@@ -20,4 +20,4 @@ Smart Alarm is armed and disarmed simply by setting SmartThings location 'mode'.
 
 This allows arming and disarming SmartAlarm 'Hello Home' parses. For example, 'Good Night!' phrase activates 'Night' mode, thus automatically arming Smart Alarm in Stay mode. You can also change location modes based on presence or other criteria, giving you many different ways to arm and disarm Smart Alarm.
 
-For more information, visit Smart Alarm wiki https://github.com/statusbits/smartthings/wiki.
+For more information please visit [Smart Alarm wiki](https://github.com/statusbits/smartthings/wiki).
