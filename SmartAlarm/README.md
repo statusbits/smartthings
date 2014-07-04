@@ -1,7 +1,7 @@
 Smart Alarm
 ===========
 
-Smart Alarm is a multi-zone virtual alarm panel for the SmartThings home automation system.
+Smart Alarm is a multi-zone virtual alarm panel for the [SmartThings](http://www.smartthings.com) home automation system.
 
 Features
 --------
