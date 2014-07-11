@@ -25,15 +25,15 @@ Installation
 
 Smart Alarm is available in the "Safety & Security" section of Shared Smart Apps in [SmartThings IDE](https://graph.api.smartthings.com).
 
-1. Go to "My SmartApps" section and click on "+ New SmartApp" button on the right.
-2. On the "New SmartApp" page, fill out mandatory "Name" and "Description" fields (it does not matter what you put there), then click "Create" button at the bottom.
-3. When a new app template opens in the IDE, click on "Browse SmartApps" drop-down list in upper right corner and select "Browse Shared SmartApps". A list of shared SmartApps will appear on the left side of the editor window.
+1. Go to "My SmartApps" section and click on the "+ New SmartApp" button on the right.
+2. On the "New SmartApp" page, fill out mandatory "Name" and "Description" fields (it does not matter what you put there), then click the "Create" button at the bottom.
+3. When a new app template opens in the IDE, click on "Browse SmartApps" drop-down list in the upper right corner and select "Browse Shared SmartApps". A list of shared SmartApps will appear on the left side of the editor window.
 4. Scroll down to "Safety & Security" section and click on it.
-5. Select "Smart Alarm" from the list and click red "Overwrite" button in the bottom right corner.
-6. Click blue "Save" button above the editor window.
-7. Click on "Publish" button next to it and select "For Me". You have now self-published your SmartApp".
-8. Open SmartThings mobile appon iPhone or Android and go to the Dashboard.
+5. Select "Smart Alarm" from the list and click the red "Overwrite" button in the bottom right corner.
+6. Click the blue "Save" button above the editor window.
+7. Click the "Publish" button next to it and select "For Me". You have now self-published your SmartApp.
+8. Open SmartThings mobile app on iPhone or Android and go to the Dashboard.
 9. Tap on the round "+" button and navigate to "My Apps" section by swiping the menu ribbon all the way to the left.
-10. "Smart Alarm" should be available in the list that appers below the menu ribbon. Tap it and follow setup instructions.
+10. "Smart Alarm" should be available in the list that appears below the menu ribbon. Tap it and follow setup instructions.
 
 For more information please visit [Smart Alarm wiki](https://github.com/statusbits/smartthings/wiki/Smart-Alarm).
