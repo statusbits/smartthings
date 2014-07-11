@@ -18,7 +18,7 @@ Features
 
 Smart Alarm is armed and disarmed simply by setting SmartThings location 'mode'. For example, you can configure it to arm in Away mode when the location mode is set to 'Away' and to arm in Stay mode when the location mode is set to 'Night'. Setting location to any other mode, for example 'Home' will automatically disarm Smart Alarm.
 
-This allows arming and disarming SmartAlarm using 'Hello Home' parses. For example, 'Good Night!' phrase activates 'Night' mode, thus automatically arming Smart Alarm in Stay mode. You can also change location modes based on presence or other criteria, giving you many different ways to arm and disarm Smart Alarm.
+This allows arming and disarming SmartAlarm using 'Hello Home' phrases. For example, 'Good Night!' phrase activates 'Night' mode, thus automatically arming Smart Alarm in Stay mode. You can also change location modes based on presence or other criteria, giving you many different ways to arm and disarm Smart Alarm.
 
 Installation
 ------------
