@@ -9,9 +9,6 @@ working for hours and even days.
 Here comes Pollster to the rescue! Pollster is a polling daemon that calls poll() function periodically
 for selected devices. Polling interval is user-configurable and can be as short as one minute.
 
-Screen Shot
------------
-
 ![](https://sites.google.com/site/statusbits/pictures/Pollster.jpg)
 
 Installation
