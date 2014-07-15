@@ -4,5 +4,5 @@ This repository contains applications (SmartApps) and custom device types I have
 
 Currently these include:
 
+* __Pollster__ - a SmartThings polling daemon
 * __SmartAlarm__ - a multi-zone virtual alarm panel
-* __Poller__ - a SmartThings polling daemon
