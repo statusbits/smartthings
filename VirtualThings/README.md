@@ -12,7 +12,9 @@ implements "Switch" device
 fire "on" and "off" events when a user touches the switch tile.
 
 
-### Virtual 8-button Remote Control (VirtualRemoteControl.device.groovy)
+### Virtual 8-button Remote Control
+
+    File: VirtualRemoteControl.device.groovy
 
 ![Screenshot](http://statusbits.github.io/images/VirtualRemoteControl.jpg)
 
@@ -26,12 +28,14 @@ home "modes", trigger "Hello Home" actions, etc. Note, that Button
 Controller app supports only four buttons though.
 
 
-### Virtual Temperature Tile (VirtualTemperatureTile.device.groovy)
+### Virtual Temperature Tile
+
+    File: VirtualTemperatureTile.device.groovy
 
 This virtual device implements SmartThings "Temperature" device capability
 and can be used to display temperature data from external source. The device
 current temperature value can be set by calling its 'parse' method with a
-string argument in the "current_value:<value>" format. For example:
+string argument in the "current_value:value" format. For example:
     
     parse("current_value:72.5")
 
