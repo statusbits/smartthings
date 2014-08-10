@@ -25,6 +25,17 @@ SmartApp to turn switches on and off, open and close door locks, change
 home "modes", trigger "Hello Home" actions, etc. Note, that Button
 Controller app supports only four buttons though.
 
+
+### Virtual Temperature Tile (VirtualTemperatureTile.device.groovy)
+
+This virtual device implements SmartThings "Temperature" device capability
+and can be used to display temperature data from external source. The device
+current temperature value can be set by calling its 'parse' method with a
+string argument in the "current_value:<value>" format. For example:
+    
+    parse("current_value:72.5")
+
+
 Installation
 ------------
 
