@@ -40,6 +40,18 @@ command with "open" or "closed" string as an argument:
     setCurrentValue("open")
 
 
+### Virtual Motion Tile
+
+    File: VirtualMotionTile.device.groovy
+
+This virtual device implements SmartThings "Motion Sensor" device capability
+and can be used to display active/inactive motion sensor status from external
+source. The device current status can be set by calling its 'setCurrentValue'
+command with "active" or "inactive" string as an argument:
+
+    setCurrentValue("active")
+
+
 ### Virtual Temperature Tile
 
     File: VirtualTemperatureTile.device.groovy
