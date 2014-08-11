@@ -15,7 +15,7 @@
  *  specific language governing permissions and limitations under the License.
  *
  *  The latest version of this file can be found at:
- *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualTemperatureSensor.device.groovy
+ *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualTemperatureTile.device.groovy
  *
  *  Version: 1.0.0
  *  Date: 2014-08-10
@@ -27,7 +27,7 @@ metadata {
         capability "Sensor"
 
         // custom commands
-        command "parse"
+        command "setCurrentValue"
     }
 
     tiles {
@@ -64,20 +64,31 @@ def parse(String message) {
     TRACE("parse(${message})")
 
     def msg = stringToMap(message)
-    if (msg.current_value == null) {
+    if (msg.current_value) {
+        setCurrentValue(message.current_value)
+    } else {
         log.error "Invalid message: ${message}"
-        return null
     }
 
-    def temp = msg.current_value.toFloat()
+    return null
+}
+
+def setCurrentValue(value) {
+    TRACE("setCurrentValue(${value})")
+
+    Float temp = value.toFloat()
+    def tempScale = getTemperatureScale()
+    if (tempScale == "C") {
+        temp = (temp - 32) / 1.8
+    }
 
     def event = [
         name  : "temperature",
         value : temp,
-        unit  : "F",
+        unit  : tempScale,
     ]
 
-    return createEvent(event)
+    sendEvent(event)
 }
 
 private def TRACE(message) {

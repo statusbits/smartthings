@@ -34,10 +34,13 @@ Controller app supports only four buttons though.
 
 This virtual device implements SmartThings "Temperature" device capability
 and can be used to display temperature data from external source. The device
-current temperature value can be set by calling its 'parse' method with a
-string argument in the "current_value:value" format. For example:
-    
-    parse("current_value:72.5")
+current temperature value can be set by calling its 'setCurrentValue'
+command with temperature value (in degrees of Fahrenheit) as an argument:
+
+    setCurrentValue(72.5)
+
+The Virtual Temperature Tile converts temperature to degrees of Celsius if
+the location is configured to use Celsius temperature scale.
 
 
 Installation
