@@ -15,6 +15,9 @@
  *  License  for the specific language governing permissions and limitations
  *  under the License.
  *
+ *  The latest version of this file can be found at:
+ *  https://github.com/statusbits/smartthings/blob/master/XivelyBridge/XivelyBridge.app.groovy
+ *
  *  Version: 0.9.0
  *  Date: 2014-08-10
  */
