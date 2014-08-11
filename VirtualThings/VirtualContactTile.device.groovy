@@ -73,5 +73,5 @@ def setCurrentValue(value) {
 }
 
 private def TRACE(message) {
-    log.debug message
+    //log.debug message
 }
