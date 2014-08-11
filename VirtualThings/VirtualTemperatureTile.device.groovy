@@ -65,7 +65,7 @@ def parse(String message) {
 
     def msg = stringToMap(message)
     if (msg.current_value) {
-        setCurrentValue(message.current_value)
+        setCurrentValue(msg.current_value)
     } else {
         log.error "Invalid message: ${message}"
     }
