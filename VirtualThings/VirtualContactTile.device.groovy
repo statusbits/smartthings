@@ -42,9 +42,10 @@ metadata {
     }
 
     simulator {
-        status "open"   : "current_value:open"
-        status "closed" : "current_value:closed"
-        status "Invalid message" : "foobar"
+        status "open"           : "current_value:open"
+        status "closed"         : "current_value:closed"
+        status "Invalid value"  : "current_value:foobar"
+        status "Invalid format" : "foobar"
     }
 }
 
@@ -63,6 +64,12 @@ def parse(String message) {
 
 def setCurrentValue(value) {
     TRACE("setCurrentValue(${value})")
+
+    def values = ["open", "closed"]
+    if (null == values.find {it == value }) {
+        log.error "Invalid value: ${value}"
+        return null
+    }
 
     def event = [
         name  : "contact",
