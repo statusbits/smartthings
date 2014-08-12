@@ -40,6 +40,31 @@ command with "open" or "closed" string as an argument:
     setCurrentValue("open")
 
 
+### Virtual Humidity Tile
+
+    File: VirtualHumidityTile.device.groovy
+
+This virtual device implements SmartThings "Relative Humidity Measurement"
+device capability and can be used to display relative humidity data from
+external source. The device current humidity value can be set by calling its
+'setCurrentValue' command with relative humidity value (in persents) as an
+argument:
+
+    setCurrentValue(60)
+
+
+### Virtual Illuminance Tile
+
+    File: VirtualIlluminanceTile.device.groovy
+
+This virtual device implements SmartThings "Illuminance Measurement" device
+capability and can be used to display illuminance data from external source.
+The device current illuminance value can be set by calling its
+'setCurrentValue' command with illuminance value (in lux) as an argument:
+
+    setCurrentValue(400)
+
+
 ### Virtual Motion Tile
 
     File: VirtualMotionTile.device.groovy
