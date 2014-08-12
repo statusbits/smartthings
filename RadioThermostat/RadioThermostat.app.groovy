@@ -30,16 +30,23 @@ preferences {
 
 metadata {
     definition (name:"Radio Thermostat", namespace:"statusbits", author:"geko@statusbits.com") {
+        capability "Thermostat"
         capability "Temperature Measurement"
         capability "Sensor"
+        capability "Refresh"
         capability "Polling"
 
-        // custom commands
-        command "setCurrentValue"
+		// Custom commands
+		command "heatLevelUp"
+		command "heatLevelDown"
+		command "coolLevelUp"
+		command "coolLevelDown"
+		command "switchMode"
+		command "switchFanMode"
     }
 
     tiles {
-        valueTile("temperature", "device.temperature", width: 2, height: 2) {
+        valueTile("temperature", "device.temperature", width:2, height:2) {
             state("temperature", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
                     [value: 31, color: "#153591"],
@@ -53,36 +60,112 @@ metadata {
             )
         }
 
+        standardTile("mode", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
+			state "auto", label:'', icon:"st.thermostat.auto", action:"setOperatingMode"
+            state "cool", label:'', icon:"st.thermostat.cool", action:"setOperatingMode"
+            state "heat", label:'', icon:"st.thermostat.heat", action:"setOperatingModee"
+            state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"setOperatingMode"
+        }
+
+		standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
+			state "fanAuto", label:'', icon:"st.thermostat.fan-auto", action:"setFanMode"
+			state "fanCirculate", label:'', icon:"st.thermostat.fan-circulate", action:"setFanMode"
+			state "fanOn", label:'', icon:"st.thermostat.fan-on", action:"setFanMode"
+		}
+
         main(["temperature"])
-        details(["temperature"])
+        details(["temperature", "mode", "fanMode"])
     }
 
     simulator {
-        status "Temperature 32.0": "current_value:32.0"
-        status "Temperature 58.5": "current_value:58.5"
-        status "Temperature 72.0": "current_value:72.0"
-        status "Temperature 82.5": "current_value:82.5"
-        status "Temperature 94.5": "current_value:94.5"
-        status "Temperature 96.0": "current_value:96.0"
-        status "Invalid message" : "foobar:100.0"
+    	status "Mode: Off":		"mode:off"
+    	status "Mode: Auto":	"mode:auto"
+    	status "Mode: Cool":	"mode:cool"
+    	status "Mode: Heat":	"mode:heat"
     }
-}
-
-def poll()
-{
 }
 
 def parse(String message) {
     TRACE("parse(${message})")
 
     def msg = stringToMap(message)
-    if (msg.current_value) {
-        setCurrentValue(message.current_value)
-    } else {
-        log.error "Invalid message: ${message}"
+    if (msg.mode) {
+        setThermostatMode(msg.mode)
     }
 
     return null
+}
+
+// thermostat.setThermostatMode
+def setThermostatMode(mode) {
+	TRACE("setThermostatMode(${mode})")
+}
+
+// thermostat.auto
+def auto() {
+	TRACE("auto()")
+}
+
+// thermostat.cool
+def cool() {
+	TRACE("cool()")
+}
+
+// thermostat.heat
+def heat() {
+	TRACE("heat()")
+}
+
+// thermostat.off
+def off() {
+	TRACE("off()")
+}
+
+// thermostat.emergencyHeat
+def emergencyHeat() {
+	TRACE("emergencyHeat()")
+}
+
+// thermostat.setThermostatFanMode
+def setThermostatFanMode(fanMode) {
+	TRACE("setThermostatFanMode(${fanMode})")
+}
+
+// thermostat.fanAuto
+def fanAuto() {
+	TRACE("fanAuto()")
+}
+
+// thermostat.fanOn
+def fanOn() {
+	TRACE("fanOn()")
+}
+
+// thermostat.fanCirculate
+def fanCirculate() {
+	TRACE("fanCirculate()")
+}
+
+// thermostat.setHeatingSetpoint
+def setHeatingSetpoint(tempHeat) {
+	TRACE("setHeatingSetpoint(${tempHeat})")
+}
+
+// thermostat.setCoolingSetpoint
+def setCoolingSetpoint(tempCool) {
+	TRACE("setCoolingSetpoint(${tempCool})")
+}
+
+// polling.poll 
+def poll()
+{
+    TRACE("poll()")
+}
+
+// refresh.refresh
+def refresh()
+{
+    TRACE("refresh()")
 }
 
 def setCurrentValue(value) {
