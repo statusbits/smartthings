@@ -73,8 +73,12 @@ metadata {
             state "fanOn", label:'', icon:"st.thermostat.fan-on", action:"setFanMode"
         }
 
+        standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
+            state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
+        }
+
         main(["temperature"])
-        details(["temperature", "mode", "fanMode"])
+        details(["temperature", "mode", "fanMode", "refresh"])
     }
 
     simulator {
@@ -160,12 +164,15 @@ def setCoolingSetpoint(tempCool) {
 def poll()
 {
     TRACE("poll()")
+
+    setNetworkId(confIpAddr, confTcpPort)
 }
 
 // refresh.refresh
 def refresh()
 {
     TRACE("refresh()")
+    poll()
 }
 
 def setCurrentValue(value) {
@@ -184,6 +191,38 @@ def setCurrentValue(value) {
     ]
 
     sendEvent(event)
+}
+
+private apiGet(path) {
+    TRACE("apiGet(${path})")
+
+    def httpRequest = [
+        method:     'GET',
+        path:       path,
+        headers:    [
+            HOST:       confIpAddr,
+            Accept:     "*/*",
+        ]
+    ]
+
+    def hubAction = new physicalgraph.device.HubAction(httpRequest)
+}
+
+private apiPost(path) {
+    TRACE("apiPost(${path})")
+}
+
+// Sets device Network ID in 'AAAAAAAA:PPPP' format
+private String setNetworkId(ipaddr, port) { 
+    TRACE("setNetworkId(${ipaddr}, ${port})")
+
+    def hexIp = ipaddr.tokenize('.').collect {
+        String.format('%02X', it.toInteger())
+    }.join()
+
+    def hexPort = String.format('%04X', port.toInteger())
+    device.deviceNetworkId = "${hexIp}:${hexPort}"
+    log.debug "device.deviceNetworkId = ${device.deviceNetworkId}"
 }
 
 private def TRACE(message) {
