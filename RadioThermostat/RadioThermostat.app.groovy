@@ -73,6 +73,30 @@ metadata {
             state "fanOn", label:'', icon:"st.thermostat.fan-on", action:"setFanMode"
         }
 
+        valueTile("heatingSetpoint", "device.heatingSetpoint", inactiveLabel:false) {
+            state "default", label:'${currentValue}° heat', unit:"F"
+        }
+
+        valueTile("coolingSetpoint", "device.coolingSetpoint", inactiveLabel:false) {
+            state "default", label:'${currentValue}° cool', unit:"F"
+        }
+
+        standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+            state "default", label:'  ', icon:"st.thermostat.thermostat-up", action:"heatLevelUp"
+        }
+
+        standardTile("heatLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+            state "default", label:'  ', icon:"st.thermostat.thermostat-down", action:"heatLevelDown"
+        }
+
+        standardTile("coolLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+            state "default", label:'  ', icon:"st.thermostat.thermostat-up", action:"coolLevelUp"
+        }
+
+        standardTile("coolLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+            state "default", label:'  ', icon:"st.thermostat.thermostat-down", action:"coolLevelDown"
+        }
+
         chartTile(name:"temperatureChart", attribute:"device.temperature") {
         }
 
@@ -81,7 +105,10 @@ metadata {
         }
 
         main(["temperature"])
-        details(["temperature", "mode", "fanMode", "temperatureChart", "refresh"])
+        details(["temperature", "mode", "fanMode",
+            "heatLevelDown", "heatingSetpoint", "heatLevelUp",
+            "coolLevelDown", "coolingSetpoint", "coolLevelUp",
+            "temperatureChart", "refresh"])
     }
 
     simulator {
@@ -97,17 +124,17 @@ def parse(String message) {
 
     def msg = stringToMap(message)
 
-	if (msg.headers) {
-    	def headers = new String(msg.headers.decodeBase64())
-		def body = ""
-		if (msg.body) {
-			body = new String(msg.body.decodeBase64())
-		}
+    if (msg.headers) {
+        def headers = new String(msg.headers.decodeBase64())
+        def body = ""
+        if (msg.body) {
+            body = new String(msg.body.decodeBase64())
+        }
 
-		return parseHttpResponse(headers, body)
-	}
+        return parseHttpResponse(headers, body)
+    }
 
-	//if (msg.mode) {
+    //if (msg.mode) {
     //    setThermostatMode(msg.mode)
     //}
 
@@ -167,11 +194,51 @@ def fanCirculate() {
 // thermostat.setHeatingSetpoint
 def setHeatingSetpoint(tempHeat) {
     TRACE("setHeatingSetpoint(${tempHeat})")
+
+    //sendEvent(name:'heatingSetpoint', value:tempHeat)
 }
 
 // thermostat.setCoolingSetpoint
 def setCoolingSetpoint(tempCool) {
     TRACE("setCoolingSetpoint(${tempCool})")
+
+    //sendEvent(name:'coolingSetpoint', value:tempCool)
+}
+
+def heatLevelDown() {
+    TRACE("heatLevelDown()")
+
+    def currentT = device.currentValue("coolingSetpoint")?.toInteger()
+    if (currentT && currentT > 40) {
+        setHeatingSetpoint(currentT - 1)
+    }
+}
+
+def heatLevelUp() {
+    TRACE("heatLevelUp()")
+
+    def currentT = device.currentValue("coolingSetpoint")?.toInteger()
+    if (currentT && currentT < 99) {
+        setHeatingSetpoint(currentT + 1)
+    }
+}
+
+def coolLevelDown() {
+    TRACE("coolLevelDown()")
+
+    def currentT = device.currentValue("coolingSetpoint")?.toInteger()
+    if (currentT && currentT > 40) {
+        setCoolingSetpoint(currentT - 1)
+    }
+}
+
+def coolLevelUp() {
+    TRACE("coolLevelUp()")
+
+    def currentT = device.currentValue("coolingSetpoint")?.toInteger()
+    if (currentT && currentT < 99) {
+        setCoolingSetpoint(currentT + 1)
+    }
 }
 
 // polling.poll 
@@ -180,7 +247,7 @@ def poll()
     TRACE("poll()")
 
     setNetworkId(confIpAddr, confTcpPort)
-	apiGet("/tstat/version")
+    apiGet("/tstat/version")
 }
 
 // refresh.refresh
@@ -208,7 +275,7 @@ def setCurrentValue(value) {
     sendEvent(event)
 }
 
-private apiGet(path) {
+private apiGet(String path) {
     TRACE("apiGet(${path})")
 
     def headers = [
@@ -219,14 +286,28 @@ private apiGet(path) {
     def httpRequest = [
         method:     'GET',
         path:       path,
-		headers:	headers
+        headers:    headers
    ]
 
     def hubAction = new physicalgraph.device.HubAction(httpRequest)
 }
 
-private apiPost(path) {
+private apiPost(String path, data) {
     TRACE("apiPost(${path})")
+
+    def headers = [
+        HOST:       "${confIpAddr}:${confTcpPort}",
+        Accept:     "*/*",
+    ]
+
+    def httpRequest = [
+        method:     'POST',
+        path:       path,
+        headers:    headers,
+        body:       data
+    ]
+
+    def hubAction = new physicalgraph.device.HubAction(httpRequest)
 }
 
 // Sets device Network ID in 'AAAAAAAA:PPPP' format
@@ -243,8 +324,8 @@ private String setNetworkId(ipaddr, port) {
 }
 
 private parseHttpResponse(String headers, String body) {
-	TRACE("headers: ${headers}")
-	TRACE("body: ${body}")
+    TRACE("headers: ${headers}")
+    TRACE("body: ${body}")
 }
 
 private def TRACE(message) {
