@@ -22,10 +22,10 @@
  */
 
 preferences {
-    input("confIpAddr", "string", title:"IP Address",
+    input("confIpAddr", "string", title:"Thermostat IP Address",
         required:true, displayDuringSetup: true)
-    input("confTcpPort", "number", title:"TCP Port",
-        defaultValue:80, required:true, displayDuringSetup:true)
+    input("confTcpPort", "number", title:"Thermostat TCP Port",
+        defaultValue:"80", required:true, displayDuringSetup:true)
 }
 
 metadata {
@@ -36,13 +36,13 @@ metadata {
         capability "Refresh"
         capability "Polling"
 
-		// Custom commands
-		command "heatLevelUp"
-		command "heatLevelDown"
-		command "coolLevelUp"
-		command "coolLevelDown"
-		command "switchMode"
-		command "switchFanMode"
+        // Custom commands
+        command "heatLevelUp"
+        command "heatLevelDown"
+        command "coolLevelUp"
+        command "coolLevelDown"
+        command "switchMode"
+        command "switchFanMode"
     }
 
     tiles {
@@ -61,27 +61,27 @@ metadata {
         }
 
         standardTile("mode", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
-			state "auto", label:'', icon:"st.thermostat.auto", action:"setOperatingMode"
+            state "auto", label:'', icon:"st.thermostat.auto", action:"setOperatingMode"
             state "cool", label:'', icon:"st.thermostat.cool", action:"setOperatingMode"
             state "heat", label:'', icon:"st.thermostat.heat", action:"setOperatingModee"
             state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"setOperatingMode"
         }
 
-		standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
-			state "fanAuto", label:'', icon:"st.thermostat.fan-auto", action:"setFanMode"
-			state "fanCirculate", label:'', icon:"st.thermostat.fan-circulate", action:"setFanMode"
-			state "fanOn", label:'', icon:"st.thermostat.fan-on", action:"setFanMode"
-		}
+        standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
+            state "fanAuto", label:'', icon:"st.thermostat.fan-auto", action:"setFanMode"
+            state "fanCirculate", label:'', icon:"st.thermostat.fan-circulate", action:"setFanMode"
+            state "fanOn", label:'', icon:"st.thermostat.fan-on", action:"setFanMode"
+        }
 
         main(["temperature"])
         details(["temperature", "mode", "fanMode"])
     }
 
     simulator {
-    	status "Mode: Off":		"mode:off"
-    	status "Mode: Auto":	"mode:auto"
-    	status "Mode: Cool":	"mode:cool"
-    	status "Mode: Heat":	"mode:heat"
+        status "Mode: Off":     "mode:off"
+        status "Mode: Auto":    "mode:auto"
+        status "Mode: Cool":    "mode:cool"
+        status "Mode: Heat":    "mode:heat"
     }
 }
 
@@ -98,62 +98,62 @@ def parse(String message) {
 
 // thermostat.setThermostatMode
 def setThermostatMode(mode) {
-	TRACE("setThermostatMode(${mode})")
+    TRACE("setThermostatMode(${mode})")
 }
 
 // thermostat.auto
 def auto() {
-	TRACE("auto()")
+    TRACE("auto()")
 }
 
 // thermostat.cool
 def cool() {
-	TRACE("cool()")
+    TRACE("cool()")
 }
 
 // thermostat.heat
 def heat() {
-	TRACE("heat()")
+    TRACE("heat()")
 }
 
 // thermostat.off
 def off() {
-	TRACE("off()")
+    TRACE("off()")
 }
 
 // thermostat.emergencyHeat
 def emergencyHeat() {
-	TRACE("emergencyHeat()")
+    TRACE("emergencyHeat()")
 }
 
 // thermostat.setThermostatFanMode
 def setThermostatFanMode(fanMode) {
-	TRACE("setThermostatFanMode(${fanMode})")
+    TRACE("setThermostatFanMode(${fanMode})")
 }
 
 // thermostat.fanAuto
 def fanAuto() {
-	TRACE("fanAuto()")
+    TRACE("fanAuto()")
 }
 
 // thermostat.fanOn
 def fanOn() {
-	TRACE("fanOn()")
+    TRACE("fanOn()")
 }
 
 // thermostat.fanCirculate
 def fanCirculate() {
-	TRACE("fanCirculate()")
+    TRACE("fanCirculate()")
 }
 
 // thermostat.setHeatingSetpoint
 def setHeatingSetpoint(tempHeat) {
-	TRACE("setHeatingSetpoint(${tempHeat})")
+    TRACE("setHeatingSetpoint(${tempHeat})")
 }
 
 // thermostat.setCoolingSetpoint
 def setCoolingSetpoint(tempCool) {
-	TRACE("setCoolingSetpoint(${tempCool})")
+    TRACE("setCoolingSetpoint(${tempCool})")
 }
 
 // polling.poll 
