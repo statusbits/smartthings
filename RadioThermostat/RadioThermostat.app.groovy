@@ -73,12 +73,15 @@ metadata {
             state "fanOn", label:'', icon:"st.thermostat.fan-on", action:"setFanMode"
         }
 
+        chartTile(name:"temperatureChart", attribute:"device.temperature") {
+        }
+
         standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
             state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
         }
 
         main(["temperature"])
-        details(["temperature", "mode", "fanMode", "refresh"])
+        details(["temperature", "mode", "fanMode", "temperatureChart", "refresh"])
     }
 
     simulator {
@@ -93,9 +96,20 @@ def parse(String message) {
     TRACE("parse(${message})")
 
     def msg = stringToMap(message)
-    if (msg.mode) {
-        setThermostatMode(msg.mode)
-    }
+
+	if (msg.headers) {
+    	def headers = new String(msg.headers.decodeBase64())
+		def body = ""
+		if (msg.body) {
+			body = new String(msg.body.decodeBase64())
+		}
+
+		return parseHttpResponse(headers, body)
+	}
+
+	//if (msg.mode) {
+    //    setThermostatMode(msg.mode)
+    //}
 
     return null
 }
@@ -166,6 +180,7 @@ def poll()
     TRACE("poll()")
 
     setNetworkId(confIpAddr, confTcpPort)
+	apiGet("/tstat/version")
 }
 
 // refresh.refresh
@@ -196,14 +211,16 @@ def setCurrentValue(value) {
 private apiGet(path) {
     TRACE("apiGet(${path})")
 
+    def headers = [
+        HOST:       "${confIpAddr}:${confTcpPort}",
+        Accept:     "*/*",
+    ]
+
     def httpRequest = [
         method:     'GET',
         path:       path,
-        headers:    [
-            HOST:       confIpAddr,
-            Accept:     "*/*",
-        ]
-    ]
+		headers:	headers
+   ]
 
     def hubAction = new physicalgraph.device.HubAction(httpRequest)
 }
@@ -223,6 +240,11 @@ private String setNetworkId(ipaddr, port) {
     def hexPort = String.format('%04X', port.toInteger())
     device.deviceNetworkId = "${hexIp}:${hexPort}"
     log.debug "device.deviceNetworkId = ${device.deviceNetworkId}"
+}
+
+private parseHttpResponse(String headers, String body) {
+	TRACE("headers: ${headers}")
+	TRACE("body: ${body}")
 }
 
 private def TRACE(message) {
