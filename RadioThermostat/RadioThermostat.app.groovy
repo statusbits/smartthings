@@ -21,6 +21,8 @@
  *  Date: 2014-08-12
  */
 
+import groovy.json.JsonSlurper
+
 preferences {
     input("confIpAddr", "string", title:"Thermostat IP Address",
         required:true, displayDuringSetup: true)
@@ -100,7 +102,7 @@ metadata {
         chartTile(name:"temperatureChart", attribute:"device.temperature") {
         }
 
-        standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
+        standardTile("refresh", "device.temperature", inactiveLabel:false, decoration:"flat") {
             state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
         }
 
@@ -126,7 +128,7 @@ def parse(String message) {
 
     if (msg.headers) {
         def headers = new String(msg.headers.decodeBase64())
-        def body = ""
+        def body = null
         if (msg.body) {
             body = new String(msg.body.decodeBase64())
         }
@@ -247,7 +249,8 @@ def poll()
     TRACE("poll()")
 
     setNetworkId(confIpAddr, confTcpPort)
-    apiGet("/tstat/version")
+    //apiGet("/tstat/version")
+    apiGet("/tstat")
 }
 
 // refresh.refresh
@@ -326,6 +329,45 @@ private String setNetworkId(ipaddr, port) {
 private parseHttpResponse(String headers, String body) {
     TRACE("headers: ${headers}")
     TRACE("body: ${body}")
+
+    // parse headers
+
+
+    // parse body
+    if (body == null) {
+        return null
+    }
+
+    def slurper = new JsonSlurper()
+    def tstat = slurper.parseText(body)
+    TRACE("tstat: ${tstat}")
+
+    def events = []
+    if (tstat.containsKey("error_msg")) {
+        log.error "Thermostat error: ${tstat.error_msg}"
+        return null
+    }
+
+    if (tstat.containsKey("temp")) {
+        Float temp = tstat.temp.toFloat()
+        def ev = [
+            name:   "temperature",
+            value:  scaleTemperature(temp),
+            unit:   getTemperatureScale(),
+        ]
+
+        events << createEvent(ev)
+    }
+
+    return events
+}
+
+private def scaleTemperature(temp) {
+    if (getTemperatureScale() == "C") {
+        temp = ((temp - 32) / 1.8).round(1)
+    }
+
+    return temp
 }
 
 private def TRACE(message) {
