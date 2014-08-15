@@ -331,7 +331,12 @@ private parseHttpResponse(String headers, String body) {
     TRACE("body: ${body}")
 
     // parse headers
-
+    def parsedHeaders = parseHttpHeaders(headers)
+    TRACE("parsedHeaders: ${parsedHeaders}")
+    if (parsedHeaders.status != 200) {
+        log.error "Server error: ${parsedHeaders.reason}"
+        return null
+    }
 
     // parse body
     if (body == null) {
@@ -360,6 +365,19 @@ private parseHttpResponse(String headers, String body) {
     }
 
     return events
+}
+
+private parseHttpHeaders(String headers) {
+    def lines = headers.readLines()
+    def status = lines.remove(0).split()
+
+    def result = [
+        protocol:   status[0],
+        status:     status[1].toInteger(),
+        reason:     status[2]
+    ]
+
+    return result
 }
 
 private def scaleTemperature(temp) {
