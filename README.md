@@ -1,7 +1,7 @@
 ## SmartThings Projects
 
 This repository contains applications (SmartApps) and custom device types I
-have written for the [SmartThings](https://www.smartthings.com) home
+have written for the [SmartThings](http://fbuy.me/bb9pe) home
 automation system.
 
 Currently these include:

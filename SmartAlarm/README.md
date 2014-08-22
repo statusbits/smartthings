@@ -1,6 +1,7 @@
 ## Smart Alarm
 
-Smart Alarm is a multi-zone virtual alarm panel for the [SmartThings](http://www.smartthings.com) home automation system.
+Smart Alarm is a multi-zone virtual alarm panel for the [SmartThings](http://fbuy.me/bb9pe)
+home automation system.
 
 ### Features
 
@@ -14,9 +15,17 @@ Smart Alarm is a multi-zone virtual alarm panel for the [SmartThings](http://www
 * Silent mode disables sirens and switches, but leaves push notifications and text messages on
 * Panic button
 
-Smart Alarm is armed and disarmed simply by setting SmartThings location 'mode'. For example, you can set it up to arm in Away mode when the location mode is set to 'Away' and to arm in Stay mode when the location mode is set to 'Night'. Setting location to any other mode, for example 'Home', will automatically disarm Smart Alarm.
+Smart Alarm is armed and disarmed simply by setting SmartThings location 'mode'.
+For example, you can set it up to arm in Away mode when the location mode is
+set to 'Away' and to arm in Stay mode when the location mode is set to 'Night'.
+Setting location to any other mode, for example 'Home', will automatically
+disarm Smart Alarm.
 
-This allows arming and disarming SmartAlarm using 'Hello Home' actions. For example, 'Good Night!' action activates the 'Night' mode, thus automatically arming Smart Alarm in Stay mode. Location modes can aslo be changed based on presence or other criteria, giving you many different ways to arm and disarm Smart Alarm.
+This allows arming and disarming SmartAlarm using 'Hello Home' actions. For
+example, 'Good Night!' action activates the 'Night' mode, thus automatically
+arming Smart Alarm in Stay mode. Location modes can aslo be changed based on
+presence or other criteria, giving you many different ways to arm and disarm
+Smart Alarm.
 
 ### Screenshots
 
@@ -26,7 +35,8 @@ This allows arming and disarming SmartAlarm using 'Hello Home' actions. For exam
 
 ### Installation
 
-Smart Alarm app is available in the "Safety & Security" section of the Shared Smart Apps in [SmartThings IDE](https://graph.api.smartthings.com).
+Smart Alarm app is available in the "Safety & Security" section of the Shared
+Smart Apps in [SmartThings IDE](https://graph.api.smartthings.com).
 
 1. Go to "My SmartApps" section and click on the "+ New SmartApp" button on the right.
 2. On the "New SmartApp" page, fill out mandatory "Name" and "Description" fields (it does not matter what you put there), then click the "Create" button at the bottom.

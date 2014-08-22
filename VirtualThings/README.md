@@ -1,10 +1,10 @@
 Virtual Things
 ==============
 
-Virtual "things" are SmartThings devices that are not tied to any actual
-hardware. They do however appear as real devices in the SmartThings UI and
-can be interacted with using "things" tiles or used in the SmartApps just
-like any other device.
+Virtual "things" are [SmartThings](http://fbuy.me/bb9pe) devices that are not
+tied to any actual hardware. They do however appear as real devices in the
+SmartThings UI and can be interacted with using "things" tiles or used in the
+SmartApps just like any other device.
 
 An example of virtual device is SmartThings' "On/Off Button Tile" that
 implements "Switch" device
