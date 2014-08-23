@@ -1,23 +1,24 @@
 Pollster
 ========
 
-Many [SmartThings](http://fbuy.me/bb9pe) devices rely on polling to periodically
-update their status. These devices have 'polling' capability and provide poll()
-function that the SmartThings polling engine calls approximately once every 10
-minutes. Unfortunately, SmartThings polling engine proved to be unreliable and
-sometimes it stops working for hours and even days.
+Many [SmartThings](http://fbuy.me/bb9pe) devices rely on polling to update
+their status periodically. These devices have 'polling' capability and provide
+poll() function that the SmartThings polling engine calls approximately every
+10 minutes. Unfortunately, the SmartThings polling engine proved to be
+unreliable and sometimes it stops working for hours and even days.
 
 Here comes Pollster to the rescue! Pollster is a polling daemon that calls
-poll() function periodically for selected devices. Polling interval is
-user-configurable and can be as short as one minute.
+poll() function periodically for selected devices. Devices can be arranged
+into four groups with independently configurable polling intervals. The
+polling interval can be as short as one minute.
 
 ![](https://sites.google.com/site/statusbits/pictures/Pollster.jpg)
 
 Installation
 ------------
 
-Pollster app is available in the "Convenience" section of the Shared Smart Apps
-in [SmartThings IDE](https://graph.api.smartthings.com).
+Pollster app is available in the "Convenience" section of the Shared Smart
+Apps in [SmartThings IDE](https://graph.api.smartthings.com).
 
 1. Go to "My SmartApps" section and click on the "+ New SmartApp" button on the right.
 2. On the "New SmartApp" page, fill out mandatory "Name" and "Description" fields (it does not matter what you put there), then click the "Create" button at the bottom.
