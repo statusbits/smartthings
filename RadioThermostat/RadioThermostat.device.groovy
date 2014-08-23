@@ -3,22 +3,24 @@
  *
  *  Copyright (c) 2014 Statusbits.com
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
- *  this file except in compliance with the License. You may obtain a copy of the
- *  License at:
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License. You may obtain a
+ *  copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software distributed
- *  under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- *  CONDITIONS OF ANY KIND, either express or implied. See the License  for the
- *  specific language governing permissions and limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  License  for the specific language governing permissions and limitations
+ *  under the License.
  *
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/RadioThermostat/RadioThermostat.device.groovy
  *
- *  Version: 0.9.0
- *  Date: 2014-08-12
+ *  Revision History
+ *  ----------------
+ *  2014-08-12: Version: 0.9.0
  */
 
 import groovy.json.JsonSlurper
@@ -84,19 +86,19 @@ metadata {
         }
 
         standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-            state "default", label:'  ', icon:"st.thermostat.thermostat-up", action:"heatLevelUp"
+			state "default", label:'Heat Target', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
         }
 
         standardTile("heatLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-            state "default", label:'  ', icon:"st.thermostat.thermostat-down", action:"heatLevelDown"
+            state "default", label:'Heat Target', icon:"st.custom.buttons.subtract-icon", action:"heatLevelDown"
         }
 
-        standardTile("coolLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-            state "default", label:'  ', icon:"st.thermostat.thermostat-up", action:"coolLevelUp"
+        standardTile("coolLevelUp", "device.coolingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+            state "default", label:'Cool Target', icon:"st.custom.buttons.add-icon", action:"coolLevelUp"
         }
 
-        standardTile("coolLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-            state "default", label:'  ', icon:"st.thermostat.thermostat-down", action:"coolLevelDown"
+        standardTile("coolLevelDown", "device.coolingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+            state "default", label:'Cool Target', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
         chartTile(name:"temperatureChart", attribute:"device.temperature") {
