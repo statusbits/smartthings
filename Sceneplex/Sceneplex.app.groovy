@@ -57,9 +57,13 @@ mappings {
 def setupAuthenticate() {
     TRACE("setupAuthenticate()")
 
+    getHubAddress()
+    log.debug "redirectUrl: ${getRedirectUrl()}"
+
     def clientId = "9e9abb86-0acc-47ec-ad6d-000d323f97a0"
     //def callbackUri = "https://graph.api.smartthings.com/oauth/callback"
-    def callbackUri = "http://statusbits.github.io/stauth/sceneplex.html"
+    //def callbackUri = "http://statusbits.github.io/stauth/sceneplex.html"
+    def callbackUri = "http://txtmsg.tripod.com/cgi-bin/debug.cgi?foo=bar"
     //log.debug "callbackUri=${callbackUri}"
 
     def oauthUrl = "https://graph.api.smartthings.com/oauth/authorize?response_type=code&scope=app&client_id=${clientId}&redirect_uri=${callbackUri.encodeAsURL()}"
@@ -135,6 +139,34 @@ def activateScene() {
 
 def onAppTouch(evt) {
     TRACE("onAppTouch(${evt})")
+}
+
+def private getRedirectUrl() {
+    TRACE("getRedirectUrl()")
+
+    if (!atomicState.accessToken) {
+        log.debug "Creating access token"
+        def token = createAccessToken()
+        log.debug "accessToken: ${token}"
+        atomicState.accessToken = state.accessToken
+        log.debug "accessToken: ${atomicState.accessToken}"
+    }
+
+    return "https://graph.api.smartthings.com/api/token/${atomicState.accessToken}/smartapps/installations/${app.id}"
+}
+
+def private getHubAddress() {
+    TRACE("getHubAddress()")
+
+    location.hubs.each() {
+        log.debug "Hub: ${it.getProperties()}"
+        if (it.type == 'PHYSICAL') {
+            //def ip = it.localIP
+            //def port= it.getDataValue("localSrvPortTCP")
+            //log.debug "Hub Local IP: ${ip}"
+            log.trace "Hub name: ${it.name}, Local IP: ${it.localIP}"
+        }
+    }
 }
 
 private def TRACE(message) {
