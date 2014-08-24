@@ -45,7 +45,11 @@ metadata {
         command "heatLevelDown"
         command "coolLevelUp"
         command "coolLevelDown"
-        command "switchMode"
+        command "holdOn"
+        command "holdOff"
+
+        // Custom attributes
+        attribute "hold", "string"
     }
 
     tiles {
@@ -65,13 +69,15 @@ metadata {
         }
 
         standardTile("mode", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
-            state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"setOperatingMode"
-            state "auto", label:'', icon:"st.thermostat.auto", action:"setOperatingMode"
-            state "cool", label:'', icon:"st.thermostat.cool", action:"setOperatingMode"
-            state "heat", label:'', icon:"st.thermostat.heat", action:"setOperatingMode"
+            state "default", label:'Unknown'
+            state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"thermostat.auto"
+            state "auto", label:'', icon:"st.thermostat.auto", action:"thermostat.cool"
+            state "cool", label:'', icon:"st.thermostat.cool", action:"thermostat.heat"
+            state "heat", label:'', icon:"st.thermostat.heat", action:"thermostat.off"
         }
 
         standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
+            state "default", label:'Unknown'
             state "auto", label:'', icon:"st.thermostat.fan-auto", action:"thermostat.fanAuto"
             state "on", label:'', icon:"st.thermostat.fan-on", action:"thermostat.fanCirculate"
             state "circulate", label:'', icon:"st.thermostat.fan-circulate", action:"thermostat.fanAuto"
@@ -86,7 +92,7 @@ metadata {
         }
 
         standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-			state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
+            state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
         }
 
         standardTile("heatLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
@@ -101,15 +107,21 @@ metadata {
             state "default", label:'Cooling', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
-		standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
+        standardTile("hold", "device.hold", inactiveLabel:false, decoration:"flat") {
+            //state "default", label:'Unknown'
+            state "on", label:'Hold ON', action:"holdOff"
+            state "off", label:'Hold OFF', action:"holdOn"
+        }
+
+        standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
             state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
         }
 
         main(["temperature"])
 
-        details(["temperature", "mode", "fanMode", "heatLevelDown",
-            "heatingSetpoint", "heatLevelUp", "coolLevelDown",
-            "coolingSetpoint", "coolLevelUp", "refresh"])
+        details(["temperature", "mode", "fanMode", "heatingSetpoint",
+            "heatLevelDown", "heatLevelUp", "coolingSetpoint",
+            "coolLevelDown", "coolLevelUp", "hold", "refresh"])
     }
 
     simulator {
@@ -264,37 +276,40 @@ def coolLevelUp() {
     }
 }
 
+def holdOn() {
+    TRACE("holdOn()")
+}
+
+def holdOff() {
+    TRACE("holdOff()")
+}
+
 // polling.poll 
 def poll() {
     TRACE("poll()")
+    refresh()
+}
+
+// refresh.refresh
+def refresh() {
+    TRACE("refresh()")
 
     setNetworkId(confIpAddr, confTcpPort)
     //apiGet("/tstat/version")
     apiGet("/tstat")
 }
 
-// refresh.refresh
-def refresh() {
-    TRACE("refresh()")
-    poll()
-}
+// Sets device Network ID in 'AAAAAAAA:PPPP' format
+private String setNetworkId(ipaddr, port) { 
+    TRACE("setNetworkId(${ipaddr}, ${port})")
 
-def setCurrentValue(value) {
-    TRACE("setCurrentValue(${value})")
+    def hexIp = ipaddr.tokenize('.').collect {
+        String.format('%02X', it.toInteger())
+    }.join()
 
-    Float temp = value.toFloat()
-    def tempScale = getTemperatureScale()
-    if (tempScale == "C") {
-        temp = (temp - 32) / 1.8
-    }
-
-    def event = [
-        name  : "temperature",
-        value : temp,
-        unit  : tempScale,
-    ]
-
-    sendEvent(event)
+    def hexPort = String.format('%04X', port.toInteger())
+    device.deviceNetworkId = "${hexIp}:${hexPort}"
+    log.debug "device.deviceNetworkId = ${device.deviceNetworkId}"
 }
 
 private apiGet(String path) {
@@ -309,7 +324,7 @@ private apiGet(String path) {
         method:     'GET',
         path:       path,
         headers:    headers
-   ]
+    ]
 
     def hubAction = new physicalgraph.device.HubAction(httpRequest)
 }
@@ -332,17 +347,12 @@ private apiPost(String path, data) {
     def hubAction = new physicalgraph.device.HubAction(httpRequest)
 }
 
-// Sets device Network ID in 'AAAAAAAA:PPPP' format
-private String setNetworkId(ipaddr, port) { 
-    TRACE("setNetworkId(${ipaddr}, ${port})")
-
-    def hexIp = ipaddr.tokenize('.').collect {
-        String.format('%02X', it.toInteger())
-    }.join()
-
-    def hexPort = String.format('%04X', port.toInteger())
-    device.deviceNetworkId = "${hexIp}:${hexPort}"
-    log.debug "device.deviceNetworkId = ${device.deviceNetworkId}"
+private def executeCommand(String path, data) {
+    def hubActions = [
+        apiPost(path, data),
+        new physicalgraph.device.HubAction("delay 1000"),
+        refresh()
+    ]
 }
 
 private parseHttpResponse(String headers, String body) {
@@ -383,6 +393,33 @@ private parseHttpResponse(String headers, String body) {
         events << createEvent(ev)
     }
 
+    if (tstat.containsKey("tmode")) {
+        def tmode = parseThermostatMode(tstat.tmode)
+        TRACE("tmode: ${tmode}")
+        if (device.currentState("thermostatMode")?.value != tmode) {
+            def ev = [
+                name:   "thermostatMode",
+                value:  tmode
+            ]
+
+            events << createEvent(ev)
+        }
+    }
+
+    if (tstat.containsKey("fmode")) {
+        def fmode = parseFanMode(tstat.fmode)
+        TRACE("fmode: ${fmode}")
+        if (device.currentState("thermostatFanMode")?.value != fmode) {
+            def ev = [
+                name:   "thermostatFanMode",
+                value:  fmode
+            ]
+
+            events << createEvent(ev)
+        }
+    }
+
+    TRACE("events: ${events}")
     return events
 }
 
@@ -397,6 +434,49 @@ private parseHttpHeaders(String headers) {
     ]
 
     return result
+}
+
+private def parseThermostatMode(tmode) {
+    TRACE("parseThermostatMode(${tmode})")
+
+    def modes = [
+        0: "off",
+        1: "heat",
+        2: "cool",
+        3: "auto"
+    ]
+
+    return modes[tmode]
+}
+
+private def parseFanMode(fmode) {
+    TRACE("parseFanMode(${fmode})")
+
+    def modes = [
+        0: "auto",
+        1: "circulate",
+        2: "on"
+    ]
+
+    return modes[fmode]
+}
+
+private def setTemperature(value) {
+    TRACE("setTemperature(${value})")
+
+    Float temp = value.toFloat()
+    def tempScale = getTemperatureScale()
+    if (tempScale == "C") {
+        temp = (temp - 32) / 1.8
+    }
+
+    def event = [
+        name  : "temperature",
+        value : temp,
+        unit  : tempScale
+    ]
+
+    sendEvent(event)
 }
 
 private def scaleTemperature(temp) {
