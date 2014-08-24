@@ -46,11 +46,11 @@ metadata {
         command "coolLevelUp"
         command "coolLevelDown"
         command "switchMode"
-        command "switchFanMode"
     }
 
     tiles {
-        valueTile("temperature", "device.temperature", width:2, height:2) {
+        //valueTile("temperature", "device.temperature", width:2, height:2) {
+        valueTile("temperature", "device.temperature") {
             state("temperature", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
                     [value: 31, color: "#153591"],
@@ -65,16 +65,16 @@ metadata {
         }
 
         standardTile("mode", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
+            state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"setOperatingMode"
             state "auto", label:'', icon:"st.thermostat.auto", action:"setOperatingMode"
             state "cool", label:'', icon:"st.thermostat.cool", action:"setOperatingMode"
-            state "heat", label:'', icon:"st.thermostat.heat", action:"setOperatingModee"
-            state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"setOperatingMode"
+            state "heat", label:'', icon:"st.thermostat.heat", action:"setOperatingMode"
         }
 
         standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
-            state "fanAuto", label:'', icon:"st.thermostat.fan-auto", action:"setFanMode"
-            state "fanCirculate", label:'', icon:"st.thermostat.fan-circulate", action:"setFanMode"
-            state "fanOn", label:'', icon:"st.thermostat.fan-on", action:"setFanMode"
+            state "auto", label:'', icon:"st.thermostat.fan-auto", action:"thermostat.fanAuto"
+            state "on", label:'', icon:"st.thermostat.fan-on", action:"thermostat.fanCirculate"
+            state "circulate", label:'', icon:"st.thermostat.fan-circulate", action:"thermostat.fanAuto"
         }
 
         valueTile("heatingSetpoint", "device.heatingSetpoint", inactiveLabel:false) {
@@ -86,40 +86,40 @@ metadata {
         }
 
         standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-			state "default", label:'Heat Target', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
+			state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
         }
 
         standardTile("heatLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-            state "default", label:'Heat Target', icon:"st.custom.buttons.subtract-icon", action:"heatLevelDown"
+            state "default", label:'Heating', icon:"st.custom.buttons.subtract-icon", action:"heatLevelDown"
         }
 
         standardTile("coolLevelUp", "device.coolingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-            state "default", label:'Cool Target', icon:"st.custom.buttons.add-icon", action:"coolLevelUp"
+            state "default", label:'Cooling', icon:"st.custom.buttons.add-icon", action:"coolLevelUp"
         }
 
         standardTile("coolLevelDown", "device.coolingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
-            state "default", label:'Cool Target', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
+            state "default", label:'Cooling', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
-        chartTile(name:"temperatureChart", attribute:"device.temperature") {
-        }
-
-        standardTile("refresh", "device.temperature", inactiveLabel:false, decoration:"flat") {
+		standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
             state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
         }
 
         main(["temperature"])
-        details(["temperature", "mode", "fanMode",
-            "heatLevelDown", "heatingSetpoint", "heatLevelUp",
-            "coolLevelDown", "coolingSetpoint", "coolLevelUp",
-            "temperatureChart", "refresh"])
+
+        details(["temperature", "mode", "fanMode", "heatLevelDown",
+            "heatingSetpoint", "heatLevelUp", "coolLevelDown",
+            "coolingSetpoint", "coolLevelUp", "refresh"])
     }
 
     simulator {
-        status "Mode: Off":     "mode:off"
-        status "Mode: Auto":    "mode:auto"
-        status "Mode: Cool":    "mode:cool"
-        status "Mode: Heat":    "mode:heat"
+        status "Mode: Off":         "mode:off"
+        status "Mode: Auto":        "mode:auto"
+        status "Mode: Cool":        "mode:cool"
+        status "Mode: Heat":        "mode:heat"
+        status "Fan: Auto":         "fan:auto"
+        status "Fan: On":           "fan:on"
+        status "Fan: Circulate":    "fan:circulate"
     }
 }
 
@@ -148,6 +148,16 @@ def parse(String message) {
 // thermostat.setThermostatMode
 def setThermostatMode(mode) {
     TRACE("setThermostatMode(${mode})")
+
+    switch (mode) {
+    case "off":             return off()
+    case "auto":            return auto()
+    case "cool":            return cool()
+    case "heat":            return heat()
+    case "emergency heat":  return emergencyHeat()
+    }
+
+    log.error "Invalid thermostat mode: \'${mode}\'"
 }
 
 // thermostat.auto
@@ -173,11 +183,20 @@ def off() {
 // thermostat.emergencyHeat
 def emergencyHeat() {
     TRACE("emergencyHeat()")
+    log.warn "'emergency heat' mode is not supported"
 }
 
 // thermostat.setThermostatFanMode
 def setThermostatFanMode(fanMode) {
     TRACE("setThermostatFanMode(${fanMode})")
+
+    switch (fanMode) {
+    case "auto":        return fanAuto()
+    case "on":          return fanOn()
+    case "circulate":   return fanCirculate()
+    }
+
+    log.error "Invalid fan mode: \'${fanMode}\'"
 }
 
 // thermostat.fanAuto
@@ -246,8 +265,7 @@ def coolLevelUp() {
 }
 
 // polling.poll 
-def poll()
-{
+def poll() {
     TRACE("poll()")
 
     setNetworkId(confIpAddr, confTcpPort)
@@ -256,8 +274,7 @@ def poll()
 }
 
 // refresh.refresh
-def refresh()
-{
+def refresh() {
     TRACE("refresh()")
     poll()
 }
