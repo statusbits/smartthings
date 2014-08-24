@@ -70,10 +70,10 @@ metadata {
 
         standardTile("mode", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
             //state "default", label:'Unknown'
-            state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"thermostat.auto"
-            state "auto", label:'', icon:"st.thermostat.auto", action:"thermostat.cool"
-            state "cool", label:'', icon:"st.thermostat.cool", action:"thermostat.heat"
-            state "heat", label:'', icon:"st.thermostat.heat", action:"thermostat.off"
+            state "heat", label:'', icon:"st.thermostat.heat", action:"thermostat.cool"
+            state "cool", label:'', icon:"st.thermostat.cool", action:"thermostat.auto"
+            state "auto", label:'', icon:"st.thermostat.auto", action:"thermostat.off"
+            state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"thermostat.heat"
         }
 
         standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
@@ -334,7 +334,7 @@ private apiGet(String path) {
         headers:    headers
     ]
 
-    def hubAction = new physicalgraph.device.HubAction(httpRequest)
+    return new physicalgraph.device.HubAction(httpRequest)
 }
 
 private apiPost(String path, data) {
@@ -352,23 +352,25 @@ private apiPost(String path, data) {
         body:       data
     ]
 
-    def hubAction = new physicalgraph.device.HubAction(httpRequest)
+    return new physicalgraph.device.HubAction(httpRequest)
 }
 
 private def writeTstatValue(name, value) {
     TRACE("writeTstatValue(${name}, ${value})")
 
     def json = "{\"${name}\": ${value}}"
-    TRACE("json: ${json}")
-
     def hubActions = [
         apiPost("/tstat", json),
-        new physicalgraph.device.HubAction("delay 1000"),
+        getDelayHubAction(2000),
         refresh()
     ]
 
-	TRACE(hubActions: ${hubActions})
-    return null
+    //TRACE("hubActions: ${hubActions}")
+    return hubActions
+}
+
+private def getDelayHubAction(ms) {
+    return new physicalgraph.device.HubAction("delay ${ms}")
 }
 
 private parseHttpResponse(String headers, String body) {
