@@ -69,7 +69,7 @@ metadata {
         }
 
         standardTile("mode", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'Unknown'
+            //state "default", label:'Unknown'
             state "off", label:'', icon:"st.thermostat.heating-cooling-off", action:"thermostat.auto"
             state "auto", label:'', icon:"st.thermostat.auto", action:"thermostat.cool"
             state "cool", label:'', icon:"st.thermostat.cool", action:"thermostat.heat"
@@ -77,7 +77,7 @@ metadata {
         }
 
         standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'Unknown'
+            //state "default", label:'Unknown'
             state "auto", label:'', icon:"st.thermostat.fan-auto", action:"thermostat.fanAuto"
             state "on", label:'', icon:"st.thermostat.fan-on", action:"thermostat.fanCirculate"
             state "circulate", label:'', icon:"st.thermostat.fan-circulate", action:"thermostat.fanAuto"
@@ -175,21 +175,25 @@ def setThermostatMode(mode) {
 // thermostat.auto
 def auto() {
     TRACE("auto()")
+    writeTstatValue("tmode", 3)
 }
 
 // thermostat.cool
 def cool() {
     TRACE("cool()")
+    writeTstatValue("tmode", 2)
 }
 
 // thermostat.heat
 def heat() {
     TRACE("heat()")
+    writeTstatValue("tmode", 1)
 }
 
 // thermostat.off
 def off() {
     TRACE("off()")
+    writeTstatValue("tmode", 0)
 }
 
 // thermostat.emergencyHeat
@@ -214,16 +218,19 @@ def setThermostatFanMode(fanMode) {
 // thermostat.fanAuto
 def fanAuto() {
     TRACE("fanAuto()")
+    writeTstatValue("fmode", 0)
 }
 
 // thermostat.fanOn
 def fanOn() {
     TRACE("fanOn()")
+    writeTstatValue("fmode", 2)
 }
 
 // thermostat.fanCirculate
 def fanCirculate() {
     TRACE("fanCirculate()")
+    writeTstatValue("fmode", 1)
 }
 
 // thermostat.setHeatingSetpoint
@@ -278,10 +285,12 @@ def coolLevelUp() {
 
 def holdOn() {
     TRACE("holdOn()")
+    writeTstatValue("hold", 1)
 }
 
 def holdOff() {
     TRACE("holdOff()")
+    writeTstatValue("hold", 0)
 }
 
 // polling.poll 
@@ -295,7 +304,6 @@ def refresh() {
     TRACE("refresh()")
 
     setNetworkId(confIpAddr, confTcpPort)
-    //apiGet("/tstat/version")
     apiGet("/tstat")
 }
 
@@ -317,7 +325,7 @@ private apiGet(String path) {
 
     def headers = [
         HOST:       "${confIpAddr}:${confTcpPort}",
-        Accept:     "*/*",
+        Accept:     "*/*"
     ]
 
     def httpRequest = [
@@ -330,11 +338,11 @@ private apiGet(String path) {
 }
 
 private apiPost(String path, data) {
-    TRACE("apiPost(${path})")
+    TRACE("apiPost(${path}, ${data})")
 
     def headers = [
         HOST:       "${confIpAddr}:${confTcpPort}",
-        Accept:     "*/*",
+        Accept:     "*/*"
     ]
 
     def httpRequest = [
@@ -347,12 +355,20 @@ private apiPost(String path, data) {
     def hubAction = new physicalgraph.device.HubAction(httpRequest)
 }
 
-private def executeCommand(String path, data) {
+private def writeTstatValue(name, value) {
+    TRACE("writeTstatValue(${name}, ${value})")
+
+    def json = "{\"${name}\": ${value}}"
+    TRACE("json: ${json}")
+
     def hubActions = [
-        apiPost(path, data),
+        apiPost("/tstat", json),
         new physicalgraph.device.HubAction("delay 1000"),
         refresh()
     ]
+
+	TRACE(hubActions: ${hubActions})
+    return null
 }
 
 private parseHttpResponse(String headers, String body) {
