@@ -45,8 +45,9 @@ metadata {
         capability "Polling"
 
         // Custom attributes
-        attribute "hold", "string"      // Target temperature Hold status. Values: "on", "off"
         attribute "fanState", "string"  // Fan operating state. Values: "on", "off"
+        attribute "hold", "string"      // Target temperature Hold status. Values: "on", "off"
+        attribute "away", "string"      // Away status. Values: "on", "off"
 
         // Custom commands
         command "heatLevelUp"
@@ -55,6 +56,8 @@ metadata {
         command "coolLevelDown"
         command "holdOn"
         command "holdOff"
+        command "awayOn"
+        command "awayOff"
     }
 
     tiles {
@@ -97,57 +100,60 @@ metadata {
                 ]
         }
 
-        standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+        standardTile("heatLevelUp", "device.heatingSetpoint", inactiveLabel:false, decoration:"flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
         }
 
-        standardTile("heatLevelDown", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+        standardTile("heatLevelDown", "device.heatingSetpoint", inactiveLabel:false, decoration:"flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.subtract-icon", action:"heatLevelDown"
         }
 
-        standardTile("coolLevelUp", "device.coolingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+        standardTile("coolLevelUp", "device.coolingSetpoint", inactiveLabel:false, decoration:"flat") {
             state "default", label:'Cooling', icon:"st.custom.buttons.add-icon", action:"coolLevelUp"
         }
 
-        standardTile("coolLevelDown", "device.coolingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
+        standardTile("coolLevelDown", "device.coolingSetpoint", inactiveLabel:false, decoration:"flat") {
             state "default", label:'Cooling', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
         standardTile("operatingState", "device.thermostatOperatingState", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'State'
-            state "idle", label:'Idle'
+            state "default", label:'[State]'
+            state "idle", label:'', icon:"st.thermostat.heating-cooling-off"
             state "heating", label:'', icon:"st.thermostat.heating"
             state "cooling", label:'', icon:"st.thermostat.cooling"
         }
 
         standardTile("fanState", "device.fanState", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'Fan State'
+            state "default", label:'[Fan State]'
             state "on", label:'', icon:"st.thermostat.fan-on"
             state "off", label:'', icon:"st.thermostat.fan-off"
         }
 
-        //standardTile("mode", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
         standardTile("mode", "device.thermostatMode", inactiveLabel:false) {
-            state "default", label:'Current Mode'
+            state "default", label:'[Mode]'
+            state "off", label:'', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat"
             state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool"
             state "cool", label:'', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto"
             state "auto", label:'', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off"
-            state "off", label:'', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat"
         }
 
-        //standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
         standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false) {
-            state "default", label:'Fan Mode'
-            state "auto", label:'', icon:"st.thermostat.fan-auto", action:"thermostat.fanAuto"
-            state "on", label:'', icon:"st.thermostat.fan-on", action:"thermostat.fanCirculate"
-            state "circulate", label:'', icon:"st.thermostat.fan-circulate", action:"thermostat.fanAuto"
+            state "default", label:'[Fan Mode]'
+            state "auto", label:'', icon:"st.thermostat.fan-auto", backgroundColor:"#A4FCA6", action:"thermostat.fanCirculate"
+            state "circulate", label:'', icon:"st.thermostat.fan-circulate", backgroundColor:"#CEFCA4", action:"thermostat.fanOn"
+            state "on", label:'', icon:"st.thermostat.fan-on", backgroundColor:"#FAFCA4", action:"thermostat.fanAuto"
         }
 
-        //standardTile("hold", "device.hold", inactiveLabel:false, decoration:"flat") {
         standardTile("hold", "device.hold", inactiveLabel:false) {
-            state "default", label:'Hold'
+            state "default", label:'[Hold]'
             state "on", label:'Hold On', backgroundColor:"#FFDB94", action:"holdOff"
             state "off", label:'Hold Off', backgroundColor:"#FFFFFF", action:"holdOn"
+        }
+
+        standardTile("away", "device.away", inactiveLabel:false) {
+            state "default", label:'[Away]'
+            state "on", label:'Away On', backgroundColor:"#FFDB94", action:"awayOff"
+            state "off", label:'Away Off', backgroundColor:"#FFFFFF", action:"awayOn"
         }
 
         standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
@@ -159,17 +165,27 @@ metadata {
         details(["temperature", "operatingState", "fanState",
             "heatingSetpoint", "heatLevelDown", "heatLevelUp",
             "coolingSetpoint", "coolLevelDown", "coolLevelUp",
-            "mode", "fanMode", "hold", "refresh"])
+            "mode", "fanMode", "hold", "away", "refresh"])
     }
 
     simulator {
-        status "Mode: Off":         "mode:off"
-        status "Mode: Auto":        "mode:auto"
-        status "Mode: Cool":        "mode:cool"
-        status "Mode: Heat":        "mode:heat"
-        status "Fan: Auto":         "fan:auto"
-        status "Fan: On":           "fan:on"
-        status "Fan: Circulate":    "fan:circulate"
+        status "Temperature 72.0":      "simulator:true, temp:72.00"
+        status "Cooling Setpoint 76.0": "simulator:true, t_cool:76.00"
+        status "Heating Setpoint 68.0": "simulator:true, t_cool:68.00"
+        status "Thermostat Mode Off":   "simulator:true, tmode:0"
+        status "Thermostat Mode Heat":  "simulator:true, tmode:1"
+        status "Thermostat Mode Cool":  "simulator:true, tmode:2"
+        status "Thermostat Mode Auto":  "simulator:true, tmode:3"
+        status "Fan Mode Auto":         "simulator:true, fmode:0"
+        status "Fan Mode Circulate":    "simulator:true, fmode:1"
+        status "Fan Mode On":           "simulator:true, fmode:2"
+        status "State Off":             "simulator:true, tstate:0"
+        status "State Heat":            "simulator:true, tstate:1"
+        status "State Cool":            "simulator:true, tstate:2"
+        status "Fan State Off":         "simulator:true, fstate:0"
+        status "Fan State On":          "simulator:true, fstate:1"
+        status "Hold Disabled":         "simulator:true, hold:0"
+        status "Hold Enabled":          "simulator:true, hold:1"
     }
 }
 
@@ -179,18 +195,30 @@ def parse(String message) {
     def msg = stringToMap(message)
 
     if (msg.headers) {
+        // parse HTTP response headers
         def headers = new String(msg.headers.decodeBase64())
-        def body = null
-        if (msg.body) {
-            body = new String(msg.body.decodeBase64())
+        def parsedHeaders = parseHttpHeaders(headers)
+        TRACE("parsedHeaders: ${parsedHeaders}")
+        if (parsedHeaders.status != 200) {
+            log.error "Server error: ${parsedHeaders.reason}"
+            return null
         }
 
-        return parseHttpResponse(headers, body)
-    }
+        // parse HTTP response body
+        if (!msg.body) {
+            log.error "HTTP response has no body"
+            return null
+        }
 
-    //if (msg.mode) {
-    //    setThermostatMode(msg.mode)
-    //}
+        def body = new String(msg.body.decodeBase64())
+        def slurper = new JsonSlurper()
+        def tstat = slurper.parseText(body)
+
+        return parseTstatData(tstat)
+    } else if (msg.containsKey("simulator")) {
+        // simulator input
+        return parseTstatData(msg)
+    }
 
     return null
 }
@@ -201,37 +229,61 @@ def setThermostatMode(mode) {
 
     switch (mode) {
     case "off":             return off()
-    case "auto":            return auto()
-    case "cool":            return cool()
     case "heat":            return heat()
+    case "cool":            return cool()
+    case "auto":            return auto()
     case "emergency heat":  return emergencyHeat()
     }
 
     log.error "Invalid thermostat mode: \'${mode}\'"
 }
 
-// thermostat.auto
-def auto() {
-    TRACE("auto()")
-    return writeTstatValue('tmode', 3)
-}
+// thermostat.off
+def off() {
+    TRACE("off()")
 
-// thermostat.cool
-def cool() {
-    TRACE("cool()")
-    return writeTstatValue('tmode', 2)
+    if (device.currentValue("thermostatMode") == "off") {
+        return null
+    }
+
+    sendEvent([name:"thermostatMode", value:"off"])
+    return writeTstatValue('tmode', 0)
 }
 
 // thermostat.heat
 def heat() {
     TRACE("heat()")
+
+    if (device.currentValue("thermostatMode") == "heat") {
+        return null
+    }
+
+    sendEvent([name:"thermostatMode", value:"heat"])
     return writeTstatValue('tmode', 1)
 }
 
-// thermostat.off
-def off() {
-    TRACE("off()")
-    return writeTstatValue('tmode', 0)
+// thermostat.cool
+def cool() {
+    TRACE("cool()")
+
+    if (device.currentValue("thermostatMode") == "cool") {
+        return null
+    }
+
+    sendEvent([name:"thermostatMode", value:"cool"])
+    return writeTstatValue('tmode', 2)
+}
+
+// thermostat.auto
+def auto() {
+    TRACE("auto()")
+
+    if (device.currentValue("thermostatMode") == "auto") {
+        return null
+    }
+
+    sendEvent([name:"thermostatMode", value:"auto"])
+    return writeTstatValue('tmode', 3)
 }
 
 // thermostat.emergencyHeat
@@ -246,8 +298,8 @@ def setThermostatFanMode(fanMode) {
 
     switch (fanMode) {
     case "auto":        return fanAuto()
-    case "on":          return fanOn()
     case "circulate":   return fanCirculate()
+    case "on":          return fanOn()
     }
 
     log.error "Invalid fan mode: \'${fanMode}\'"
@@ -256,19 +308,37 @@ def setThermostatFanMode(fanMode) {
 // thermostat.fanAuto
 def fanAuto() {
     TRACE("fanAuto()")
-    return writeTstatValue('fmode', 0)
-}
 
-// thermostat.fanOn
-def fanOn() {
-    TRACE("fanOn()")
-    return writeTstatValue('fmode', 2)
+    if (device.currentValue("thermostatFanMode") == "fanAuto") {
+        return null
+    }
+
+    sendEvent([name:"thermostatFanMode", value:"fanAuto"])
+    return writeTstatValue('fmode', 0)
 }
 
 // thermostat.fanCirculate
 def fanCirculate() {
     TRACE("fanCirculate()")
+
+    if (device.currentValue("thermostatFanMode") == "fanCirculate") {
+        return null
+    }
+
+    sendEvent([name:"thermostatFanMode", value:"fanCirculate"])
     return writeTstatValue('fmode', 1)
+}
+
+// thermostat.fanOn
+def fanOn() {
+    TRACE("fanOn()")
+
+    if (device.currentValue("thermostatFanMode") == "fanOn") {
+        return null
+    }
+
+    sendEvent([name:"thermostatFanMode", value:"fanOn"])
+    return writeTstatValue('fmode', 2)
 }
 
 // thermostat.setHeatingSetpoint
@@ -391,12 +461,32 @@ def coolLevelUp() {
 
 def holdOn() {
     TRACE("holdOn()")
+
+    if (device.currentValue("hold") == "on") {
+        return null
+    }
+
+    sendEvent([name:"hold", value:"on"])
     writeTstatValue("hold", 1)
 }
 
 def holdOff() {
     TRACE("holdOff()")
+
+    if (device.currentValue("hold") == "off") {
+        return null
+    }
+
+    sendEvent([name:"hold", value:"off"])
     writeTstatValue("hold", 0)
+}
+
+def awayOn() {
+    TRACE("awayOn()")
+}
+
+def awayOff() {
+    TRACE("awayOff()")
 }
 
 // polling.poll 
@@ -479,26 +569,22 @@ private def delayHubAction(ms) {
     return new physicalgraph.device.HubAction("delay ${ms}")
 }
 
-private parseHttpResponse(String headers, String body) {
-    TRACE("headers: ${headers}")
-    TRACE("body: ${body}")
+private parseHttpHeaders(String headers) {
+    def lines = headers.readLines()
+    def status = lines.remove(0).split()
 
-    // parse headers
-    def parsedHeaders = parseHttpHeaders(headers)
-    TRACE("parsedHeaders: ${parsedHeaders}")
-    if (parsedHeaders.status != 200) {
-        log.error "Server error: ${parsedHeaders.reason}"
-        return null
-    }
+    def result = [
+        protocol:   status[0],
+        status:     status[1].toInteger(),
+        reason:     status[2]
+    ]
 
-    // parse body
-    if (body == null) {
-        log.error "HTTP response has no body"
-        return null
-    }
+    return result
+}
 
-    def slurper = new JsonSlurper()
-    def tstat = slurper.parseText(body)
+private def parseTstatData(Map tstat) {
+    TRACE("parseTstatData(${tstat})")
+
     def events = []
     if (tstat.containsKey("error_msg")) {
         log.error "Thermostat error: ${tstat.error_msg}"
@@ -610,19 +696,6 @@ private parseHttpResponse(String headers, String body) {
     return events
 }
 
-private parseHttpHeaders(String headers) {
-    def lines = headers.readLines()
-    def status = lines.remove(0).split()
-
-    def result = [
-        protocol:   status[0],
-        status:     status[1].toInteger(),
-        reason:     status[2]
-    ]
-
-    return result
-}
-
 private def parseThermostatState(val) {
     def values = [
         0: "idle",
@@ -630,7 +703,7 @@ private def parseThermostatState(val) {
         2: "cooling",
     ]
 
-    return values[val]
+    return values[val.toInteger()]
 }
 
 private def parseFanState(val) {
@@ -639,7 +712,7 @@ private def parseFanState(val) {
         1: "on",
     ]
 
-    return values[val]
+    return values[val.toInteger()]
 }
 
 private def parseThermostatMode(val) {
@@ -650,7 +723,7 @@ private def parseThermostatMode(val) {
         3: "auto"
     ]
 
-    return values[val]
+    return values[val.toInteger()]
 }
 
 private def parseFanMode(val) {
@@ -660,7 +733,7 @@ private def parseFanMode(val) {
         2: "on"
     ]
 
-    return values[val]
+    return values[val.toInteger()]
 }
 
 private def parseThermostatHold(val) {
@@ -669,7 +742,7 @@ private def parseThermostatHold(val) {
         1: "on",
     ]
 
-    return values[val]
+    return values[val.toInteger()]
 }
 
 private def scaleTemperature(Float temp) {
