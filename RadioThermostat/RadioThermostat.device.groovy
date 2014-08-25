@@ -45,9 +45,8 @@ metadata {
         capability "Polling"
 
         // Custom attributes
-        attribute "hold", "string"              // Target temperature Hold status. Values: "on", "off"
-        attribute "fanState", "string"          // Fan operating state. Values: "on", "off"
-        attribute "currentSetpoint", "number"   // Current target temperature (floating point)
+        attribute "hold", "string"      // Target temperature Hold status. Values: "on", "off"
+        attribute "fanState", "string"  // Fan operating state. Values: "on", "off"
 
         // Custom commands
         command "heatLevelUp"
@@ -61,19 +60,6 @@ metadata {
     tiles {
         valueTile("temperature", "device.temperature") {
             state "temperature", label:'${currentValue}°', unit:"F",
-                backgroundColors:[
-                    [value: 31, color: "#153591"],
-                    [value: 44, color: "#1e9cbb"],
-                    [value: 59, color: "#90d2a7"],
-                    [value: 74, color: "#44b621"],
-                    [value: 84, color: "#f1d801"],
-                    [value: 95, color: "#d04e00"],
-                    [value: 96, color: "#bc2323"]
-                ]
-        }
-
-        valueTile("currentSetpoint", "device.currentSetpoint", inactiveLabel:false) {
-            state "default", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
                     [value: 31, color: "#153591"],
                     [value: 44, color: "#1e9cbb"],
@@ -111,19 +97,6 @@ metadata {
                 ]
         }
 
-        standardTile("operatingState", "device.thermostatOperatingState", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'Unknown State'
-            state "idle", label:'Idle'
-            state "heating", label:'', icon:"st.thermostat.heating"
-            state "cooling", label:'', icon:"st.thermostat.cooling"
-        }
-
-        standardTile("fanState", "device.fanState", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'Unknown Fan State'
-            state "on", label:'', icon:"st.thermostat.fan-on"
-            state "off", label:'', icon:"st.thermostat.fan-off"
-        }
-
         standardTile("heatLevelUp", "device.heatingSetpoint", canChangeIcon: false, inactiveLabel: false, decoration: "flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
         }
@@ -140,9 +113,22 @@ metadata {
             state "default", label:'Cooling', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
+        standardTile("operatingState", "device.thermostatOperatingState", inactiveLabel:false, decoration:"flat") {
+            state "default", label:'State'
+            state "idle", label:'Idle'
+            state "heating", label:'', icon:"st.thermostat.heating"
+            state "cooling", label:'', icon:"st.thermostat.cooling"
+        }
+
+        standardTile("fanState", "device.fanState", inactiveLabel:false, decoration:"flat") {
+            state "default", label:'Fan State'
+            state "on", label:'', icon:"st.thermostat.fan-on"
+            state "off", label:'', icon:"st.thermostat.fan-off"
+        }
+
         //standardTile("mode", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
         standardTile("mode", "device.thermostatMode", inactiveLabel:false) {
-            state "default", label:'Unknown Mode'
+            state "default", label:'Current Mode'
             state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool"
             state "cool", label:'', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto"
             state "auto", label:'', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off"
@@ -151,7 +137,7 @@ metadata {
 
         //standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false, decoration:"flat") {
         standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false) {
-            state "default", label:'Unknown Fan Mode'
+            state "default", label:'Fan Mode'
             state "auto", label:'', icon:"st.thermostat.fan-auto", action:"thermostat.fanAuto"
             state "on", label:'', icon:"st.thermostat.fan-on", action:"thermostat.fanCirculate"
             state "circulate", label:'', icon:"st.thermostat.fan-circulate", action:"thermostat.fanAuto"
@@ -159,13 +145,13 @@ metadata {
 
         //standardTile("hold", "device.hold", inactiveLabel:false, decoration:"flat") {
         standardTile("hold", "device.hold", inactiveLabel:false) {
-            state "default", label:'Hold ${currentValue}'
-            state "on", label:'Hold On', action:"holdOff"
-            state "off", label:'Hold Off', action:"holdOn"
+            state "default", label:'Hold'
+            state "on", label:'Hold On', backgroundColor:"#FFDB94", action:"holdOff"
+            state "off", label:'Hold Off', backgroundColor:"#FFFFFF", action:"holdOn"
         }
 
         standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
-            state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
+            state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
         main(["temperature", "mode"])
@@ -173,9 +159,7 @@ metadata {
         details(["temperature", "operatingState", "fanState",
             "heatingSetpoint", "heatLevelDown", "heatLevelUp",
             "coolingSetpoint", "coolLevelDown", "coolLevelUp",
-            "currentSetpoint", "coolLevelDown", "coolLevelUp",
-            "mode", "fanMode", "hold",
-            "refresh"])
+            "mode", "fanMode", "hold", "refresh"])
     }
 
     simulator {
@@ -229,25 +213,25 @@ def setThermostatMode(mode) {
 // thermostat.auto
 def auto() {
     TRACE("auto()")
-    writeTstatValue('tmode', 3)
+    return writeTstatValue('tmode', 3)
 }
 
 // thermostat.cool
 def cool() {
     TRACE("cool()")
-    writeTstatValue('tmode', 2)
+    return writeTstatValue('tmode', 2)
 }
 
 // thermostat.heat
 def heat() {
     TRACE("heat()")
-    writeTstatValue('tmode', 1)
+    return writeTstatValue('tmode', 1)
 }
 
 // thermostat.off
 def off() {
     TRACE("off()")
-    writeTstatValue('tmode', 0)
+    return writeTstatValue('tmode', 0)
 }
 
 // thermostat.emergencyHeat
@@ -272,47 +256,63 @@ def setThermostatFanMode(fanMode) {
 // thermostat.fanAuto
 def fanAuto() {
     TRACE("fanAuto()")
-    writeTstatValue('fmode', 0)
+    return writeTstatValue('fmode', 0)
 }
 
 // thermostat.fanOn
 def fanOn() {
     TRACE("fanOn()")
-    writeTstatValue('fmode', 2)
+    return writeTstatValue('fmode', 2)
 }
 
 // thermostat.fanCirculate
 def fanCirculate() {
     TRACE("fanCirculate()")
-    writeTstatValue('fmode', 1)
+    return writeTstatValue('fmode', 1)
 }
 
 // thermostat.setHeatingSetpoint
 def setHeatingSetpoint(tempHeat) {
     TRACE("setHeatingSetpoint(${tempHeat})")
 
+    def ev = [
+        name:   "heatingSetpoint",
+        value:  tempHeat,
+        unit:   getTemperatureScale(),
+    ]
+
+    sendEvent(ev)
+
     if (getTemperatureScale() == "C") {
         tempHeat = temperatureCtoF(tempHeat)
     }
 
-    writeTstatValue('it_heat', tempHeat)
+    return writeTstatValue('it_heat', tempHeat)
 }
 
 // thermostat.setCoolingSetpoint
 def setCoolingSetpoint(tempCool) {
     TRACE("setCoolingSetpoint(${tempCool})")
 
+    def ev = [
+        name:   "coolingSetpoint",
+        value:  tempCool,
+        unit:   getTemperatureScale(),
+    ]
+
+    sendEvent(ev)
+
     if (getTemperatureScale() == "C") {
         tempCool = temperatureCtoF(tempCool)
     }
 
-    writeTstatValue('it_cool', tempCool)
+    return writeTstatValue('it_cool', tempCool)
 }
 
 def heatLevelDown() {
     TRACE("heatLevelDown()")
 
-    def currentT = device.currentValue("coolingSetpoint")?.toFloat()
+    def currentT = device.currentValue("heatingSetpoint")?.toFloat()
     if (!currentT) {
         return
     }
@@ -332,7 +332,7 @@ def heatLevelDown() {
 def heatLevelUp() {
     TRACE("heatLevelUp()")
 
-    def currentT = device.currentValue("coolingSetpoint")?.toFloat()
+    def currentT = device.currentValue("heatingSetpoint")?.toFloat()
     if (!currentT) {
         return
     }
@@ -463,18 +463,19 @@ private apiPost(String path, data) {
 private def writeTstatValue(name, value) {
     TRACE("writeTstatValue(${name}, ${value})")
 
+    setNetworkId(confIpAddr, confTcpPort)
+
     def json = "{\"${name}\": ${value}}"
     def hubActions = [
         apiPost("/tstat", json),
-        getDelayHubAction(2000),
-        refresh()
+        delayHubAction(2000),
+        apiGet("/tstat")
     ]
 
-    //TRACE("hubActions: ${hubActions}")
     return hubActions
 }
 
-private def getDelayHubAction(ms) {
+private def delayHubAction(ms) {
     return new physicalgraph.device.HubAction("delay ${ms}")
 }
 
@@ -492,16 +493,20 @@ private parseHttpResponse(String headers, String body) {
 
     // parse body
     if (body == null) {
+        log.error "HTTP response has no body"
         return null
     }
 
     def slurper = new JsonSlurper()
     def tstat = slurper.parseText(body)
-    TRACE("tstat: ${tstat}")
-
     def events = []
     if (tstat.containsKey("error_msg")) {
         log.error "Thermostat error: ${tstat.error_msg}"
+        return null
+    }
+
+    if (tstat.containsKey("success")) {
+        // this is POST response - ignore
         return null
     }
 
@@ -517,7 +522,6 @@ private parseHttpResponse(String headers, String body) {
     }
 
     if (tstat.containsKey("t_cool")) {
-        //Float temp = tstat.t_cool.toFloat()
         def ev = [
             name:   "coolingSetpoint",
             value:  scaleTemperature(tstat.t_cool.toFloat()),
@@ -528,7 +532,6 @@ private parseHttpResponse(String headers, String body) {
     }
 
     if (tstat.containsKey("t_heat")) {
-        //Float temp = tstat.t_heat.toFloat()
         def ev = [
             name:   "heatingSetpoint",
             value:  scaleTemperature(tstat.t_heat.toFloat()),
