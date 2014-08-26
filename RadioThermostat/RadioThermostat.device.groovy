@@ -698,9 +698,9 @@ private def parseTstatData(Map tstat) {
 
 private def parseThermostatState(val) {
     def values = [
-        0: "idle",
-        1: "heating",
-        2: "cooling",
+        "idle",     // 0
+        "heating",  // 1
+        "cooling"   // 2
     ]
 
     return values[val.toInteger()]
@@ -708,8 +708,8 @@ private def parseThermostatState(val) {
 
 private def parseFanState(val) {
     def values = [
-        0: "off",
-        1: "on",
+        "off",      // 0
+        "on"        // 1
     ]
 
     return values[val.toInteger()]
@@ -717,10 +717,10 @@ private def parseFanState(val) {
 
 private def parseThermostatMode(val) {
     def values = [
-        0: "off",
-        1: "heat",
-        2: "cool",
-        3: "auto"
+        "off",      // 0
+        "heat",     // 1
+        "cool",     // 2
+        "auto"      // 3
     ]
 
     return values[val.toInteger()]
@@ -728,9 +728,9 @@ private def parseThermostatMode(val) {
 
 private def parseFanMode(val) {
     def values = [
-        0: "auto",
-        1: "circulate",
-        2: "on"
+        "auto",     // 0
+        "circulate",// 1
+        "on"        // 2
     ]
 
     return values[val.toInteger()]
@@ -738,8 +738,8 @@ private def parseFanMode(val) {
 
 private def parseThermostatHold(val) {
     def values = [
-        0: "off",
-        1: "on",
+        "off",      // 0
+        "on"        // 1
     ]
 
     return values[val.toInteger()]
