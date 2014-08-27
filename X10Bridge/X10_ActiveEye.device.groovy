@@ -25,23 +25,12 @@
  *  - ActiveEye product page: http://www.x10.com/ms16a.html
  *  - ActiveEye setup instructions: http://kbase.x10.com/wiki/Active_Eye_Motion_Sensor_Setup
  *
- *  Version: 0.9.0
- *  Date: 2014-08-18
+ *  Revision History
+ *  ----------------
+ *  2014-08-28  V0.9.1  parse takes 'motion:<value>' as an argument
+ *  2014-08-18  V0.9.0  Initial check-in
  */
 
-// Device configuration
-preferences {
-    input("houseCode", "enum", title:"X10 House Code",
-        required:true, displayDuringSetup: true,
-        metadata:[values:["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"]],
-        defaultValue: "A")
-    input("unitCode", "enum", title:"X10 Unit Code",
-        required:true, displayDuringSetup: true,
-        metadata:[values:["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]],
-        defaultValue: "1")
-}
-
-// UI description
 metadata {
     definition (name:"X10 ActiveEye", namespace:"statusbits", author:"geko@statusbits.com") {
         capability "Sensor"
@@ -50,24 +39,22 @@ metadata {
         capability "Refresh"
 
         // custom commands
-        command "setCurrentValue"
+        command "parse"     // (String "<attribute>:<value>[,<attribute>:<value>]")
     }
 
     tiles {
         standardTile("motion", "device.motion", width:2, height:2, inactiveLabel:false) {
-            state("unknown", label:'unknown', backgroundColor:"#ffffff")
-            state("active", label:'motion', icon:"st.motion.motion.active", backgroundColor:"#53a7c0")
-            state("inactive", label:'no motion', icon:"st.motion.motion.inactive", backgroundColor:"#ffffff")
+            state "default", label:'unknown', backgroundColor:"#ffffff"
+            state "active", label:'motion', icon:"st.motion.motion.active", backgroundColor:"#53a7c0"
+            state "inactive", label:'no motion', icon:"st.motion.motion.inactive", backgroundColor:"#ffffff"
         }
 
         valueTile("illuminance", "device.illuminance", width:1, height:1, inactiveLabel:false) {
-            state("unknown", label:'unknown', backgroundColor:"#ffffff")
-            state("illuminance", label:'${currentValue}', unit:"lux",
+            state "default", label:'${currentValue}', unit:"lux",
                 backgroundColors:[
                     [value: 10,  color: "#767676"],
                     [value: 400, color: "#fbd41b"]
                 ]
-            )
         }
 
         standardTile("debug", "device.motion", inactiveLabel: false, decoration: "flat") {
@@ -81,14 +68,38 @@ metadata {
             // status messages
             status "Motion Active":     "motion:active"
             status "Motion Inactive":   "motion:inactive"
-            status "Light":             "illuminance:400"
-            status "Dark":              "illuminance:10"
+
+            for (int i = 10; i < 100; i += 20) {
+                status "Illuminance ${i} lux":  "illuminance:${i}"
+            }
+            for (int i = 100; i < 1000; i += 200) {
+                status "Illuminance ${i} lux":  "illuminance:${i}"
+            }
+
+            status "Motion Active, 200 lux":    "motion:active, illuminance:200"
+            status "Invalid value":             "motion:foobar"
+            status "Invalid format":            "foobar"
         }
     }
 }
 
 def parse(String message) {
-    setCurrentValue(message)
+    TRACE("parse(${message})")
+
+    Map msg = stringToMap(message)
+    if (msg?.size() == 0) {
+        log.error "Invalid message: ${message}"
+        return null
+    }
+
+    if (msg.containsKey("motion")) {
+        parseMotion(msg.motion)
+    }
+
+    if (msg.containsKey("illuminance")) {
+        parseIlluminance(msg.illuminance)
+    }
+
     return null
 }
 
@@ -96,31 +107,13 @@ def refresh() {
     TRACE("refresh()")
 }
 
-def setCurrentValue(String message) {
-    TRACE("setCurrentValue(${message})")
-
-    if (message == null) {
-        return
-    }
-
-    def value = stringToMap(message)
-
-    if (value.motion) {
-        setMotion(value.motion)
-    }
-
-    if (value.illuminance) {
-        setIlluminance(value.illuminance)
-    }
-}
-
-private def setMotion(value) {
-    TRACE("setMotion(${value})")
+private def parseMotion(value) {
+    TRACE("parseMotion(${value})")
 
     def values = ["active", "inactive"]
-    if (null == values.find {it == value }) {
+    if (!values.find {it == value }) {
         log.error "Invalid value: ${value}"
-        return null
+        return
     }
 
     def event = [
@@ -128,11 +121,12 @@ private def setMotion(value) {
         value : value,
     ]
 
+    TRACE("event: (${event})")
     sendEvent(event)
 }
 
-private def setIlluminance(value) {
-    TRACE("setIlluminance(${value})")
+private def parseIlluminance(value) {
+    TRACE("parseIlluminance(${value})")
 
     def event = [
         name  : "illuminance",
@@ -140,12 +134,12 @@ private def setIlluminance(value) {
         unit  : "lux",
     ]
 
+    TRACE("event: (${event})")
     sendEvent(event)
 }
 
 private def TRACE(message) {
     log.debug message
-    log.debug "settings        : ${settings}"
     log.debug "deviceNetworkId : ${device.deviceNetworkId}"
     log.debug "motion          : ${device.currentValue("motion")}"
     log.debug "illuminance     : ${device.currentValue("illuminance")}"
