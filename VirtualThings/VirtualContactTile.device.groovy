@@ -18,8 +18,10 @@
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualContactTile.device.groovy
  *
- *  Version: 1.0.0
- *  Date: 2014-08-10
+ *  Revision History
+ *  ----------------
+ *  2014-08-28  V1.1.0  setCurrentValue takes 'contact:<value>' as an argument
+ *  2014-08-10  V1.0.0  Initial release
  */
 
 metadata {
@@ -28,7 +30,7 @@ metadata {
         capability "Sensor"
 
         // custom commands
-        command "setCurrentValue"
+        command "setCurrentValue"   // (String "contact:<open|closed>")
     }
 
     tiles {
@@ -42,29 +44,29 @@ metadata {
     }
 
     simulator {
-        status "open"           : "current_value:open"
-        status "closed"         : "current_value:closed"
-        status "Invalid value"  : "current_value:foobar"
+        status "open"           : "contact:open"
+        status "closed"         : "contact:closed"
+        status "Invalid value"  : "contact:foobar"
         status "Invalid format" : "foobar"
     }
 }
 
 def parse(String message) {
     TRACE("parse(${message})")
-
-    def msg = stringToMap(message)
-    if (msg.current_value) {
-        setCurrentValue(msg.current_value)
-    } else {
-        log.error "Invalid message: ${message}"
-    }
-
+    setCurrentValue(message)
     return null
 }
 
-def setCurrentValue(value) {
-    TRACE("setCurrentValue(${value})")
+def setCurrentValue(String message) {
+    TRACE("setCurrentValue(${message})")
 
+    Map msg = stringToMap(message)
+    if (!msg.containsKey("contact")) {
+        log.error "Invalid message: ${message}"
+        return null
+    }
+
+    def value = msg.contact
     def values = ["open", "closed"]
     if (null == values.find {it == value }) {
         log.error "Invalid value: ${value}"

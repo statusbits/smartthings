@@ -18,8 +18,10 @@
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualHumidityTile.device.groovy
  *
- *  Version: 1.0.0
- *  Date: 2014-08-11
+ *  Revision History
+ *  ----------------
+ *  2014-08-28  V1.1.0  setCurrentValue takes 'contact:<value>' as an argument
+ *  2014-08-11  V1.0.0  Initial release
  */
 
 metadata {
@@ -28,7 +30,7 @@ metadata {
         capability "Sensor"
 
         // custom commands
-        command "setCurrentValue"
+        command "setCurrentValue"   // (String "humidity:<value>")
     }
 
     tiles {
@@ -42,30 +44,29 @@ metadata {
 
     simulator {
         for (int i = 0; i <= 100; i += 20) {
-            status "Humidity ${i}%": "current_value:${i}"
+            status "Humidity ${i}%": "humidity:${i}"
         }
     }
 }
 
 def parse(String message) {
     TRACE("parse(${message})")
-
-    def msg = stringToMap(message)
-    if (msg.current_value) {
-        setCurrentValue(msg.current_value)
-    } else {
-        log.error "Invalid message: ${message}"
-    }
-
+    setCurrentValue(message)
     return null
 }
 
-def setCurrentValue(value) {
-    TRACE("setCurrentValue(${value})")
+def setCurrentValue(String message) {
+    TRACE("setCurrentValue(${message})")
+
+    Map msg = stringToMap(message)
+    if (!msg.containsKey("humidity")) {
+        log.error "Invalid message: ${message}"
+        return null
+    }
 
     def event = [
         name  : "humidity",
-        value : value,
+        value : msg.humidity,
         unit  : "%",
     ]
 
