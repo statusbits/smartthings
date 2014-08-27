@@ -20,7 +20,7 @@
  *
  *  Revision History
  *  ----------------
- *  2014-08-28  V1.1.0  setCurrentValue takes 'contact:<value>' as an argument
+ *  2014-08-28  V1.1.0  parse takes 'contact:<value>' as an argument
  *  2014-08-10  V1.0.0  Initial release
  */
 
@@ -30,7 +30,7 @@ metadata {
         capability "Sensor"
 
         // custom commands
-        command "setCurrentValue"   // (String "contact:<open|closed>")
+        command "parse"     // (String "contact:<open|closed>")
     }
 
     tiles {
@@ -53,12 +53,6 @@ metadata {
 
 def parse(String message) {
     TRACE("parse(${message})")
-    setCurrentValue(message)
-    return null
-}
-
-def setCurrentValue(String message) {
-    TRACE("setCurrentValue(${message})")
 
     Map msg = stringToMap(message)
     if (!msg.containsKey("contact")) {
@@ -78,6 +72,7 @@ def setCurrentValue(String message) {
         value : value,
     ]
 
+    TRACE("event: (${event})")
     sendEvent(event)
 }
 

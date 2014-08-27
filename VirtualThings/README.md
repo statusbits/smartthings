@@ -34,10 +34,11 @@ Controller app supports only four buttons though.
 
 This virtual device implements SmartThings "Contact Sensor" device capability
 and can be used to display status of an open/closed contact from external
-source. The device current status can be set by calling its 'setCurrentValue'
-command with "open" or "closed" string as an argument:
+source. The device current status can be set by calling its 'parse' command
+with "contact:<value>" string as an argument, where <value> is either "open"
+or "closed":
 
-    setCurrentValue("open")
+    parse("contact:<open | closed>")
 
 
 ### Virtual Humidity Tile
@@ -47,10 +48,10 @@ command with "open" or "closed" string as an argument:
 This virtual device implements SmartThings "Relative Humidity Measurement"
 device capability and can be used to display relative humidity data from
 external source. The device current humidity value can be set by calling its
-'setCurrentValue' command with relative humidity value (in persents) as an
-argument:
+'parse' command with "humidity:<value>" string as an argument, where <value>
+is relative humidity in percents:
 
-    setCurrentValue(60)
+    parse("humidity:<value>")
 
 
 ### Virtual Illuminance Tile
@@ -59,10 +60,11 @@ argument:
 
 This virtual device implements SmartThings "Illuminance Measurement" device
 capability and can be used to display illuminance data from external source.
-The device current illuminance value can be set by calling its
-'setCurrentValue' command with illuminance value (in lux) as an argument:
+The device current illuminance value can be set by calling its 'parse' command
+with "illuminance:<value>" string as an argument, where <value> is illuminance
+value in lux:
 
-    setCurrentValue(400)
+    parse("illuminance:<value>")
 
 
 ### Virtual Motion Tile
@@ -71,10 +73,11 @@ The device current illuminance value can be set by calling its
 
 This virtual device implements SmartThings "Motion Sensor" device capability
 and can be used to display active/inactive motion sensor status from external
-source. The device current status can be set by calling its 'setCurrentValue'
-command with "active" or "inactive" string as an argument:
+source. The device current status can be set by calling its 'parse' command
+with "motion:<value>"  string as an argument, where <value> is either "active"
+or "inactive":
 
-    setCurrentValue("active")
+    parse("contact:<active | inactive>")
 
 
 ### Virtual Temperature Tile
@@ -83,14 +86,11 @@ command with "active" or "inactive" string as an argument:
 
 This virtual device implements SmartThings "Temperature Measurement" device
 capability and can be used to display temperature data from external source.
-The device current temperature value can be set by calling its
-'setCurrentValue' command with temperature value (in degrees of Fahrenheit)
-as an argument:
+The device current temperature value can be set by calling its 'parse' command
+with "temperature:<value>" string as an argument, where <value> is temperature
+in degrees of Fahrenheit:
 
-    setCurrentValue(72.5)
-
-The Virtual Temperature Tile converts temperature to degrees of Celsius if
-the location is configured to use Celsius temperature scale.
+    parse("temperature:<value>")
 
 
 Installation

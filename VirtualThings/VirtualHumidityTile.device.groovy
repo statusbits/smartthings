@@ -20,7 +20,7 @@
  *
  *  Revision History
  *  ----------------
- *  2014-08-28  V1.1.0  setCurrentValue takes 'contact:<value>' as an argument
+ *  2014-08-28  V1.1.0  parse takes 'humidity:<value>' as an argument
  *  2014-08-11  V1.0.0  Initial release
  */
 
@@ -30,7 +30,7 @@ metadata {
         capability "Sensor"
 
         // custom commands
-        command "setCurrentValue"   // (String "humidity:<value>")
+        command "parse"     // (String "humidity:<value>")
     }
 
     tiles {
@@ -51,12 +51,6 @@ metadata {
 
 def parse(String message) {
     TRACE("parse(${message})")
-    setCurrentValue(message)
-    return null
-}
-
-def setCurrentValue(String message) {
-    TRACE("setCurrentValue(${message})")
 
     Map msg = stringToMap(message)
     if (!msg.containsKey("humidity")) {
@@ -70,6 +64,7 @@ def setCurrentValue(String message) {
         unit  : "%",
     ]
 
+    TRACE("event: (${event})")
     sendEvent(event)
 }
 

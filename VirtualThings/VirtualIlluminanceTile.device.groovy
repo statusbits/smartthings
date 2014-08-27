@@ -18,8 +18,10 @@
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualIlluminanceTile.device.groovy
  *
- *  Version: 1.0.0
- *  Date: 2014-08-11
+ *  Revision History
+ *  ----------------
+ *  2014-08-28  V1.1.0  parse() takes 'illuminance:<value>' as an argument
+ *  2014-08-11  V1.0.0  Initial release
  */
 
 metadata {
@@ -28,7 +30,7 @@ metadata {
         capability "Sensor"
 
         // custom commands
-        command "setCurrentValue"
+        command "parse"     // (String "illuminance:<value>")
     }
 
     tiles {
@@ -42,10 +44,10 @@ metadata {
 
     simulator {
         for (int i = 10; i < 100; i += 20) {
-            status "Illuminance ${i} lux": "current_value:${i}"
+            status "Illuminance ${i} lux": "illuminance:${i}"
         }
         for (int i = 100; i < 1000; i += 200) {
-            status "Illuminance ${i} lux": "current_value:${i}"
+            status "Illuminance ${i} lux": "illuminance:${i}"
         }
     }
 }
@@ -53,25 +55,19 @@ metadata {
 def parse(String message) {
     TRACE("parse(${message})")
 
-    def msg = stringToMap(message)
-    if (msg.current_value) {
-        setCurrentValue(msg.current_value)
-    } else {
+    Map msg = stringToMap(message)
+    if (!msg.containsKey("illuminance")) {
         log.error "Invalid message: ${message}"
+        return null
     }
-
-    return null
-}
-
-def setCurrentValue(value) {
-    TRACE("setCurrentValue(${value})")
 
     def event = [
         name  : "illuminance",
-        value : value,
-        unit  : "lux",
+        value : msg.illuminance,
+        unit  : "lux"
     ]
 
+    TRACE("event: (${event})")
     sendEvent(event)
 }
 

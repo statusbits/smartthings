@@ -18,8 +18,8 @@
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualTemperatureTile.device.groovy
  *
- *  Version: 1.0.0
- *  Date: 2014-08-10
+ *  2014-08-28  V1.1.0  parse takes 'temperature:<value>' as an argument
+ *  2014-08-10  V1.0.0  Initial release
  */
 
 metadata {
@@ -28,7 +28,7 @@ metadata {
         capability "Sensor"
 
         // custom commands
-        command "setCurrentValue"
+        command "parse"     // (String "temperature:<value>")
     }
 
     tiles {
@@ -51,12 +51,9 @@ metadata {
     }
 
     simulator {
-        status "Temperature 32.0": "current_value:32.0"
-        status "Temperature 58.5": "current_value:58.5"
-        status "Temperature 72.0": "current_value:72.0"
-        status "Temperature 82.5": "current_value:82.5"
-        status "Temperature 94.5": "current_value:94.5"
-        status "Temperature 96.0": "current_value:96.0"
+        for (int i = 20; i <= 110; i += 10) {
+            status "Temperature ${i}°": "temperature:${i}"
+        }
         status "Invalid message" : "foobar:100.0"
     }
 }
@@ -64,24 +61,18 @@ metadata {
 def parse(String message) {
     TRACE("parse(${message})")
 
-    def msg = stringToMap(message)
-    if (msg.current_value) {
-        setCurrentValue(msg.current_value)
-    } else {
+    Map msg = stringToMap(message)
+    if (!msg.containsKey("temperature")) {
         log.error "Invalid message: ${message}"
+        return null
     }
 
-    return null
-}
-
-def setCurrentValue(value) {
-    TRACE("setCurrentValue(${value})")
-
-    Float temp = value.toFloat()
-    def tempScale = getTemperatureScale()
-    if (tempScale == "C") {
-        temp = (temp - 32) / 1.8
-    }
+    Float temp = msg.temperature.toFloat()
+    def event = [
+        name  : "temperature",
+        value : temp.round(1),
+        unit  : "F",
+    ]
 
     def event = [
         name  : "temperature",
@@ -89,6 +80,7 @@ def setCurrentValue(value) {
         unit  : tempScale,
     ]
 
+    TRACE("event: (${event})")
     sendEvent(event)
 }
 

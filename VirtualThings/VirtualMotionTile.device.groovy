@@ -18,8 +18,10 @@
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualMotionTile.device.groovy
  *
- *  Version: 1.0.0
- *  Date: 2014-08-10
+ *  Revision History
+ *  ----------------
+ *  2014-08-28  V1.1.0  parse takes 'motion:<value>' as an argument
+ *  2014-08-10  V1.0.0  Initial release
  */
 
 metadata {
@@ -28,7 +30,7 @@ metadata {
         capability "Sensor"
 
         // custom commands
-        command "setCurrentValue"
+        command "parse"     // (String "motion:<active|inactive>")
     }
 
     tiles {
@@ -42,9 +44,9 @@ metadata {
     }
 
     simulator {
-        status "Active"         : "current_value:active"
-        status "Inactive"       : "current_value:inactive"
-        status "Invalid value"  : "current_value:foobar"
+        status "Active"         : "motion:active"
+        status "Inactive"       : "motion:inactive"
+        status "Invalid value"  : "motion:foobar"
         status "Invalid format" : "foobar"
     }
 }
@@ -52,19 +54,13 @@ metadata {
 def parse(String message) {
     TRACE("parse(${message})")
 
-    def msg = stringToMap(message)
-    if (msg.current_value) {
-        setCurrentValue(msg.current_value)
-    } else {
+    Map msg = stringToMap(message)
+    if (!msg.containsKey("motion")) {
         log.error "Invalid message: ${message}"
+        return null
     }
 
-    return null
-}
-
-def setCurrentValue(value) {
-    TRACE("setCurrentValue(${value})")
-
+    def value = msg.motion
     def values = ["active", "inactive"]
     if (null == values.find {it == value }) {
         log.error "Invalid value: ${value}"
@@ -76,6 +72,7 @@ def setCurrentValue(value) {
         value : value,
     ]
 
+    TRACE("event: (${event})")
     sendEvent(event)
 }
 
