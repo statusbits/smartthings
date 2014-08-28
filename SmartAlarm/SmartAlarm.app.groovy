@@ -14,8 +14,13 @@
  *  CONDITIONS OF ANY KIND, either express or implied. See the License  for the
  *  specific language governing permissions and limitations under the License.
  *
- *  Version: 1.0.0
- *  Date: 2014-07-04
+ *  The latest version of this file can be found at:
+ *  https://github.com/statusbits/smartthings/blob/master/SmartAlarm/SmartAlarm.app.groovy
+ *
+ *  Revision History
+ *  ----------------
+ *  2014-08-28  V1.0.1  Spelling mistakes, formatting, etc.
+ *  2014-07-04  V1.0.0  Initial release
  */
 
 definition(
@@ -53,25 +58,26 @@ def setupWelcome() {
     TRACE("setupWelcome()")
 
     def textIntro =
-        "Smart Alarm is a multi-zone virtual alarm panel. You can configure up to 16 " +
-        "security zones and assign any number of sensors to each zone. " +
-        "The alarm is armed and disarmed simply by setting home mode.\n\n" +
-        "For more information, please visit [www.statusbits.com/p/smartalarm.html]."
+        "Smart Alarm is a multi-zone virtual alarm panel. You can configure " +
+        "up to 16 security zones and assign any number of sensors to each " +
+        "zone. The alarm is armed and disarmed simply by setting home mode.\n\n" +
+        "For more information, please visit " +
+        "[www.statusbits.com/p/smartalarm.html]."
 
     def textLicense =
         "Licensed under the Apache License, Version 2.0 (the \"License\"); " +
-        "you may not use this software except in compliance with the License. " +
-        "You may obtain a copy of the License at:\n\n" +
+        "you may not use this software except in compliance with the " +
+        "License. You may obtain a copy of the License at:\n\n" +
         "http://www.apache.org/licenses/LICENSE-2.0\n\n" +
-        "Unless required by applicable law or agreed to in writing, software " +
-        "distributed under the License is distributed on an \"AS IS\" BASIS, " +
-        "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or " +
-        "implied. See the License for the specific language governing " +
-        "permissions and limitations under the License."
+        "Unless required by applicable law or agreed to in writing, " +
+        "software distributed under the License is distributed on an " +
+        "\"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, " +
+        "either express or implied. See the License for the specific " +
+        "language governing permissions and limitations under the License."
 
     def textNext =
-        "Please read the Licence Agreement below, then tap the 'Next' button at the " +
-        "top of the page to continue."
+        "Please read the License Agreement below, then tap the 'Next' " +
+        "button at the top of the page to continue."
 
     def pageProperties = [
         name:       "setupWelcome",
@@ -102,38 +108,40 @@ def setupConfigure() {
         "Tap the 'Next' button when done."
 
     def helpNumZones =
-        "A security zone is an area of your home protected by one or more sensors, " +
-        "for example a bedroom, a garage, or an entire floor in a multistory " +
-        "building. You can configure up to 16 zones and assign any number of " +
-        "sensors (contact, motion, smoke or moisture) to each zone."
+        "A security zone is an area of your home protected by one or more " +
+        "sensors, for example a bedroom, a garage, or an entire floor in a " +
+        "multistory building. You can configure up to 16 zones and assign " +
+        "any number of sensors (contact, motion, smoke or moisture) to each zone."
 
     def helpArming =
-        "Smart Alarm can be armed in one of two modes: Stay and Away. Interior " +
-        "zones are not armed in Stay mode, alowing you to freely move inside your " +
-        "home.\n\n" +
-        "Smart Alarm is armed and disarmed simply by setting home mode. Just " +
-        "specify in which mode(s) the alarm should be armed and as soon as one of " +
-        "those modes becomes active, the alarm panel will arm itself. Switching " +
-        "to any other mode will automatically disarm it."
+        "Smart Alarm can be armed in one of two modes: Stay and Away. " +
+        "Interior zones are not armed in Stay mode, allowing you to freely " +
+        "move inside your home.\n\n" +
+        "Smart Alarm is armed and disarmed simply by setting home mode. " +
+        "Just specify in which mode(s) the alarm should be armed and as " +
+        "soon as one of those modes becomes active, the alarm panel will " +
+        "arm itself. Switching to any other mode will automatically disarm it."
 
     def helpExitDelay =
-        "Exit delay allows you to exit premises within 45 seconds after arming the " +
-        "alarm panel without setting of an alarm."
+        "Exit delay allows you to exit premises within 45 seconds after " +
+        "arming the alarm panel without setting of an alarm."
 
     def helpEntryDelay =
-        "Entry delay allows you to enter premises when Smart Alarm is armed and " +
-        "disarm it within 45 seconds without setting of an alarm."
+        "Entry delay allows you to enter premises when Smart Alarm is " +
+        "armed and disarm it within 45 seconds without setting of an alarm."
 
     def helpAlarm =
-        "Wnen an alarm is set off, Smart Alarm can turn on some sirens and/or lights."
+        "When an alarm is set off, Smart Alarm can turn on some sirens " +
+        "and/or lights."
 
     def helpSilent =
-        "Enable Silent mode if you wish to temporarily disable sirens and switches. " +
-        "You will still recieve push notifications and/or text messages, if configured."
+        "Enable Silent mode if you wish to temporarily disable sirens and " +
+        "switches. You will still receive push notifications and/or text " +
+        "messages, if configured."
 
     def helpNotify =
-        "Smart Alarm can notify you via push messages and/or text messages whenever " +
-        "it is armed, disarmed or when an alarm is set off."
+        "Smart Alarm can notify you via push messages and/or text messages " +
+        "whenever it is armed, disarmed or when an alarm is set off."
 
     def inputNumZones = [
         name:           "numZones",
@@ -783,7 +791,7 @@ private def notify(msg)
 }
 
 private def textVersion() {
-    def text = "Version 1.0.0"
+    def text = "Version 1.0.1"
 }
 
 private def textCopyright() {
