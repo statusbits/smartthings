@@ -38,6 +38,9 @@ metadata {
         capability "Illuminance Measurement"
         capability "Refresh"
 
+        // custom attributes
+        attribute "networkId", "string"
+
         // custom commands
         command "parse"     // (String "<attribute>:<value>[,<attribute>:<value>]")
     }
@@ -57,12 +60,16 @@ metadata {
                 ]
         }
 
+        valueTile("networkId", "device.networkId", decoration:"flat", inactiveLabel:false) {
+            state "default", label:'${currentValue}', inactiveLabel:false
+        }
+
         standardTile("debug", "device.motion", inactiveLabel: false, decoration: "flat") {
             state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
         }
 
         main(["motion", "illuminance"])
-        details(["motion", "illuminance", "debug"])
+        details(["motion", "illuminance", "networkId", "debug"])
 
         simulator {
             // status messages
@@ -105,6 +112,14 @@ def parse(String message) {
 
 def refresh() {
     TRACE("refresh()")
+
+    def event = [
+        name  : "networkId",
+        value : device.deviceNetworkId
+    ]
+
+    TRACE("event: (${event})")
+    sendEvent(event)
 }
 
 private def parseMotion(value) {
