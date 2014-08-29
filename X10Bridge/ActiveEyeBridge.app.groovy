@@ -45,11 +45,12 @@ definition(
 
 preferences {
     page name:"setupInit"
-    page name:"setupMenu", title:"Main Menu", nextPage:null
+    page name:"setupMenu"
     page name:"setupAddDevice"
     page name:"actionAddDevice"
-    page name:"setupRemoveDevice"
-    page name:"actionRemoveDevice"
+    page name:"setupRemoveDevices"
+    page name:"actionRemoveDevices"
+    page name:"setupListDevices"
 }
 
 private def setupInit() {
@@ -128,25 +129,24 @@ private def setupMenu() {
     }
 
     def text =
-        "Tap the Main Menu below and select one of the options, then tap the " +
-        "'Next' button at the top of the screen to continue."
+        "Select one of the actions below, then tap the 'Done' button at " +
+        "the top of the screen to complete setup."
 
     def pageProperties = [
         name:       "setupMenu",
-        //title:      "Setup Wizard",
-        //nextPage:   "setupWizard",
+        title:      "Setup Menu",
+        nextPage:   null,
         install:    true,
         uninstall:  state.setup.installed
     ]
 
     state.setup.menu = false
     return dynamicPage(pageProperties) {
-        section("Main Menu") {
+        section {
             paragraph text
-            //input name: "setupAction", title:"Main Menu", type: "enum", required:true,
-            //    description: "Tap to select option", metadata:[values:actions]
-
             href "setupAddDevice", title:"Add Motion Sensor", description:"Tap to open"
+            href "setupRemoveDevices", title:"Remove Motion Sensors", description:"Tap to open"
+            href "setupListDevices", title:"List Motion Sensors", description:"Tap to open"
         }
     }
 }
@@ -172,9 +172,10 @@ private def setupAddDevice() {
     def unitCodes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
 
     def pageProperties = [
-        name:       "setupWizard",
+        name:       "setupAddDevice",
         title:      "Add Motion Sensor",
         nextPage:   "actionAddDevice",
+        install:    false,
         uninstall:  state.setup.installed
     ]
 
@@ -202,18 +203,36 @@ private def actionAddDevice() {
 }
 
 // Show "Remove Device" setup page
-private def setupRemoveDevice() {
-    TRACE("setupRemoveDevice()")
+private def setupRemoveDevices() {
+    TRACE("setupRemoveDevices()")
 
-    return dynamicPage(name:"setupWizard", uninstall:state.setup.installed) {
-        section("Operation Not Implemented") {
+    def pageProperties = [
+        name:       "setupRemoveDevices",
+        title:      "Remove Motion Sensors",
+        nextPage:   "setupMenu",
+        install:    false,
+        uninstall:  state.setup.installed
+    ]
+
+    if (state.setup.devices.size() == 0) {
+        return dynamicPage(pageProperties) {
+            section {
+                paragraph "You have not configured any motion sensors yet."
+                paragraph "Tap 'Next' to continue."
+            }
+        }
+    }
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph "Not Implemented."
             paragraph "Tap 'Next' to continue."
         }
     }
 }
 
-private def actionRemoveDevice() {
-    TRACE("actionRemoveDevice()")
+private def actionRemoveDevices() {
+    TRACE("actionRemoveDevices()")
 
     //removeDevice(devAddr, settings.setupDevName)
     return setupMenu()
@@ -222,12 +241,12 @@ private def actionRemoveDevice() {
 private def setupListDevices() {
     TRACE("setupListDevices()")
 
-    def text = ""
+    def deviceList = ""
 
     if (state.setup.devices.size() == 0) {
-        text = "You have not configured any devices yet."
+        deviceList = "You have not configured any devices yet."
     } else {
-        text =
+        deviceList =
             "Switches:\n" +
             "  A1 - Kitchen Lights\n" +
             "  A2 - Hallway Lights\n" +
@@ -242,11 +261,19 @@ private def setupListDevices() {
             "  D2 - Coffee Maker"
     }
 
-    return dynamicPage(name:"setupWizard", uninstall:state.setup.installed) {
-        section("Device List") {
-            paragraph text
+    def pageProperties = [
+        name:       "setupListDevices",
+        title:      "Configured Motion Sensors",
+        nextPage:   "setupMenu",
+        install:    false,
+        uninstall:  state.setup.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph "Tap 'Next' to continue."
+            paragraph deviceList
         }
-        section("Tap 'Next' to continue.") {}
     }
 }
 
@@ -261,24 +288,6 @@ private def setupConfigureDevice() {
     }
 }
 
-private def setupFinish() {
-    TRACE("setupFinish()")
-
-    def message =
-        "You have successfully conifigured your devices. Tap the 'Next' " +
-        "button at the top of the screen one more time to complete installation."
-
-    state.setup.installed = true
-    state.setup.action = "finish"
-
-    // override install attribute to complete installation
-    return dynamicPage(name:"setupWizard", nextPage:null, uninstall:state.setup.installed, install:true) {
-        section("Congratulations!") {
-            paragraph message
-        }
-    }
-}
-
 def installed() {
     initialize()
 }
@@ -288,7 +297,12 @@ def updated() {
     initialize()
 }
 
-def initialize() {
+// Handle SmartApp touch event.
+def onAppTouch(evt) {
+    TRACE("onAppTouch(${evt})")
+}
+
+private def initialize() {
     TRACE("initialize()")
     log.trace "${app.name}. ${textVersion()}. ${textCopyright()}"
 
@@ -307,11 +321,6 @@ private def addDevice(addr, name) {
     state.setup.devices[addr] = device
 
     log.debug "state = ${state}"
-}
-
-// Handle SmartApp touch event.
-def onAppTouch(evt) {
-    TRACE("onAppTouch(${evt})")
 }
 
 private def textVersion() {
