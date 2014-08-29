@@ -145,8 +145,10 @@ private def setupMenu() {
         section {
             paragraph text
             href "setupAddDevice", title:"Add Motion Sensor", description:"Tap to open"
-            href "setupRemoveDevices", title:"Remove Motion Sensors", description:"Tap to open"
-            href "setupListDevices", title:"List Motion Sensors", description:"Tap to open"
+            if (state.setup.devices.size() > 0) {
+                href "setupRemoveDevices", title:"Remove Motion Sensors", description:"Tap to open"
+                href "setupListDevices", title:"List Motion Sensors", description:"Tap to open"
+            }
         }
     }
 }
@@ -180,16 +182,21 @@ private def setupAddDevice() {
     ]
 
     return dynamicPage(pageProperties) {
-        section("Sensor Name") {
+        section {
             paragraph helpName
-            input "setupDevName", "string", title: "What is your sensor name?", required:true
+            input "setupDevName", "string", title:"What is your sensor name?",
+                required:true, defaultValue:"X10 ActiveEye"
         }
         section("X10 Address") {
             paragraph helpAddress
-            input "setupHouseCode", "enum", title: "What is your House Code?",
+            input "setupHouseCode", "enum", title:"What is your House Code?",
                 metadata:[values:houseCodes], required:true
-            input "setupUnitCode", "enum", title: "What is your Unit Code?",
+            input "setupUnitCode", "enum", title:"What is your Unit Code?",
                 metadata:[values:unitCodes], required:true
+        }
+        section("Options") {
+            input "setupLightSensor", "bool", title:"Enable Light Sensor",
+                defaultValue:true, required:true
         }
     }
 }
@@ -199,6 +206,7 @@ private def actionAddDevice() {
 
     def devAddr = settings.setupHouseCode + settings.setupUnitCode
     addDevice(devAddr, settings.setupDevName)
+
     return setupMenu()
 }
 
@@ -209,7 +217,7 @@ private def setupRemoveDevices() {
     def pageProperties = [
         name:       "setupRemoveDevices",
         title:      "Remove Motion Sensors",
-        nextPage:   "setupMenu",
+        nextPage:   "actionRemoveDevices",
         install:    false,
         uninstall:  state.setup.installed
     ]
@@ -223,10 +231,19 @@ private def setupRemoveDevices() {
         }
     }
 
+    def deviceList = []
+    state.setup.devices.each() { k,v ->
+        // enumerate only motion sensors
+        if (v.type == "motion") {
+            deviceList << "${k} - ${v.name}"
+        }
+    }
+
     return dynamicPage(pageProperties) {
         section {
-            paragraph "Not Implemented."
-            paragraph "Tap 'Next' to continue."
+            paragraph "Select device you wish to remove, then tap 'Next' to continue."
+            input "setupDevRemove", "enum", title:"Select Devices",
+                metadata:[values:deviceList], required:false, multiple:true
         }
     }
 }
@@ -234,45 +251,47 @@ private def setupRemoveDevices() {
 private def actionRemoveDevices() {
     TRACE("actionRemoveDevices()")
 
-    //removeDevice(devAddr, settings.setupDevName)
+    settings.setupDevRemove.each() {
+        def parts = it.tokenize()
+        removeDevice(parts[0])
+    }
+
     return setupMenu()
 }
 
 private def setupListDevices() {
     TRACE("setupListDevices()")
 
-    def deviceList = ""
-
-    if (state.setup.devices.size() == 0) {
-        deviceList = "You have not configured any devices yet."
-    } else {
-        deviceList =
-            "Switches:\n" +
-            "  A1 - Kitchen Lights\n" +
-            "  A2 - Hallway Lights\n" +
-            "Dimmers:\n" +
-            "  B1 - Family Room Lights\n" +
-            "  B2 - Master Bedoom Lights\n" +
-            "Motion Sensors:\n" +
-            "  C1 - Family Motion\n" +
-            "  C2 - Hallway Motion\n" +
-            "Remote Control:\n" +
-            "  D1 - Garage Lights\n" +
-            "  D2 - Coffee Maker"
-    }
-
     def pageProperties = [
         name:       "setupListDevices",
-        title:      "Configured Motion Sensors",
+        title:      "X10 Device List",
         nextPage:   "setupMenu",
         install:    false,
         uninstall:  state.setup.installed
     ]
 
+    if (state.setup.devices.size() == 0) {
+        return dynamicPage(pageProperties) {
+            section {
+                paragraph "You have not configured any X10 devices yet. Tap 'Done' to continue."
+            }
+        }
+    }
+
+    def motionSensors = ""
+    state.setup.devices.each() { k,v ->
+        // enumerate only motion sensors
+        if (v.type == "motion") {
+            motionSensors += "${k} - ${v.name}\n"
+        }
+    }
+
     return dynamicPage(pageProperties) {
         section {
-            paragraph "Tap 'Next' to continue."
-            paragraph deviceList
+            paragraph "Tap 'Done' to continue."
+        }
+        section("Motion Sensors") {
+            paragraph motionSensors
         }
     }
 }
@@ -283,7 +302,6 @@ private def setupConfigureDevice() {
     return dynamicPage(name:"setupWizard", uninstall:state.setup.installed) {
         section("Title") {
             input "deviceName", "string", title: "Device name"
-
         }
     }
 }
@@ -311,9 +329,31 @@ private def initialize() {
 }
 
 private def addDevice(addr, name) {
+    TRACE("addDevice(${addr}, ${name})")
+
+	def devId = "X10:${addr}"
+	if (getChildDevice(devId)) {
+		log.error "Child device ${devId} already exist"
+		return false
+	}
+
+	def devFile = "X10 ActiveEye"
+    def devParams = [
+    	name  			: name,
+        label 			: name,
+        completedSetup 	: true
+    ]
+	
+	log.debug "Creating Child device ${devParams}"
+	//def dev = addChildDevice("statusbits", devFile, devId, null, devParams)
+    //if (dev == null) {
+	//    log.error "Cannot create child device \'${devFile}\'"
+	//    return false
+    //}
+
     def device = [
         'name' : name,
-        'type' : "motion",
+        'type' : 'motion',
     ]
 
     log.debug "device = ${device}"
@@ -321,6 +361,12 @@ private def addDevice(addr, name) {
     state.setup.devices[addr] = device
 
     log.debug "state = ${state}"
+    return true
+}
+
+private def removeDevice(addr) {
+    TRACE("removeDevice(${addr})")
+    state.setup.devices.remove(addr)
 }
 
 private def textVersion() {
