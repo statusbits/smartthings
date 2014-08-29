@@ -18,8 +18,10 @@
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/XivelyBridge/XivelyBridge.app.groovy
  *
- *  Version: 0.9.0
- *  Date: 2014-08-10
+ *  Revision History
+ *  ----------------
+ *  2014-08-28  V0.9.0  Use parse() instead of setCurrentValue()
+ *  2014-08-10  V0.9.0  Initial check-in
  */
 
 definition(
@@ -112,7 +114,7 @@ private parseReadResponse(response) {
     }
 
     if (response.data.current_value) {
-        settings.temperature.setCurrentValue(response.data.current_value)
+        settings.temperature.parse("temperature:${response.data.current_value}")
     }
 }
 
