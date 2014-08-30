@@ -46,7 +46,8 @@ definition(
 preferences {
     page name:"setupInit"
     page name:"setupMenu"
-    page name:"setupAddDevice"
+    page name:"setupSceneController"
+    page name:"setupMotionSensor"
     page name:"actionAddDevice"
     page name:"setupRemoveDevices"
     page name:"actionRemoveDevices"
@@ -123,12 +124,7 @@ private def setupWelcome() {
 private def setupMenu() {
     TRACE("setupMenu()")
 
-    if (state.setup.devices.size() == 0) {
-        // Jump to the "Add Device" page 
-        //return setupAddDevice()
-    }
-
-    def text =
+    def textHelp =
         "Select one of the actions below, then tap the 'Done' button at " +
         "the top of the screen to complete setup."
 
@@ -143,8 +139,9 @@ private def setupMenu() {
     state.setup.menu = false
     return dynamicPage(pageProperties) {
         section {
-            paragraph text
-            href "setupAddDevice", title:"Add Motion Sensor", description:"Tap to open"
+            paragraph textHelp
+            href "setupSceneController", title:"Add Scene Controller", description:"Tap to open"
+            href "setupMotionSensor", title:"Add Motion Sensor", description:"Tap to open"
             if (state.setup.devices.size() > 0) {
                 href "setupRemoveDevices", title:"Remove Motion Sensors", description:"Tap to open"
                 href "setupListDevices", title:"List Motion Sensors", description:"Tap to open"
@@ -153,33 +150,71 @@ private def setupMenu() {
     }
 }
 
-// Show "Add Device" setup page
-private def setupAddDevice() {
-    TRACE("setupAddDevice()")
+// Show "Add Scene Controller" setup page
+private def setupSceneController() {
+    TRACE("setupSceneController()")
+
+    def textHelp =
+        "You can use X10 remote control to activate \"Hello, Home\" " +
+        "actions (also known as \"scenes\"). Each pair of the remote " +
+        "control On and Off buttons transmits commands on one of the 256 " +
+        "X10 channels, identified by the House Code (letters A through P) " +
+        "and the Unit Code (numbers 1 through 16). You can assign " +
+        "different scenes to On and Off buttons."
+
+    def pageProperties = [
+        name:       "setupSceneController",
+        title:      "Add Scene Controller",
+        nextPage:   "actionAddDevice",
+        install:    false,
+        uninstall:  state.setup.installed
+    ]
+
+    // Set new device type
+    state.setup.newDeviceType = "scene"
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph textHelp
+        }
+        section("Select X10 Channel") {
+            input "setupHouseCode", "enum", title:"House Code",
+                metadata:[values:x10HouseCodes()], required:true
+            input "setupUnitCode", "enum", title:"Unit Code",
+                metadata:[values:x10UnitCodes()], required:true
+        }
+        section("Run this Scene ...") {
+            input "setupSceneOn", "enum", title:"When On button is pushed",
+                metadata:[values:getScenes()], required:true
+            input "setupSceneOff", "enum", title:"When Off button is pushed",
+                metadata:[values:["None"] + getScenes()], required:false
+        }
+    }
+}
+
+// Show "Add Motion Sensor" setup page
+private def setupMotionSensor() {
+    TRACE("setupMotionSensor()")
 
     def helpName =
         "Give the motion sensor a descriptive name, for example 'Hallway Motion'."
 
-    def helpAddress =
-        "Each ActiveEye motion sensor is assigned a unique X10 address, " +
-        "consisting of the 'House Code' (letters A through P) and the " +
-        "'Unit Code' (numbers 1 through 16). Please enter the sensor's " +
-        "X10 address below."
-
-    def helpContinue =
-        "Select 'Yes' if you wish to add more sensors, then tap the 'Next' " +
-        "button at the top of the screen to continue."
-
-    def houseCodes = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"]
-    def unitCodes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
+    def helpChannel =
+        "Each ActiveEye motion sensor transmits commands on one of the 256 " +
+        "channels, identified by \"House Code\" (letters A through P) and " +
+        "\"Unit Code\" (numbers 1 through 16). Please select the sensor's " +
+        "X10 channel below."
 
     def pageProperties = [
-        name:       "setupAddDevice",
+        name:       "setupMotionSensor",
         title:      "Add Motion Sensor",
         nextPage:   "actionAddDevice",
         install:    false,
         uninstall:  state.setup.installed
     ]
+
+    // Set new device type
+    state.setup.newDeviceType = "motion"
 
     return dynamicPage(pageProperties) {
         section {
@@ -187,12 +222,12 @@ private def setupAddDevice() {
             input "setupDevName", "string", title:"What is your sensor name?",
                 required:true, defaultValue:"X10 ActiveEye"
         }
-        section("X10 Address") {
-            paragraph helpAddress
-            input "setupHouseCode", "enum", title:"What is your House Code?",
-                metadata:[values:houseCodes], required:true
-            input "setupUnitCode", "enum", title:"What is your Unit Code?",
-                metadata:[values:unitCodes], required:true
+        section("X10 Channel") {
+            paragraph helpChannel
+            input "setupHouseCode", "enum", title:"Select Motion Sensor House Code",
+                metadata:[values:x10HouseCodes()], required:true
+            input "setupUnitCode", "enum", title:"Select Motion Sensor Unit Code",
+                metadata:[values:x10UnitCodes()], required:true
         }
         section("Options") {
             input "setupLightSensor", "bool", title:"Enable Light Sensor",
@@ -204,9 +239,22 @@ private def setupAddDevice() {
 private def actionAddDevice() {
     TRACE("actionAddDevice()")
 
-    def devAddr = settings.setupHouseCode + settings.setupUnitCode
-    addDevice(devAddr, settings.setupDevName)
+    String devAddr = settings.setupHouseCode + settings.setupUnitCode
+    if (state.setup.devices.containsKey(devAddr)) {
+        log.error "X10 address ${devAddr} is in use"
+    } else {
+        switch (state.setup.newDeviceType) {
+        case "scene":
+            addSceneController(devAddr)
+            break;
 
+        case "motion":
+            addMotionSensor(devAddr)
+            break;
+        }
+    }
+
+    state.setup.newDeviceType = null
     return setupMenu()
 }
 
@@ -328,8 +376,25 @@ private def initialize() {
     subscribe(app, onAppTouch)
 }
 
-private def addDevice(addr, name) {
-    TRACE("addDevice(${addr}, ${name})")
+private def addSceneController(addr) {
+    TRACE("addMotionSensor(${addr})")
+
+    def device = [
+        'type'      : 'scene',
+        'sceneOn'   : settings.setupSceneOn,
+        'sceneOff'  : settings.setupSceneOff
+    ]
+
+    log.debug "device = ${device}"
+
+    state.setup.devices[addr] = device
+
+    log.debug "state = ${state}"
+    return true
+}
+
+private def addMotionSensor(addr) {
+    TRACE("addMotionSensor(${addr})")
 
 	def devId = "X10:${addr}"
 	if (getChildDevice(devId)) {
@@ -339,11 +404,11 @@ private def addDevice(addr, name) {
 
 	def devFile = "X10 ActiveEye"
     def devParams = [
-    	name  			: name,
-        label 			: name,
+    	name  			: settings.setupDevName,
+        label 			: settings.setupDevName,
         completedSetup 	: true
     ]
-	
+
 	log.debug "Creating Child device ${devParams}"
 	//def dev = addChildDevice("statusbits", devFile, devId, null, devParams)
     //if (dev == null) {
@@ -352,8 +417,8 @@ private def addDevice(addr, name) {
     //}
 
     def device = [
-        'name' : name,
         'type' : 'motion',
+        'name' : settings.setupDevName
     ]
 
     log.debug "device = ${device}"
@@ -367,6 +432,24 @@ private def addDevice(addr, name) {
 private def removeDevice(addr) {
     TRACE("removeDevice(${addr})")
     state.setup.devices.remove(addr)
+}
+
+private def getScenes() {
+    def scenes = []
+    def actions = location.helloHome?.getPhrases()
+    actions.each() {
+        scenes << "${it.label}"
+    }
+
+    return scenes
+}
+
+private def x10HouseCodes() {
+    def houseCodes = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"]
+}
+
+private def x10UnitCodes() {
+    def unitCodes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
 }
 
 private def textVersion() {
