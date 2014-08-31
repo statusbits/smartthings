@@ -1,10 +1,12 @@
 /**
- *  X10 ActiveEye Bridge.
+ *  X10 Bridge.
  *
- *  Copyright (c) 2014 Statusbits.com
- *
- *  SmartApp for interfacing SmartThings with X10 ActiveEye (model MS16A)
- *  or EagleEye (model MS14A) motion detectors.
+ *  This SmartApp allows integration of X10 switches and dimmers with
+ *  SmartThings. Please note that it requires a Linux host with Mochad server
+ *  installed on the local network and accessible from the SmartThings hub.
+ *  Mochad is a free, open-source X10 gateway software for Linux. Please
+ *  visit https://github.com/statusbits/smartthings/blob/master/X10Bridge
+ *  for more information.
  *
  *  Copyright (c) 2014 Statusbits.com
  *
@@ -21,11 +23,11 @@
  *  under the License.
  *
  *  The latest version of this file can be found at:
- *  https://github.com/statusbits/smartthings/blob/master/X10Bridge/ActiveEyeBridge.app.groovy
+ *  https://github.com/statusbits/smartthings/blob/master/X10Bridge/X10Bridge.app.groovy
  *
  *  Useful links:
- *  - ActiveEye product page: http://www.x10.com/ms16a.html
- *  - ActiveEye setup instructions: http://kbase.x10.com/wiki/Active_Eye_Motion_Sensor_Setup
+ *  - X10 Bridge project page: https://github.com/statusbits/smartthings/blob/master/X10Bridge
+ *  - Mochad project page: http://sourceforge.net/projects/mochad/
  *
  *  Revision History
  *  ----------------
@@ -33,24 +35,23 @@
  */
 
 definition(
-    name: "ActiveEye Bridge",
+    name: "X10 Bridge",
     namespace: "statusbits",
     author: "geko@statusbits.com",
-    description: "Connect X10 ActiveEye motion sensors to SmartThings",
+    description: "Connect X10 switches and dimmers to SmartThings. Requires Mochad server.",
     category: "My Apps",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
-    oauth: true
+    //oauth: true
 )
 
 preferences {
     page name:"setupInit"
     page name:"setupMenu"
-    page name:"setupSceneController"
-    page name:"setupMotionSensor"
-    page name:"actionAddDevice"
+    page name:"setupAddSwitch"
+    page name:"setupActionAdd"
     page name:"setupRemoveDevices"
-    page name:"actionRemoveDevices"
+    page name:"setupActionRemove"
     page name:"setupListDevices"
 }
 
@@ -74,20 +75,19 @@ private def setupWelcome() {
     TRACE("setupWelcome()")
 
     def textPara1 =
-        "ActiveEye Bridge integrates X10 ActiveEye (model MS16A) and/or " +
-        "EagleEye (model MS14A) motion sensors into SmartThings.\n\n" +
-        "ActiveEye Bridge does not rely on the SmartThings Hub to receive " +
-        "signals from the motion sensors. Instead, it requires an X10 " +
-        "serial Firecracker receiver (model MR26A) and an X10 Gateway " +
-        "software installed on a PC. Please visit " +
-        "[www.statusbits.com/p/activeeye] for more information."
+        "X10 Bridge allows you integrate X10 switches and dimmers into " +
+        "SmartThings. Please note that it requires a Linux box running " +
+        "Mochad server installed on the local network and accessible from " +
+        "the SmartThings hub.\n\n" +
+        "Mochad is a free, open-source X10 gateway software for Linux. " +
+        "Please visit [insert link] for X10 Bridge setup instructions."
 
     def textPara2 = "${app.name}. ${textVersion()}\n${textCopyright()}"
 
     def textPara3 =
-        "Please read the License Agreement below, then tap the 'Next' " +
-        "button at the top of the screen to accept the terms and " +
-        "conditions of the License Agreement and continue."
+        "Please read the License Agreement below. By tapping the 'Next' " +
+        "button at the top of the screen, you agree and accept the terms " +
+        "and conditions of the License Agreement."
 
     def textLicense =
         "Licensed under the Apache License, Version 2.0 (the \"License\"); " +
@@ -136,125 +136,78 @@ private def setupMenu() {
         uninstall:  state.setup.installed
     ]
 
-    state.setup.menu = false
+    state.setup.deviceType = null
+
     return dynamicPage(pageProperties) {
         section {
             paragraph textHelp
-            href "setupSceneController", title:"Add Scene Controller", description:"Tap to open"
-            href "setupMotionSensor", title:"Add Motion Sensor", description:"Tap to open"
+            href "setupAddSwitch", title:"Add X10 Switch", description:"Tap to open"
             if (state.setup.devices.size() > 0) {
-                href "setupRemoveDevices", title:"Remove Motion Sensors", description:"Tap to open"
-                href "setupListDevices", title:"List Motion Sensors", description:"Tap to open"
+                href "setupRemoveDevices", title:"Remove Devices", description:"Tap to open"
+                href "setupListDevices", title:"List Installed Devices", description:"Tap to open"
             }
         }
+        section("About") {
+            paragraph "${app.name}. ${textVersion()}\n${textCopyright()}"
+        }
     }
 }
 
-// Show "Add Scene Controller" setup page
-private def setupSceneController() {
-    TRACE("setupSceneController()")
+// Show "Add X10 Switch" setup page
+private def setupAddSwitch() {
+    TRACE("setupAddSwitch()")
 
-    def textHelp =
-        "You can use X10 remote control to activate \"Hello, Home\" " +
-        "actions (also known as \"scenes\"). Each pair of the remote " +
-        "control On and Off buttons transmits commands on one of the 256 " +
-        "X10 channels, identified by the House Code (letters A through P) " +
-        "and the Unit Code (numbers 1 through 16). You can assign " +
-        "different scenes to On and Off buttons."
+    def textHelpName =
+        "Give your X10 switch a descriptive name, for example 'Kitchen " +
+        "Lights'."
+
+    def textHelpAddr =
+        "Each X10 device is assigned an address, consisting of two parts - " +
+        "a House Code (letters A through P) and a Unit Code (numbers 1 " +
+        "through 16), for example 'D12'. Please check your device and " +
+        "enter its X10 device address below."
 
     def pageProperties = [
-        name:       "setupSceneController",
-        title:      "Add Scene Controller",
-        nextPage:   "actionAddDevice",
+        name:       "setupAddSwitch",
+        title:      "Add X10 Switch",
+        nextPage:   "setupActionAdd",
         install:    false,
         uninstall:  state.setup.installed
     ]
 
     // Set new device type
-    state.setup.newDeviceType = "scene"
+    state.setup.deviceType = "switch"
 
     return dynamicPage(pageProperties) {
         section {
-            paragraph textHelp
+            paragraph textHelpName
+            input "setupDevName", "string", title:"What is your switch name?",
+                required:true, defaultValue:"X10 Switch"
         }
-        section("Select X10 Channel") {
-            input "setupHouseCode", "enum", title:"House Code",
+        section("X10 Address") {
+            paragraph textHelpAddr
+            input "setupHouseCode", "enum", title:"What is your switch House Code?",
                 metadata:[values:x10HouseCodes()], required:true
-            input "setupUnitCode", "enum", title:"Unit Code",
+            input "setupUnitCode", "enum", title:"What is your switch Unit Code?",
                 metadata:[values:x10UnitCodes()], required:true
-        }
-        section("Run this Scene ...") {
-            input "setupSceneOn", "enum", title:"When On button is pushed",
-                metadata:[values:getScenes()], required:true
-            input "setupSceneOff", "enum", title:"When Off button is pushed",
-                metadata:[values:["None"] + getScenes()], required:false
         }
     }
 }
 
-// Show "Add Motion Sensor" setup page
-private def setupMotionSensor() {
-    TRACE("setupMotionSensor()")
-
-    def helpName =
-        "Give the motion sensor a descriptive name, for example 'Hallway Motion'."
-
-    def helpChannel =
-        "Each ActiveEye motion sensor transmits commands on one of the 256 " +
-        "channels, identified by \"House Code\" (letters A through P) and " +
-        "\"Unit Code\" (numbers 1 through 16). Please select the sensor's " +
-        "X10 channel below."
-
-    def pageProperties = [
-        name:       "setupMotionSensor",
-        title:      "Add Motion Sensor",
-        nextPage:   "actionAddDevice",
-        install:    false,
-        uninstall:  state.setup.installed
-    ]
-
-    // Set new device type
-    state.setup.newDeviceType = "motion"
-
-    return dynamicPage(pageProperties) {
-        section {
-            paragraph helpName
-            input "setupDevName", "string", title:"What is your sensor name?",
-                required:true, defaultValue:"X10 ActiveEye"
-        }
-        section("X10 Channel") {
-            paragraph helpChannel
-            input "setupHouseCode", "enum", title:"Select Motion Sensor House Code",
-                metadata:[values:x10HouseCodes()], required:true
-            input "setupUnitCode", "enum", title:"Select Motion Sensor Unit Code",
-                metadata:[values:x10UnitCodes()], required:true
-        }
-        section("Options") {
-            input "setupLightSensor", "bool", title:"Enable Light Sensor",
-                defaultValue:true, required:true
-        }
-    }
-}
-
-private def actionAddDevice() {
-    TRACE("actionAddDevice()")
+private def setupActionAdd() {
+    TRACE("setupActionAdd()")
 
     String devAddr = settings.setupHouseCode + settings.setupUnitCode
     if (state.setup.devices.containsKey(devAddr)) {
         log.error "X10 address ${devAddr} is in use"
     } else {
-        switch (state.setup.newDeviceType) {
-        case "scene":
-            addSceneController(devAddr)
-            break;
-
-        case "motion":
-            addMotionSensor(devAddr)
+        switch (state.setup.deviceType) {
+        case "switch":
+            addSwitch(devAddr)
             break;
         }
     }
 
-    state.setup.newDeviceType = null
     return setupMenu()
 }
 
@@ -262,10 +215,16 @@ private def actionAddDevice() {
 private def setupRemoveDevices() {
     TRACE("setupRemoveDevices()")
 
+    def textHelp =
+        "Select devices you wish to remove, then tap 'Next' to continue."
+
+    def textNoDevices =
+        "You have not configured any X10 devices yet. Tap 'Done' to continue."
+
     def pageProperties = [
         name:       "setupRemoveDevices",
-        title:      "Remove Motion Sensors",
-        nextPage:   "actionRemoveDevices",
+        title:      "Remove Devices",
+        nextPage:   "setupActionRemove",
         install:    false,
         uninstall:  state.setup.installed
     ]
@@ -273,33 +232,29 @@ private def setupRemoveDevices() {
     if (state.setup.devices.size() == 0) {
         return dynamicPage(pageProperties) {
             section {
-                paragraph "You have not configured any motion sensors yet."
-                paragraph "Tap 'Next' to continue."
+                paragraph textNoDevices
             }
         }
     }
 
     def deviceList = []
-    state.setup.devices.each() { k,v ->
-        // enumerate only motion sensors
-        if (v.type == "motion") {
-            deviceList << "${k} - ${v.name}"
-        }
+    state.setup.devices.each { k,v ->
+        deviceList << "${k} - ${v.name}"
     }
 
     return dynamicPage(pageProperties) {
         section {
-            paragraph "Select device you wish to remove, then tap 'Next' to continue."
+            paragraph textHelp
             input "setupDevRemove", "enum", title:"Select Devices",
-                metadata:[values:deviceList], required:false, multiple:true
+                metadata:[values:deviceList.sort()], required:false, multiple:true
         }
     }
 }
 
-private def actionRemoveDevices() {
-    TRACE("actionRemoveDevices()")
+private def setupActionRemove() {
+    TRACE("setupActionRemove()")
 
-    settings.setupDevRemove.each() {
+    settings.setupDevRemove.each {
         def parts = it.tokenize()
         removeDevice(parts[0])
     }
@@ -310,9 +265,12 @@ private def actionRemoveDevices() {
 private def setupListDevices() {
     TRACE("setupListDevices()")
 
+    def textNoDevices =
+        "You have not configured any X10 devices yet. Tap 'Done' to continue."
+
     def pageProperties = [
         name:       "setupListDevices",
-        title:      "X10 Device List",
+        title:      "Installed Devices",
         nextPage:   "setupMenu",
         install:    false,
         uninstall:  state.setup.installed
@@ -321,25 +279,18 @@ private def setupListDevices() {
     if (state.setup.devices.size() == 0) {
         return dynamicPage(pageProperties) {
             section {
-                paragraph "You have not configured any X10 devices yet. Tap 'Done' to continue."
+                paragraph textNoDevices
             }
         }
     }
 
-    def motionSensors = ""
-    state.setup.devices.each() { k,v ->
-        // enumerate only motion sensors
-        if (v.type == "motion") {
-            motionSensors += "${k} - ${v.name}\n"
-        }
-    }
-
+    def switches = getDeviceListAsText('switch')
     return dynamicPage(pageProperties) {
         section {
             paragraph "Tap 'Done' to continue."
         }
-        section("Motion Sensors") {
-            paragraph motionSensors
+        section("Switches") {
+            paragraph switches
         }
     }
 }
@@ -376,33 +327,16 @@ private def initialize() {
     subscribe(app, onAppTouch)
 }
 
-private def addSceneController(addr) {
-    TRACE("addMotionSensor(${addr})")
+private def addSwitch(addr) {
+    TRACE("addSwitch(${addr})")
 
-    def device = [
-        'type'      : 'scene',
-        'sceneOn'   : settings.setupSceneOn,
-        'sceneOff'  : settings.setupSceneOff
-    ]
-
-    log.debug "device = ${device}"
-
-    state.setup.devices[addr] = device
-
-    log.debug "state = ${state}"
-    return true
-}
-
-private def addMotionSensor(addr) {
-    TRACE("addMotionSensor(${addr})")
-
-	def devId = "X10:${addr}"
-	if (getChildDevice(devId)) {
-		log.error "Child device ${devId} already exist"
+	def dni = "X10:${addr}"
+	if (getChildDevice(dni)) {
+		log.error "Child device ${dni} already exist"
 		return false
 	}
 
-	def devFile = "X10 ActiveEye"
+	def devFile = "X10 Switch"
     def devParams = [
     	name  			: settings.setupDevName,
         label 			: settings.setupDevName,
@@ -410,15 +344,16 @@ private def addMotionSensor(addr) {
     ]
 
 	log.debug "Creating Child device ${devParams}"
-	//def dev = addChildDevice("statusbits", devFile, devId, null, devParams)
+	//def dev = addChildDevice("statusbits", devFile, dni, null, devParams)
     //if (dev == null) {
 	//    log.error "Cannot create child device \'${devFile}\'"
 	//    return false
     //}
 
     def device = [
-        'type' : 'motion',
-        'name' : settings.setupDevName
+        'type'  : 'switch',
+        'name'  : settings.setupDevName,
+        'dni'   : dni
     ]
 
     log.debug "device = ${device}"
@@ -434,14 +369,27 @@ private def removeDevice(addr) {
     state.setup.devices.remove(addr)
 }
 
-private def getScenes() {
-    def scenes = []
-    def actions = location.helloHome?.getPhrases()
-    actions.each() {
-        scenes << "${it.label}"
+private def getDeviceMap() {
+    def devices = [:]
+    state.setup.devices.each { k,v ->
+        if (!devices.containsKey(v.type)) {
+            devices[v.type] = []
+        }
+        devices[v.type] << k
     }
 
-    return scenes
+    return devices
+}
+
+private def getDeviceListAsText(type) {
+    String s = ""
+    state.setup.devices.each { k,v ->
+        if (v.type == type) {
+            s += "${k} - ${v.name}\n"
+        }
+    }
+
+    return s
 }
 
 private def x10HouseCodes() {
