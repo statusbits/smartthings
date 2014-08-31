@@ -48,11 +48,13 @@ definition(
 preferences {
     page name:"setupInit"
     page name:"setupMenu"
+    page name:"setupMochad"
     page name:"setupAddSwitch"
     page name:"setupActionAdd"
     page name:"setupRemoveDevices"
     page name:"setupActionRemove"
     page name:"setupListDevices"
+    page name:"setupTestConnection"
 }
 
 private def setupInit() {
@@ -124,9 +126,14 @@ private def setupWelcome() {
 private def setupMenu() {
     TRACE("setupMenu()")
 
+    // if Mochad is not configured, then do it now
+    if (!settings.containsKey('mochadIpAddress')) {
+        return setupMochad()
+    }
+
     def textHelp =
-        "Select one of the actions below, then tap the 'Done' button at " +
-        "the top of the screen to complete setup."
+        "Select one of the actions below, then tap Done to complete " +
+        "setup."
 
     def pageProperties = [
         name:       "setupMenu",
@@ -141,6 +148,7 @@ private def setupMenu() {
     return dynamicPage(pageProperties) {
         section {
             paragraph textHelp
+            href "setupMochad", title:"Configure Mochad Gateway", description:"Tap to open"
             href "setupAddSwitch", title:"Add X10 Switch", description:"Tap to open"
             if (state.setup.devices.size() > 0) {
                 href "setupRemoveDevices", title:"Remove Devices", description:"Tap to open"
@@ -149,6 +157,74 @@ private def setupMenu() {
         }
         section("About") {
             paragraph "${app.name}. ${textVersion()}\n${textCopyright()}"
+        }
+    }
+}
+
+// Show "Configure Mochad" setup page
+private def setupMochad() {
+    TRACE("setupMochad()")
+
+    def textHelp =
+        "X10 Bridge communicates with X10 devices via Mochad TCP gateway " +
+        "running on a Linux box. The Linux box must be connected to your " +
+        "local network and assigned a static (or reserved) IP address, so " +
+        "it does not change when the Linux box is rebooted.\n\n" +
+        "Enter IP address and TCP port of your Mochad gateway, then tap " +
+        "Done to continue."
+
+    def inputIpAddress = [
+        name:           "mochadIpAddress",
+        type:           "string",
+        title:          "What is your gateway IP Address?"
+    ]
+
+    def inputTcpPort = [
+        name:           "mochadTcpPort",
+        type:           "number",
+        title:          "What is your gateway TCP Port?",
+        defaultValue:   "1099"
+    ]
+
+    def pageProperties = [
+        name:       "setupMochad",
+        title:      "Configure Mochad Gateway",
+        nextPage:   "setupMenu",
+        install:    false,
+        uninstall:  state.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph textHelp
+            input inputIpAddress
+            input inputTcpPort
+            href "setupTestConnection", title:"Test Gateway Connection", description:"Tap to start"
+        }
+    }
+}
+
+// Show "Test Mochad Connection" setup page
+private def setupTestConnection() {
+    TRACE("setupTestConnection()")
+
+	def networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
+    socketSend("X10 Bridge\r\n", networkId)
+
+    def textHelp =
+        "Tap Done to continue."
+
+    def pageProperties = [
+        name:       "setupTestConnection",
+        title:      "Mochad Connection Test",
+        nextPage:   "setupMenu",
+        install:    false,
+        uninstall:  state.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph textHelp
         }
     }
 }
@@ -216,10 +292,10 @@ private def setupRemoveDevices() {
     TRACE("setupRemoveDevices()")
 
     def textHelp =
-        "Select devices you wish to remove, then tap 'Next' to continue."
+        "Select devices you wish to remove, then tap Next to continue."
 
     def textNoDevices =
-        "You have not configured any X10 devices yet. Tap 'Done' to continue."
+        "You have not configured any X10 devices yet. Tap Done to continue."
 
     def pageProperties = [
         name:       "setupRemoveDevices",
@@ -266,7 +342,7 @@ private def setupListDevices() {
     TRACE("setupListDevices()")
 
     def textNoDevices =
-        "You have not configured any X10 devices yet. Tap 'Done' to continue."
+        "You have not configured any X10 devices yet. Tap Done to continue."
 
     def pageProperties = [
         name:       "setupListDevices",
@@ -287,20 +363,10 @@ private def setupListDevices() {
     def switches = getDeviceListAsText('switch')
     return dynamicPage(pageProperties) {
         section {
-            paragraph "Tap 'Done' to continue."
+            paragraph "Tap Done to continue."
         }
         section("Switches") {
             paragraph switches
-        }
-    }
-}
-
-private def setupConfigureDevice() {
-    TRACE("setupConfigureDevice()")
-
-    return dynamicPage(name:"setupWizard", uninstall:state.setup.installed) {
-        section("Title") {
-            input "deviceName", "string", title: "Device name"
         }
     }
 }
@@ -314,40 +380,64 @@ def updated() {
     initialize()
 }
 
+// Handle Location events
+def onLocation(evt) {
+    TRACE("onLocation(${evt})")
+
+	if (evt.eventSource == 'HUB') {
+		// Parse Hub event
+		def hubEvent = stringToMap(evt.description)
+
+		// Add Hub ID to the parsed event
+        hubEvent.hubId = evt.hubId
+
+        log.debug "hubEvent: ${hubEvent}"
+		//parseLanResponse(hubEvent)
+	}
+}
+
 // Handle SmartApp touch event.
 def onAppTouch(evt) {
     TRACE("onAppTouch(${evt})")
+
+    log.debug "state: ${state}"
+    log.debug "settings: ${settings}"
 }
 
 private def initialize() {
     TRACE("initialize()")
     log.trace "${app.name}. ${textVersion()}. ${textCopyright()}"
 
+	state.networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
+
     // subscribe to attributes, devices, locations, etc.
     subscribe(app, onAppTouch)
+
+	// Subscribe to location events with filter disabled
+	subscribe(location, null, onLocation, [filterEvents:false])
 }
 
 private def addSwitch(addr) {
     TRACE("addSwitch(${addr})")
 
-	def dni = "X10:${addr}"
-	if (getChildDevice(dni)) {
-		log.error "Child device ${dni} already exist"
-		return false
-	}
+    def dni = "X10:${addr}"
+    if (getChildDevice(dni)) {
+        log.error "Child device ${dni} already exist"
+        return false
+    }
 
-	def devFile = "X10 Switch"
+    def devFile = "X10 Switch"
     def devParams = [
-    	name  			: settings.setupDevName,
-        label 			: settings.setupDevName,
-        completedSetup 	: true
+        name            : settings.setupDevName,
+        label           : settings.setupDevName,
+        completedSetup  : true
     ]
 
-	log.debug "Creating Child device ${devParams}"
-	//def dev = addChildDevice("statusbits", devFile, dni, null, devParams)
+    log.debug "Creating child device ${devParams}"
+    //def dev = addChildDevice("statusbits", devFile, dni, null, devParams)
     //if (dev == null) {
-	//    log.error "Cannot create child device \'${devFile}\'"
-	//    return false
+    //    log.error "Cannot create child device \'${devFile}\'"
+    //    return false
     //}
 
     def device = [
@@ -392,12 +482,34 @@ private def getDeviceListAsText(type) {
     return s
 }
 
+def socketSend(message, networkId) {
+    TRACE("socketSend(${message}, ${networkId})")
+
+	def hubAction = new physicalgraph.device.HubAction(message,
+   			physicalgraph.device.Protocol.LAN, networkId)
+
+	TRACE("hubAction:\n${hubAction.getProperties()}")
+	sendHubCommand(hubAction)
+}
+
+// Returns device Network ID in 'AAAAAAAA:PPPP' format
+private String makeNetworkId(ipaddr, port) { 
+	TRACE("createNetworkId(${ipaddr}, ${port})")
+
+	String hexIp = ipaddr.tokenize('.').collect {
+    	String.format('%02X', it.toInteger())
+    }.join()
+
+	String hexPort = String.format('%04X', port)
+	return "${hexIp}:${hexPort}"
+}
+
 private def x10HouseCodes() {
-    def houseCodes = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"]
+    return ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"]
 }
 
 private def x10UnitCodes() {
-    def unitCodes = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
+    return ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
 }
 
 private def textVersion() {
