@@ -51,7 +51,7 @@ preferences {
     page name:"setupMochad"
     page name:"setupAddSwitch"
     page name:"setupActionAdd"
-    page name:"setupRemoveDevices"
+    page name:"setupRemoveDevice"
     page name:"setupActionRemove"
     page name:"setupListDevices"
     page name:"setupTestConnection"
@@ -65,10 +65,10 @@ private def setupInit() {
         return setupMenu()
     }
 
-    // initialize setup state and show welcome page
+    // initialize app state and show welcome page
     state.setup = [:]
     state.setup.installed = false
-    state.setup.devices = [:]
+    state.devices = [:]
     return setupWelcome()
 }
 
@@ -103,11 +103,11 @@ private def setupWelcome() {
         "language governing permissions and limitations under the License."
 
     def pageProperties = [
-        name:       "setupInit",
-        title:      "Welcome!",
-        nextPage:   "setupMenu",
-        install:    false,
-        uninstall:  state.setup.installed
+        name        : "setupInit",
+        title       : "Welcome!",
+        nextPage    : "setupMenu",
+        install     : false,
+        uninstall   : state.setup.installed
     ]
 
     return dynamicPage(pageProperties) {
@@ -136,11 +136,11 @@ private def setupMenu() {
         "setup."
 
     def pageProperties = [
-        name:       "setupMenu",
-        title:      "Setup Menu",
-        nextPage:   null,
-        install:    true,
-        uninstall:  state.setup.installed
+        name        : "setupMenu",
+        title       : "Setup Menu",
+        nextPage    : null,
+        install     : true,
+        uninstall   : state.setup.installed
     ]
 
     state.setup.deviceType = null
@@ -150,13 +150,17 @@ private def setupMenu() {
             paragraph textHelp
             href "setupMochad", title:"Configure Mochad Gateway", description:"Tap to open"
             href "setupAddSwitch", title:"Add X10 Switch", description:"Tap to open"
-            if (state.setup.devices.size() > 0) {
-                href "setupRemoveDevices", title:"Remove Devices", description:"Tap to open"
+            if (state.devices.size() > 0) {
+                href "setupRemoveDevice", title:"Remove Devices", description:"Tap to open"
                 href "setupListDevices", title:"List Installed Devices", description:"Tap to open"
             }
         }
         section("About") {
             paragraph "${app.name}. ${textVersion()}\n${textCopyright()}"
+        }
+        section([title:"Options", mobileOnly:true]) {
+            label title:"Assign a name", required:false
+            //mode title:"Set for specific mode(s)", required:false
         }
     }
 }
@@ -174,24 +178,24 @@ private def setupMochad() {
         "Done to continue."
 
     def inputIpAddress = [
-        name:           "mochadIpAddress",
-        type:           "string",
-        title:          "What is your gateway IP Address?"
+        name        : "mochadIpAddress",
+        type        : "string",
+        title       :   "What is your gateway IP Address?"
     ]
 
     def inputTcpPort = [
-        name:           "mochadTcpPort",
-        type:           "number",
-        title:          "What is your gateway TCP Port?",
-        defaultValue:   "1099"
+        name        : "mochadTcpPort",
+        type        : "number",
+        title       : "What is your gateway TCP Port?",
+        defaultValue: "1099"
     ]
 
     def pageProperties = [
-        name:       "setupMochad",
-        title:      "Configure Mochad Gateway",
-        nextPage:   "setupMenu",
-        install:    false,
-        uninstall:  state.installed
+        name        : "setupMochad",
+        title       : "Configure Mochad Gateway",
+        nextPage    : "setupMenu",
+        install     : false,
+        uninstall   : state.installed
     ]
 
     return dynamicPage(pageProperties) {
@@ -208,18 +212,20 @@ private def setupMochad() {
 private def setupTestConnection() {
     TRACE("setupTestConnection()")
 
-	def networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
-    socketSend("X10 Bridge\r\n", networkId)
+    def networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
+    //socketSend("test\r\n", networkId)
+    //socketSend("on k1\r\n", networkId)
+    socketSend("rf k1 on\r\n", networkId)
 
     def textHelp =
         "Tap Done to continue."
 
     def pageProperties = [
-        name:       "setupTestConnection",
-        title:      "Mochad Connection Test",
-        nextPage:   "setupMenu",
-        install:    false,
-        uninstall:  state.installed
+        name        : "setupTestConnection",
+        title       : "Mochad Connection Test",
+        nextPage    : "setupMochad",
+        install     : false,
+        uninstall   : state.installed
     ]
 
     return dynamicPage(pageProperties) {
@@ -243,12 +249,36 @@ private def setupAddSwitch() {
         "through 16), for example 'D12'. Please check your device and " +
         "enter its X10 device address below."
 
+    def inputDeviceName = [
+        name        : "setupDevName",
+        type        : "string",
+        title       : "What is your switch name?",
+        required    : true,
+        defaultValue:"X10 Switch"
+    ]
+
+    def inputHouseCode = [
+        name        : "setupHouseCode",
+        type        : "enum",
+        title       : "What is your switch House Code?",
+        metadata    : [values:x10HouseCodes()],
+        required    : true
+    ]
+
+    def inputUnitCode = [
+        name        : "setupUnitCode",
+        type        : "enum",
+        title       : "What is your switch Unit Code?",
+        metadata    : [values:x10UnitCodes()],
+        required    : true
+    ]
+
     def pageProperties = [
-        name:       "setupAddSwitch",
-        title:      "Add X10 Switch",
-        nextPage:   "setupActionAdd",
-        install:    false,
-        uninstall:  state.setup.installed
+        name        : "setupAddSwitch",
+        title       : "Add X10 Switch",
+        nextPage    : "setupActionAdd",
+        install     : false,
+        uninstall   : state.setup.installed
     ]
 
     // Set new device type
@@ -257,15 +287,12 @@ private def setupAddSwitch() {
     return dynamicPage(pageProperties) {
         section {
             paragraph textHelpName
-            input "setupDevName", "string", title:"What is your switch name?",
-                required:true, defaultValue:"X10 Switch"
+            input inputDeviceName
         }
         section("X10 Address") {
             paragraph textHelpAddr
-            input "setupHouseCode", "enum", title:"What is your switch House Code?",
-                metadata:[values:x10HouseCodes()], required:true
-            input "setupUnitCode", "enum", title:"What is your switch Unit Code?",
-                metadata:[values:x10UnitCodes()], required:true
+            input inputHouseCode
+            input inputUnitCode
         }
     }
 }
@@ -274,7 +301,7 @@ private def setupActionAdd() {
     TRACE("setupActionAdd()")
 
     String devAddr = settings.setupHouseCode + settings.setupUnitCode
-    if (state.setup.devices.containsKey(devAddr)) {
+    if (state.devices.containsKey(devAddr)) {
         log.error "X10 address ${devAddr} is in use"
     } else {
         switch (state.setup.deviceType) {
@@ -288,24 +315,24 @@ private def setupActionAdd() {
 }
 
 // Show "Remove Device" setup page
-private def setupRemoveDevices() {
-    TRACE("setupRemoveDevices()")
+private def setupRemoveDevice() {
+    TRACE("setupRemoveDevice()")
 
     def textHelp =
-        "Select devices you wish to remove, then tap Next to continue."
+        "Select device you wish to remove, then tap Next to continue."
 
     def textNoDevices =
         "You have not configured any X10 devices yet. Tap Done to continue."
 
     def pageProperties = [
-        name:       "setupRemoveDevices",
-        title:      "Remove Devices",
-        nextPage:   "setupActionRemove",
-        install:    false,
-        uninstall:  state.setup.installed
+        name        : "setupRemoveDevice",
+        title       : "Remove Device",
+        nextPage    : "setupActionRemove",
+        install     : false,
+        uninstall   : state.setup.installed
     ]
 
-    if (state.setup.devices.size() == 0) {
+    if (state.devices.size() == 0) {
         return dynamicPage(pageProperties) {
             section {
                 paragraph textNoDevices
@@ -314,15 +341,26 @@ private def setupRemoveDevices() {
     }
 
     def deviceList = []
-    state.setup.devices.each { k,v ->
-        deviceList << "${k} - ${v.name}"
+    state.devices.each { k,v ->
+        def dev = getChildDevice(v.dni)
+        if (dev) {
+            deviceList << "${k} - ${dev.displayName}"
+        }
     }
+
+    def inputDevice = [
+        name        : "setupDevRemove",
+        type        : "enum",
+        title       : "Select Devices",
+        metadata    : [values:deviceList.sort()],
+        required    : false
+    ]
 
     return dynamicPage(pageProperties) {
         section {
             paragraph textHelp
             input "setupDevRemove", "enum", title:"Select Devices",
-                metadata:[values:deviceList.sort()], required:false, multiple:true
+                metadata:[values:deviceList.sort()], required:false
         }
     }
 }
@@ -330,8 +368,8 @@ private def setupRemoveDevices() {
 private def setupActionRemove() {
     TRACE("setupActionRemove()")
 
-    settings.setupDevRemove.each {
-        def parts = it.tokenize()
+    if (settings.setupDevRemove) {
+        def parts = settings.setupDevRemove.tokenize()
         removeDevice(parts[0])
     }
 
@@ -345,14 +383,14 @@ private def setupListDevices() {
         "You have not configured any X10 devices yet. Tap Done to continue."
 
     def pageProperties = [
-        name:       "setupListDevices",
-        title:      "Installed Devices",
-        nextPage:   "setupMenu",
-        install:    false,
-        uninstall:  state.setup.installed
+        name        : "setupListDevices",
+        title       : "Installed Devices",
+        nextPage    : "setupMenu",
+        install     : false,
+        uninstall   : state.setup.installed
     ]
 
-    if (state.setup.devices.size() == 0) {
+    if (state.devices.size() == 0) {
         return dynamicPage(pageProperties) {
             section {
                 paragraph textNoDevices
@@ -372,49 +410,101 @@ private def setupListDevices() {
 }
 
 def installed() {
+    TRACE("installed()")
+
     initialize()
 }
 
 def updated() {
+    TRACE("updated()")
+
     unsubscribe()
     initialize()
+}
+
+def uninstalled() {
+    TRACE("uninstalled()")
+
+    // delete all child devices
+    def devices = getChildDevices()
+    devices?.each {
+        try {
+            deleteChildDevice(it.deviceNetworkId)
+        } catch (e) {
+            log.error "Cannot delete device ${it.deviceNetworkId}. Error: ${e}"
+        }
+    }
 }
 
 // Handle Location events
 def onLocation(evt) {
     TRACE("onLocation(${evt})")
 
-	if (evt.eventSource == 'HUB') {
-		// Parse Hub event
-		def hubEvent = stringToMap(evt.description)
-
-		// Add Hub ID to the parsed event
-        hubEvent.hubId = evt.hubId
-
+    if (evt.eventSource == 'HUB') {
+        // Parse Hub event
+        def hubEvent = stringToMap(evt.description)
         log.debug "hubEvent: ${hubEvent}"
-		//parseLanResponse(hubEvent)
-	}
+
+        // Add Hub ID to the parsed event
+        //hubEvent.hubId = evt.hubId
+        //parseLanResponse(hubEvent)
+    }
 }
 
 // Handle SmartApp touch event.
 def onAppTouch(evt) {
     TRACE("onAppTouch(${evt})")
+    STATE()
 
-    log.debug "state: ${state}"
-    log.debug "settings: ${settings}"
+	// test
+	x10_on(null)
+}
+
+// Excecute X10 'on' command on behalf of child device
+def x10_on(device) {
+    TRACE("x10_on(${device})")
+
+	def addr = 'k1'
+    socketSend("rf ${addr} on\r\n", state.networkId)
+}
+
+// Excecute X10 'off' command on behalf of child device
+def x10_off(device) {
+	TRACE("x10_off(${device})")
+
+	def addr = 'k1'
+    socketSend("rf ${addr} off\r\n", state.networkId)
+}
+
+// Excecute X10 'dim' command on behalf of child device
+def x10_dim(device) {
+	TRACE("x10_dim(${device})")
+
+	def addr = 'k1'
+    socketSend("rf ${addr} dim\r\n", state.networkId)
+}
+
+// Excecute X10 'bright' command on behalf of child device
+def x10_bright(device) {
+	TRACE("x10_bright(${device})")
+
+	def addr = 'k1'
+    socketSend("rf ${addr} bright\r\n", state.networkId)
 }
 
 private def initialize() {
-    TRACE("initialize()")
     log.trace "${app.name}. ${textVersion()}. ${textCopyright()}"
+    STATE()
 
-	state.networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
+    state.setup.installed = true
+    state.networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
+    updateDeviceList()
 
     // subscribe to attributes, devices, locations, etc.
     subscribe(app, onAppTouch)
 
-	// Subscribe to location events with filter disabled
-	subscribe(location, null, onLocation, [filterEvents:false])
+    // Subscribe to location events with filter disabled
+    subscribe(location, null, onLocation, [filterEvents:false])
 }
 
 private def addSwitch(addr) {
@@ -433,35 +523,53 @@ private def addSwitch(addr) {
         completedSetup  : true
     ]
 
-    log.debug "Creating child device ${devParams}"
-    //def dev = addChildDevice("statusbits", devFile, dni, null, devParams)
-    //if (dev == null) {
-    //    log.error "Cannot create child device \'${devFile}\'"
-    //    return false
-    //}
+    log.trace "Creating child device ${devParams}"
+    try {
+        def dev = addChildDevice("statusbits", devFile, dni, null, devParams)
+    } catch (e) {
+        log.error "Cannot create child device. Error: ${e}"
+        return false
+    }
 
-    def device = [
+    // save device in the app state
+    state.devices[addr] = [
+        'dni'   : dni,
         'type'  : 'switch',
-        'name'  : settings.setupDevName,
-        'dni'   : dni
     ]
 
-    log.debug "device = ${device}"
-
-    state.setup.devices[addr] = device
-
-    log.debug "state = ${state}"
+    STATE()
     return true
 }
 
 private def removeDevice(addr) {
     TRACE("removeDevice(${addr})")
-    state.setup.devices.remove(addr)
+
+    def dni = state.devices[addr].dni
+    log.debug "Removing child device ${dni}"
+
+    try {
+        deleteChildDevice(dni)
+        state.devices.remove(addr)
+    } catch (e) {
+        log.error "Cannot delete device ${dni}. Error: ${e}"
+    }
+}
+
+// Purge devices that were removed manually
+private def updateDeviceList() {
+    TRACE("updateDeviceList()")
+
+    state.devices.each { k,v ->
+        if (!getChildDevice(v.dni)) {
+            log.trace "Removing deleted device ${v.dni}"
+            state.devices.remove(k)
+        }
+    }
 }
 
 private def getDeviceMap() {
     def devices = [:]
-    state.setup.devices.each { k,v ->
+    state.devices.each { k,v ->
         if (!devices.containsKey(v.type)) {
             devices[v.type] = []
         }
@@ -473,9 +581,12 @@ private def getDeviceMap() {
 
 private def getDeviceListAsText(type) {
     String s = ""
-    state.setup.devices.each { k,v ->
+    state.devices.each { k,v ->
         if (v.type == type) {
-            s += "${k} - ${v.name}\n"
+            def dev = getChildDevice(v.dni)
+            if (dev) {
+                s += "${k} - ${dev.displayName}\n"
+            }
         }
     }
 
@@ -485,23 +596,23 @@ private def getDeviceListAsText(type) {
 def socketSend(message, networkId) {
     TRACE("socketSend(${message}, ${networkId})")
 
-	def hubAction = new physicalgraph.device.HubAction(message,
-   			physicalgraph.device.Protocol.LAN, networkId)
+    def hubAction = new physicalgraph.device.HubAction(message,
+            physicalgraph.device.Protocol.LAN, networkId)
 
-	TRACE("hubAction:\n${hubAction.getProperties()}")
-	sendHubCommand(hubAction)
+    TRACE("hubAction:\n${hubAction.getProperties()}")
+    sendHubCommand(hubAction)
 }
 
 // Returns device Network ID in 'AAAAAAAA:PPPP' format
-private String makeNetworkId(ipaddr, port) { 
-	TRACE("createNetworkId(${ipaddr}, ${port})")
+private String makeNetworkId(ipaddr, port) {
+    TRACE("createNetworkId(${ipaddr}, ${port})")
 
-	String hexIp = ipaddr.tokenize('.').collect {
-    	String.format('%02X', it.toInteger())
+    String hexIp = ipaddr.tokenize('.').collect {
+        String.format('%02X', it.toInteger())
     }.join()
 
-	String hexPort = String.format('%04X', port)
-	return "${hexIp}:${hexPort}"
+    String hexPort = String.format('%04X', port)
+    return "${hexIp}:${hexPort}"
 }
 
 private def x10HouseCodes() {
@@ -522,6 +633,9 @@ private def textCopyright() {
 
 private def TRACE(message) {
     log.debug message
+}
+
+private def STATE() {
     log.debug "state: ${state}"
     log.debug "settings: ${settings}"
 }

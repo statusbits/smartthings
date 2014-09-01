@@ -103,23 +103,39 @@ def parse(String message) {
 // switch.on() command handler
 def on() {
     TRACE("on()")
-	sendEvent(name:"switch", value:"on")
+
+    if (parent) {
+        parent.x10_on(this)
+    	sendEvent(name:"switch", value:"on")
+    }
 }
 
 // switch.off() command handler
 def off() {
     TRACE("off()")
-	sendEvent(name:"switch", value:"off")
+
+    if (parent) {
+        parent.x10_off(this)
+    	sendEvent(name:"switch", value:"off")
+    }
 }
 
 // Custom dim() command handler
 def dim() {
     TRACE("dim()")
+
+    if (parent) {
+        parent.x10_dim(this)
+    }
 }
 
 // Custom bright() command handler
 def bright() {
     TRACE("bright()")
+
+    if (parent) {
+        parent.x10_bright(this)
+    }
 }
 
 // refresh.refresh() command handler
