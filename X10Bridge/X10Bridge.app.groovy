@@ -55,6 +55,7 @@ preferences {
     page name:"setupActionRemove"
     page name:"setupListDevices"
     page name:"setupTestConnection"
+    page name:"setupActionTest"
 }
 
 private def setupInit() {
@@ -131,10 +132,6 @@ private def setupMenu() {
         return setupMochad()
     }
 
-    def textHelp =
-        "Select one of the actions below, then tap Done to complete " +
-        "setup."
-
     def pageProperties = [
         name        : "setupMenu",
         title       : "Setup Menu",
@@ -147,7 +144,6 @@ private def setupMenu() {
 
     return dynamicPage(pageProperties) {
         section {
-            paragraph textHelp
             href "setupMochad", title:"Configure Mochad Gateway", description:"Tap to open"
             href "setupAddSwitch", title:"Add X10 Switch", description:"Tap to open"
             if (state.devices.size() > 0) {
@@ -155,12 +151,15 @@ private def setupMenu() {
                 href "setupListDevices", title:"List Installed Devices", description:"Tap to open"
             }
         }
-        section("About") {
-            paragraph "${app.name}. ${textVersion()}\n${textCopyright()}"
+        section("Utilities") {
+            href "setupTestConnection", title:"Test Mochad Connection", description:"Tap to open"
         }
         section([title:"Options", mobileOnly:true]) {
             label title:"Assign a name", required:false
             //mode title:"Set for specific mode(s)", required:false
+        }
+        section("About") {
+            paragraph "${app.name}. ${textVersion()}\n${textCopyright()}"
         }
     }
 }
@@ -169,7 +168,7 @@ private def setupMenu() {
 private def setupMochad() {
     TRACE("setupMochad()")
 
-    def textHelp =
+    def textPara1 =
         "X10 Bridge communicates with X10 devices via Mochad TCP gateway " +
         "running on a Linux box. The Linux box must be connected to your " +
         "local network and assigned a static (or reserved) IP address, so " +
@@ -177,10 +176,17 @@ private def setupMochad() {
         "Enter IP address and TCP port of your Mochad gateway, then tap " +
         "Done to continue."
 
+    def textPara2 =
+        "Mochad works with two types of X10 controllers - CM15A and CM19A. " +
+        "CM15A can transmit X10 commands using both power line (PL) and " +
+        "radio frequency (RF) protocols, while CM19A can only transmit X10 " +
+        "commands using RF protocol and requires an RF-to-PL adapter, for " +
+        "example TM751 or RR501." 
+
     def inputIpAddress = [
         name        : "mochadIpAddress",
         type        : "string",
-        title       :   "What is your gateway IP Address?"
+        title       : "What is your gateway IP Address?"
     ]
 
     def inputTcpPort = [
@@ -188,6 +194,14 @@ private def setupMochad() {
         type        : "number",
         title       : "What is your gateway TCP Port?",
         defaultValue: "1099"
+    ]
+
+    def inputProtocol = [
+        name        : "mochadProtocol",
+        type        : "enum",
+        title       : "What X10 protocol do you use?",
+        metadata    : [values:["PL", "RF"]],
+        defaultValue: "PL"
     ]
 
     def pageProperties = [
@@ -200,30 +214,35 @@ private def setupMochad() {
 
     return dynamicPage(pageProperties) {
         section {
-            paragraph textHelp
+            paragraph textPara1
             input inputIpAddress
             input inputTcpPort
-            href "setupTestConnection", title:"Test Gateway Connection", description:"Tap to start"
+        }
+        section("Choose X10 Protocol") {
+            paragraph textPara2
+            input inputProtocol
         }
     }
 }
 
-// Show "Test Mochad Connection" setup page
+// Show "Mochad Connection Test" setup page
 private def setupTestConnection() {
     TRACE("setupTestConnection()")
 
-    def networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
-    //socketSend("test\r\n", networkId)
-    //socketSend("on k1\r\n", networkId)
-    socketSend("rf k1 on\r\n", networkId)
-
     def textHelp =
-        "Tap Done to continue."
+        "You can execute any Mochad command to verify that your hub can " +
+        "communicate with the gateway. Tap Next to continue."
+
+    def inputCommand = [
+        name        : "mochadCommand",
+        type        : "string",
+        title       : "Enter Mochad command"
+    ]
 
     def pageProperties = [
         name        : "setupTestConnection",
-        title       : "Mochad Connection Test",
-        nextPage    : "setupMochad",
+        title       : "Test Mochad Connection",
+        nextPage    : "setupActionTest",
         install     : false,
         uninstall   : state.installed
     ]
@@ -231,6 +250,32 @@ private def setupTestConnection() {
     return dynamicPage(pageProperties) {
         section {
             paragraph textHelp
+            input inputCommand
+        }
+    }
+}
+
+// Execute Mochad connection test
+private def setupActionTest() {
+    TRACE("setupActionTest()")
+
+    def pageProperties = [
+        name        : "setupActionTest",
+        title       : "Mochad Connection Test",
+        nextPage    : "setupMenu",
+        install     : false,
+        uninstall   : state.installed
+    ]
+
+    if (settings.mochadCommand) {
+        def networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
+        socketSend("${settings.mochadCommand}\r\n", networkId)
+    }
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph "Executing Mochad command:\n  ${settings.mochadCommand}"
+            paragraph "Tap Done to continue."
         }
     }
 }
@@ -510,7 +555,7 @@ private def initialize() {
 private def addSwitch(addr) {
     TRACE("addSwitch(${addr})")
 
-    def dni = "X10:${addr}"
+    def dni = "X10:${addr}".toUpperCase()
     if (getChildDevice(dni)) {
         log.error "Child device ${dni} already exist"
         return false
@@ -565,6 +610,12 @@ private def updateDeviceList() {
             state.devices.remove(k)
         }
     }
+
+    // refresh all devices
+    def devices = getChildDevices()
+    devices?.each {
+        it.refresh()
+    }
 }
 
 private def getDeviceMap() {
@@ -593,7 +644,11 @@ private def getDeviceListAsText(type) {
     return s
 }
 
-def socketSend(message, networkId) {
+private def mochadComand() {
+
+}
+
+private def socketSend(message, networkId) {
     TRACE("socketSend(${message}, ${networkId})")
 
     def hubAction = new physicalgraph.device.HubAction(message,
