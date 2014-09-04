@@ -421,19 +421,15 @@ def uninstalled() {
 def onLocation(evt) {
     TRACE("onLocation(${evt})")
 
-    if (evt.description == 'ping') {
-        // ignore ping event
-        return
-    }
-
     if (evt.eventSource == 'HUB') {
+        if (evt.description == 'ping') {
+            // ignore ping event
+            return
+        }
+
         // Parse Hub event
         def hubEvent = stringToMap(evt.description)
         log.debug "hubEvent: ${hubEvent}"
-
-        // Add Hub ID to the parsed event
-        //hubEvent.hubId = evt.hubId
-        //parseLanResponse(hubEvent)
     }
 }
 
@@ -441,9 +437,6 @@ def onLocation(evt) {
 def onAppTouch(evt) {
     TRACE("onAppTouch(${evt})")
     STATE()
-
-	// test
-	x10_on(null)
 }
 
 // Excecute X10 'on' command on behalf of child device
@@ -506,11 +499,11 @@ private def initialize() {
     state.networkId = makeNetworkId(settings.mochadIpAddress, settings.mochadTcpPort)
     updateDeviceList()
 
-    // subscribe to attributes, devices, locations, etc.
-    subscribe(app, onAppTouch)
-
     // Subscribe to location events with filter disabled
     subscribe(location, null, onLocation, [filterEvents:false])
+
+    // for debugging
+    //subscribe(app, onAppTouch)
 }
 
 private def addSwitch(addr) {
@@ -532,6 +525,7 @@ private def addSwitch(addr) {
     log.trace "Creating child device ${devParams}"
     try {
         def dev = addChildDevice("statusbits", devFile, dni, null, devParams)
+        dev.refresh()
     } catch (e) {
         log.error "Cannot create child device. Error: ${e}"
         return false
@@ -591,10 +585,6 @@ private def getDeviceListAsText(type) {
     return s
 }
 
-private def mochadComand() {
-
-}
-
 private def socketSend(message, networkId) {
     TRACE("socketSend(${message}, ${networkId})")
 
@@ -626,11 +616,11 @@ private def x10UnitCodes() {
 }
 
 private def textVersion() {
-    def text = "Version 0.9.0"
+    return "Version 0.9.0"
 }
 
 private def textCopyright() {
-    def text = "Copyright (c) 2014 Statusbits.com"
+    return "Copyright (c) 2014 Statusbits.com"
 }
 
 private def TRACE(message) {
