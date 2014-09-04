@@ -28,9 +28,9 @@ definition(
     namespace: "statusbits",
     author: "geko@statusbits.com",
     description: "Multi-Zone Virtual Alarm Panel",
-    category: "My Apps",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png"
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-IsItSafe.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-IsItSafe@2x.png"
 )
 
 preferences {
@@ -518,7 +518,7 @@ private def panelStatus()
 {
     TRACE("panelStatus()")
 
-    def msg = "${location.name} alarm "
+    def msg = "SmartAlarm "
     if (state.armed) {
         def mode = state.stay ? "Stay" : "Away"
         msg += "armed '${mode}'."
@@ -535,10 +535,9 @@ private def panelStatus()
         } else {
             msg += "disarmed"
         }
-
     }
-
-    notify(msg)
+    sendNotificationEvent(msg)
+//    notify(msg)
 }
 
 private def panelPanic()
@@ -791,7 +790,7 @@ private def notify(msg)
 }
 
 private def textVersion() {
-    def text = "Version 1.0.1"
+    def text = "Version 1.0.1BAB"
 }
 
 private def textCopyright() {
