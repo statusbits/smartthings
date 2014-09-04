@@ -105,7 +105,7 @@ def on() {
     TRACE("on()")
 
     if (parent) {
-        parent.x10_on(this)
+        parent.x10_on(device.deviceNetworkId)
     	sendEvent(name:"switch", value:"on")
     }
 }
@@ -115,7 +115,7 @@ def off() {
     TRACE("off()")
 
     if (parent) {
-        parent.x10_off(this)
+        parent.x10_off(device.deviceNetworkId)
     	sendEvent(name:"switch", value:"off")
     }
 }
@@ -125,7 +125,7 @@ def dim() {
     TRACE("dim()")
 
     if (parent) {
-        parent.x10_dim(this)
+        parent.x10_dim(device.deviceNetworkId)
     }
 }
 
@@ -134,7 +134,7 @@ def bright() {
     TRACE("bright()")
 
     if (parent) {
-        parent.x10_bright(this)
+        parent.x10_bright(device.deviceNetworkId)
     }
 }
 
@@ -143,7 +143,7 @@ def refresh() {
     TRACE("refresh()")
 
     // update device network ID
-    sendEvent(name: "networkId", value: device.deviceNetworkId)
+    sendEvent(name:"networkId", value:device.deviceNetworkId)
 
     STATE()
 }

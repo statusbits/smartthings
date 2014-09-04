@@ -421,6 +421,11 @@ def uninstalled() {
 def onLocation(evt) {
     TRACE("onLocation(${evt})")
 
+    if (evt.description == 'ping') {
+        // ignore ping event
+        return
+    }
+
     if (evt.eventSource == 'HUB') {
         // Parse Hub event
         def hubEvent = stringToMap(evt.description)
@@ -442,35 +447,55 @@ def onAppTouch(evt) {
 }
 
 // Excecute X10 'on' command on behalf of child device
-def x10_on(device) {
-    TRACE("x10_on(${device})")
+def x10_on(nid) {
+    TRACE("x10_on(${nid})")
 
-	def addr = 'k1'
-    socketSend("rf ${addr} on\r\n", state.networkId)
+    def s = nid?.tokenize(':')
+    if (s.size < 2 || s[0].toUpperCase() != 'X10') {
+        log.debug "Invalid device network ID ${nid}"
+        return
+    }
+
+    socketSend("${settings.mochadProtocol} ${s[1]} on\r\n", state.networkId)
 }
 
 // Excecute X10 'off' command on behalf of child device
-def x10_off(device) {
-	TRACE("x10_off(${device})")
+def x10_off(nid) {
+	TRACE("x10_off(${nid})")
 
-	def addr = 'k1'
-    socketSend("rf ${addr} off\r\n", state.networkId)
+    def s = nid?.tokenize(':')
+    if (s.size < 2 || s[0].toUpperCase() != 'X10') {
+        log.debug "Invalid device network ID ${nid}"
+        return
+    }
+
+    socketSend("${settings.mochadProtocol} ${s[1]} off\r\n", state.networkId)
 }
 
 // Excecute X10 'dim' command on behalf of child device
-def x10_dim(device) {
-	TRACE("x10_dim(${device})")
+def x10_dim(nid) {
+	TRACE("x10_dim(${nid})")
 
-	def addr = 'k1'
-    socketSend("rf ${addr} dim\r\n", state.networkId)
+    def s = nid?.tokenize(':')
+    if (s.size < 2 || s[0].toUpperCase() != 'X10') {
+        log.debug "Invalid device network ID ${nid}"
+        return
+    }
+
+    socketSend("${settings.mochadProtocol} ${s[1]} dim\r\n", state.networkId)
 }
 
 // Excecute X10 'bright' command on behalf of child device
-def x10_bright(device) {
-	TRACE("x10_bright(${device})")
+def x10_bright(nid) {
+	TRACE("x10_bright(${nid})")
 
-	def addr = 'k1'
-    socketSend("rf ${addr} bright\r\n", state.networkId)
+    def s = nid?.tokenize(':')
+    if (s.size < 2 || s[0].toUpperCase() != 'X10') {
+        log.debug "Invalid device network ID ${nid}"
+        return
+    }
+
+    socketSend("${settings.mochadProtocol} ${s[1]} bright\r\n", state.networkId)
 }
 
 private def initialize() {
