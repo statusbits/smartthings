@@ -51,8 +51,6 @@ preferences {
     page name:"setupMochad"
     page name:"setupAddSwitch"
     page name:"setupActionAdd"
-    page name:"setupRemoveDevice"
-    page name:"setupActionRemove"
     page name:"setupListDevices"
     page name:"setupTestConnection"
     page name:"setupActionTest"
@@ -147,7 +145,6 @@ private def setupMenu() {
             href "setupMochad", title:"Configure Mochad Gateway", description:"Tap to open"
             href "setupAddSwitch", title:"Add X10 Switch", description:"Tap to open"
             if (state.devices.size() > 0) {
-                href "setupRemoveDevice", title:"Remove Devices", description:"Tap to open"
                 href "setupListDevices", title:"List Installed Devices", description:"Tap to open"
             }
         }
@@ -235,8 +232,9 @@ private def setupTestConnection() {
 
     def inputCommand = [
         name        : "mochadCommand",
-        type        : "string",
-        title       : "Enter Mochad command"
+        type        : "text",
+        title       : "Enter Mochad command",
+        autoCorrect : false
     ]
 
     def pageProperties = [
@@ -354,68 +352,6 @@ private def setupActionAdd() {
             addSwitch(devAddr)
             break;
         }
-    }
-
-    return setupMenu()
-}
-
-// Show "Remove Device" setup page
-private def setupRemoveDevice() {
-    TRACE("setupRemoveDevice()")
-
-    def textHelp =
-        "Select device you wish to remove, then tap Next to continue."
-
-    def textNoDevices =
-        "You have not configured any X10 devices yet. Tap Done to continue."
-
-    def pageProperties = [
-        name        : "setupRemoveDevice",
-        title       : "Remove Device",
-        nextPage    : "setupActionRemove",
-        install     : false,
-        uninstall   : state.setup.installed
-    ]
-
-    if (state.devices.size() == 0) {
-        return dynamicPage(pageProperties) {
-            section {
-                paragraph textNoDevices
-            }
-        }
-    }
-
-    def deviceList = []
-    state.devices.each { k,v ->
-        def dev = getChildDevice(v.dni)
-        if (dev) {
-            deviceList << "${k} - ${dev.displayName}"
-        }
-    }
-
-    def inputDevice = [
-        name        : "setupDevRemove",
-        type        : "enum",
-        title       : "Select Devices",
-        metadata    : [values:deviceList.sort()],
-        required    : false
-    ]
-
-    return dynamicPage(pageProperties) {
-        section {
-            paragraph textHelp
-            input "setupDevRemove", "enum", title:"Select Devices",
-                metadata:[values:deviceList.sort()], required:false
-        }
-    }
-}
-
-private def setupActionRemove() {
-    TRACE("setupActionRemove()")
-
-    if (settings.setupDevRemove) {
-        def parts = settings.setupDevRemove.tokenize()
-        removeDevice(parts[0])
     }
 
     return setupMenu()
@@ -584,20 +520,6 @@ private def addSwitch(addr) {
 
     STATE()
     return true
-}
-
-private def removeDevice(addr) {
-    TRACE("removeDevice(${addr})")
-
-    def dni = state.devices[addr].dni
-    log.debug "Removing child device ${dni}"
-
-    try {
-        deleteChildDevice(dni)
-        state.devices.remove(addr)
-    } catch (e) {
-        log.error "Cannot delete device ${dni}. Error: ${e}"
-    }
 }
 
 // Purge devices that were removed manually
