@@ -6,7 +6,7 @@ X10 Bridge
 switches and dimmers with the [SmartThings](http://fbuy.me/bb9pe) home
 automation system.
 
-Click here to watch [YouTube demo video](http://youtu.be/laCar-03Jq4).
+Click here to watch the [demo video](http://youtu.be/laCar-03Jq4).
 
 ![Screenshot](http://statusbits.github.io/images/X10Bridge-01.jpg)
 
