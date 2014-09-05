@@ -75,29 +75,25 @@ Now you can plug either CM15A or CM19A X10 interface into a USB port and
 mochad will launch automatically.
 
 For more information, please refer to mochad
-[README](http://sourceforge.net/p/mochad/code/ci/master/tree/)
+[README](http://sourceforge.net/p/mochad/code/ci/master/tree/).
 
 **2. Installing X10 Switch Device Type Handler**
 
 Before you install the **X10 Bridge** smart app, you'll need to install the
 **X10 Switch** device type handler.
 
-Installing **X10 Bridge** smart app is available in the "My Apps" section of the Shared
-Smart Apps in [SmartThings IDE](https://graph.api.smartthings.com).
-
 1. Open [SmartThings IDE](https://graph.api.smartthings.com) in your web
 browser and log into your account.
 2. Click on the "My Device Types" section in the navigation bar (or open
-[device page](https://graph.api.smartthings.com/ide/devices) directly.
-3. On the "<Your Name>'s Device Types" page, click on the "+ New SmartDevice"
+[device page](https://graph.api.smartthings.com/ide/devices) directly).
+3. On the "\<Your Name\>'s Device Types" page, click on the "+ New SmartDevice"
 button on the right.
-4. On the "New SmartDevice" page, fill out the mandatory "Name" field. Note
-that it does not matter what you type in the name field since it will be
-overwritten in the next step anyway. Click the blue "Create" button at the
-bottom of the page. An IDE editor window containing device handler template
-should now open.
+4. On the "New SmartDevice" page, fill out the mandatory "Name" field. It does
+not matter what you type in the name field since it will be overwritten in the
+next step anyway. Click the blue "Create" button at the bottom of the page. An
+IDE editor window containing device handler template should now open.
 5. In another browser window, go to the **X10 Switch**
-[source code](ttps://github.com/statusbits/smartthings/blob/master/X10Bridge/X10_Switch.device.groovy)
+[source code](https://github.com/statusbits/smartthings/blob/master/X10Bridge/X10_Switch.device.groovy)
 on GitHub.
 6. Copy the **X10 Switch** source code from GitHub and paste it into the
 IDE editor window (see Step 4). Make sure you completely *overwrite*
