@@ -1,12 +1,12 @@
 /**
  *  X10 Bridge.
  *
- *  This SmartApp allows integration of X10 switches and dimmers with
- *  SmartThings. Please note that it requires a Linux host with Mochad server
- *  installed on the local network and accessible from the SmartThings hub.
- *  Mochad is a free, open-source X10 gateway software for Linux. Please
- *  visit https://github.com/statusbits/smartthings/blob/master/X10Bridge
- *  for more information.
+ *  This SmartApp allows integration of X10 appliance modules, lamp modules,
+ *  switches and dimmers with SmartThings. It uses an open-source Mochad
+ *  TCP Gateway running on a Linux computer and either CM15A or CM19A X10
+ *  interface module to communicate with the X10 devices. Please visit
+ *  https://github.com/statusbits/smartthings/blob/master/X10Bridge for more
+ *  information.
  *
  *  Copyright (c) 2014 geko@statusbits.com
  *
@@ -32,14 +32,15 @@
  *
  *  Revision History
  *  ----------------
- *  2014-08-18  V0.9.0  Initial check-in
+ *  2014-09-05  V1.0.0  Released into SmartThings community.
+ *  2014-08-18  V0.9.0  Initial check-in.
  */
 
 definition(
     name: "X10 Bridge",
     namespace: "statusbits",
     author: "geko@statusbits.com",
-    description: "Connect X10 switches and dimmers to SmartThings. Requires Mochad server.",
+    description: "Connect X10 switches and dimmers to SmartThings. Requires Mochad TCP gateway.",
     category: "My Apps",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
@@ -168,19 +169,20 @@ private def setupMochad() {
     TRACE("setupMochad()")
 
     def textPara1 =
-        "X10 Bridge communicates with X10 devices via Mochad TCP gateway " +
-        "running on a Linux box. The Linux box must be connected to your " +
-        "local network and assigned a static (or reserved) IP address, so " +
-        "it does not change when the Linux box is rebooted.\n\n" +
+        "X10 Bridge uses Mochad TCP gateway running on a Linux computer to " +
+        "communicate with X10 devices. The gateway computer must be " +
+        "connected to your local network and assigned a static (or " +
+        "reserved) IP address, so it does not change when the computer is " +
+        "rebooted.\n\n" +
         "Enter IP address and TCP port of your Mochad gateway, then tap " +
         "Done to continue."
 
     def textPara2 =
-        "Mochad works with two types of X10 controllers - CM15A and CM19A. " +
+        "Mochad works with two types of X10 interfaces - CM15A and CM19A. " +
         "CM15A can transmit X10 commands using both power line (PL) and " +
         "radio frequency (RF) protocols, while CM19A can only transmit X10 " +
-        "commands using RF protocol and requires an RF-to-PL adapter, for " +
-        "example TM751 or RR501." 
+        "commands using RF protocol and requires either TM751 or RR501 X10 " +
+        "transceiver."
 
     def inputIpAddress = [
         name        : "mochadIpAddress",
@@ -618,7 +620,7 @@ private def x10UnitCodes() {
 }
 
 private def textVersion() {
-    return "Version 0.9.0"
+    return "Version 1.0.0"
 }
 
 private def textCopyright() {
@@ -626,10 +628,10 @@ private def textCopyright() {
 }
 
 private def TRACE(message) {
-    log.debug message
+    //log.debug message
 }
 
 private def STATE() {
-    log.debug "state: ${state}"
-    log.debug "settings: ${settings}"
+    //log.debug "state: ${state}"
+    //log.debug "settings: ${settings}"
 }

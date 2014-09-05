@@ -25,7 +25,8 @@
  *
  *  Revision History
  *  ----------------
- *  2014-08-30  V0.9.0  Initial check-in
+ *  2014-09-05  V1.0.0  Released into SmartThings community.
+ *  2014-08-30  V0.9.0  Initial check-in.
  */
 
 metadata {
@@ -150,10 +151,10 @@ def refresh() {
 }
 
 private def TRACE(message) {
-    log.debug message
+    //log.debug message
 }
 
 private def STATE() {
-    log.debug "switch is ${device.currentValue("switch")}"
-    log.debug "deviceNetworkId: ${device.deviceNetworkId}"
+    //log.debug "switch is ${device.currentValue("switch")}"
+    //log.debug "deviceNetworkId: ${device.deviceNetworkId}"
 }
