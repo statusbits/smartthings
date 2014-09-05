@@ -681,6 +681,7 @@ private def onAlarm(n, evt)
         if (zone.alert || !state.entryDelay) {
             activateAlarm()
         } else {
+            unschedule(activateAlarm)  //Added to fix issue with RunIn() not executing
             runIn(state.entryDelay, activateAlarm)
         }
     }
@@ -734,6 +735,7 @@ def onLocation(evt)
     state.stay = newStay
     if (newArmed) {
         if (state.exitDelay) {
+            unschedule(panelReset)  //Added to fix issue with RunIn() not executing
             runIn(state.exitDelay, panelReset)
         } else {
             panelReset()
@@ -769,6 +771,7 @@ def activateAlarm()
     notify(msg)
 
     // Reset panel in 3 minutes
+    unschedule(panelReset)  //Added to fix issue with RunIn() not executing
     runIn(180, panelReset)
 }
 
