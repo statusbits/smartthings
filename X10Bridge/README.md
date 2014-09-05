@@ -132,6 +132,22 @@ menu ribbon. Tap it and follow setup instructions. Please note, that if the
 your SmartThings account and then restart your SmartThings mobile app.
 
 
+Known Issues
+------------
+
+1. Currently, **X10 Bridge** allows *only* transmitting X10 commands.
+Therefore, it has no way of knowing the actual state of the X10 devices.
+For example, if the X10 switch, appliance module or a lamp module is turned on
+or off either manually or by other means (e.g. using remote control), the
+device state in the SmartThings will not be updated.
+
+2. **X10 Bridge** uses *raw TCP socket* connection to communicate with mochad
+TCP gateway. Raw TCP sockets are not officially supported by SmartThings
+and therefore may not work reliably. Therefore, this smart app should be
+considered *experimental* and should not be used for any critical tasks.
+You have been warned.
+
+
 License
 -------
 
