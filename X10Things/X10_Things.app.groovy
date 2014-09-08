@@ -51,7 +51,7 @@ definition(
 preferences {
     page name:"setupInit"
     page name:"setupMenu"
-    page name:"setupRemoteButton"
+    page name:"setupSceneButton"
     page name:"setupActiveEye"
     page name:"setupAddDevice"
     page name:"setupListDevices"
@@ -152,9 +152,9 @@ private def setupMenu() {
 
     return dynamicPage(pageProperties) {
         section {
-            href "setupRemoteButton", title:"Add Remote Control Button", description:"Tap to open"
+            href "setupSceneButton", title:"Add Scene Button", description:"Tap to open"
             href "setupActiveEye", title:"Add ActiveEye Motion Sensor", description:"Tap to open"
-            if (state.devices?.size) {
+            if (state.devices?.size()) {
                 href "setupListDevices", title:"List Installed Devices", description:"Tap to open"
             }
         }
@@ -171,19 +171,38 @@ private def setupMenu() {
     }
 }
 
-// Show "Add Remote Control Button" setup page
-private def setupRemoteButton() {
-    TRACE("setupRemoteButton()")
+// Show "Add Scene Button" setup page
+private def setupSceneButton() {
+    TRACE("setupSceneButton()")
 
-    def textHelpName =
-        "Give your X10 switch a descriptive name, for example 'Kitchen " +
-        "Lights'."
+    def textAbout =
+        "You can use X10 remote control buttons to activate SmartThings " +
+        "'Hello, Home' actions (scenes). Two different scenes can be " +
+        "assigned to each pair of the 'On' and 'Off' buttons."
 
     def textHelpAddr =
-        "Each X10 device is assigned an address, consisting of two parts - " +
-        "a House Code (letters A through P) and a Unit Code (numbers 1 " +
-        "through 16), for example 'D12'. Please check your device and " +
-        "enter its X10 device address below."
+        "Each pair of the 'On' and 'Off' buttons on a remote control is " +
+        "identified by its X10 address, consisting of two parts - a House " +
+        "Code (letters A through P) and a Unit Code (numbers 1 through 16), " +
+        "for example 'B10'. Please enter the button's X10 address below."
+
+    def scenes = ["none"] + getScenes()
+
+    def inputSceneOn = [
+        name        : "setupSceneOn",
+        type        : "enum",
+        title       : "When 'On' button is pushed",
+        metadata    : [values:scenes],
+        required    : false
+    ]
+
+    def inputSceneOff = [
+        name        : "setupSceneOff",
+        type        : "enum",
+        title       : "When 'Off' button is pushed",
+        metadata    : [values:scenes],
+        required    : false
+    ]
 
     def inputDeviceName = [
         name        : "setupSwitchName",
@@ -210,8 +229,8 @@ private def setupRemoteButton() {
     ]
 
     def pageProperties = [
-        name        : "setupRemoteButton",
-        title       : "Add Remote Control Button",
+        name        : "setupSceneButton",
+        title       : "Add Scene Button",
         nextPage    : "setupAddDevice",
         install     : false,
         uninstall   : state.setup.installed
@@ -222,13 +241,16 @@ private def setupRemoteButton() {
 
     return dynamicPage(pageProperties) {
         section {
-            paragraph textHelpName
-            input inputDeviceName
+            paragraph textAbout
         }
         section("X10 Address") {
             paragraph textHelpAddr
             input inputHouseCode
             input inputUnitCode
+        }
+        section("Activate 'Hello, Home' action ...") {
+            input inputSceneOn
+            input inputSceneOff
         }
     }
 }
@@ -327,18 +349,18 @@ private def setupListDevices() {
         }
     }
 
-    def button = getDeviceListAsText('button')
+    def buttons = getButtonListAsText()
     def motionSensors = getDeviceListAsText('motionSensor')
     return dynamicPage(pageProperties) {
         section {
             paragraph "Tap Done to continue."
         }
-        if (buttons.size) {
+        if (buttons.size()) {
             section("Remote Control Buttons") {
-                paragraph switches
+                paragraph buttons
             }
         }
-        if (motionSensors.size) {
+        if (motionSensors.size()) {
             section("ActiveEye Motion Sensors") {
                 paragraph motionSensors
             }
@@ -428,7 +450,7 @@ def x10_on(nid) {
     TRACE("x10_on(${nid})")
 
     def s = nid?.tokenize(':')
-    if (s.size < 2 || s[0].toUpperCase() != 'X10') {
+    if (s.size() < 2 || s[0].toUpperCase() != 'X10') {
         log.debug "Invalid device network ID ${nid}"
         return
     }
@@ -439,7 +461,7 @@ def x10_off(nid) {
     TRACE("x10_off(${nid})")
 
     def s = nid?.tokenize(':')
-    if (s.size < 2 || s[0].toUpperCase() != 'X10') {
+    if (s.size() < 2 || s[0].toUpperCase() != 'X10') {
         log.debug "Invalid device network ID ${nid}"
         return
     }
@@ -450,7 +472,7 @@ def x10_dim(nid) {
     TRACE("x10_dim(${nid})")
 
     def s = nid?.tokenize(':')
-    if (s.size < 2 || s[0].toUpperCase() != 'X10') {
+    if (s.size() < 2 || s[0].toUpperCase() != 'X10') {
         log.debug "Invalid device network ID ${nid}"
         return
     }
@@ -461,7 +483,7 @@ def x10_bright(nid) {
     TRACE("x10_bright(${nid})")
 
     def s = nid?.tokenize(':')
-    if (s.size < 2 || s[0].toUpperCase() != 'X10') {
+    if (s.size() < 2 || s[0].toUpperCase() != 'X10') {
         log.debug "Invalid device network ID ${nid}"
         return
     }
@@ -489,9 +511,11 @@ private def addButton(houseCode, unitCode) {
     }
 
     // save device in the app state
-    //state.devices[addr] = [
-    //    'type'    : 'button',
-    //]
+    state.devices[addr] = [
+        'type'    : 'button',
+        'sceneOn' : settings.setupSceneOn,
+        'sceneOff': settings.setupSceneOff,
+    ]
 
     STATE()
     return true
@@ -552,6 +576,15 @@ private def addActiveEye(houseCode, unitCode) {
     return true
 }
 
+private def getScenes() {
+    def scenes = []
+    location.helloHome?.getPhrases().each {
+        scenes << "${it.label}"
+    }
+
+    return scenes
+}
+
 // Purge devices that were removed manually
 private def updateDeviceList() {
     TRACE("updateDeviceList()")
@@ -595,6 +628,22 @@ private def getDeviceListAsText(type) {
                 }
             } else {
                 s += "${k}\n"
+            }
+        }
+    }
+
+    return s
+}
+
+private def getButtonListAsText() {
+    String s = ""
+    state.devices.each { k,v ->
+        if (v.type == 'button') {
+            if (v.sceneOn) {
+                s += "${k} 'On' - ${v.sceneOn}\n"
+            }
+            if (v.sceneOff) {
+                s += "${k} 'Off' - ${v.sceneOff}\n"
             }
         }
     }
