@@ -2,10 +2,10 @@
  *  X10 Things.
  *
  *  This smart app allows connecting X10 remote controls and ActiveEye motion
- *  sensors to SmartThings. Please note that SmartThings hub is not required
- *  to connect X10 devices. Instead, X10 Things smart app requires an X10
- *  receiver (for example MR26A) and an X10 Gateway to send X10 commands
- *  directly to SmartThings over the Internet.
+ *  sensors to SmartThings. Please note that you don't need SmartThings hub to
+ *  connect X10 devices. Instead, you will need an X10 receiver (for example
+ *  MR26A) and an X10 Gateway to send X10 commands directly to SmartThings
+ *  over the Internet.
  *
  *  Please visit <https://github.com/statusbits/smartthings/blob/master/X10Things>
  *  for more information.
@@ -51,10 +51,10 @@ definition(
 preferences {
     page name:"setupInit"
     page name:"setupMenu"
-    page name:"setupSceneButton"
+    page name:"setupRemoteControl"
     page name:"setupActiveEye"
     page name:"setupAddDevice"
-    page name:"setupListDevices"
+    page name:"setupShowDevices"
     page name:"setupRestEndpoint"
 }
 
@@ -75,14 +75,13 @@ mappings {
 private def setupInit() {
     TRACE("setupInit()")
 
-    if (state.setup) {
+    if (state.installed) {
         // already initialized, go to setup menu
         return setupMenu()
     }
 
     // initialize app state and show welcome page
-    state.setup = [:]
-    state.setup.installed = false
+    state.installed = false
     state.devices = [:]
     return setupWelcome()
 }
@@ -93,11 +92,10 @@ private def setupWelcome() {
 
     def textPara1 =
         "This smart app allows connecting X10 remote controls and " +
-        "ActiveEye motion sensors to SmartThings. Please note that " +
-        "SmartThings hub is not required to connect X10 devices. Instead, " +
-        "X10 Things smart app requires an X10 receiver (for example MR26A) " +
-        "and an X10 Gateway to send X10 commands directly to SmartThings " +
-        "over the Internet."
+        "ActiveEye motion sensors to SmartThings. Please note that you " +
+        "don't need SmartThings hub to connect X10 devices. Instead, you " +
+        "will need an X10 receiver (for example MR26A) and an X10 Gateway " +
+        "to send X10 commands directly to SmartThings over the Internet."
 
     def textPara2 = "${app.name}. ${textVersion()}\n${textCopyright()}"
 
@@ -123,7 +121,7 @@ private def setupWelcome() {
         title       : "Welcome!",
         nextPage    : "setupMenu",
         install     : false,
-        uninstall   : state.setup.installed
+        uninstall   : state.installed
     ]
 
     return dynamicPage(pageProperties) {
@@ -147,15 +145,15 @@ private def setupMenu() {
         title       : "Setup Menu",
         nextPage    : null,
         install     : true,
-        uninstall   : state.setup.installed
+        uninstall   : state.installed
     ]
 
     return dynamicPage(pageProperties) {
         section {
-            href "setupSceneButton", title:"Add Scene Button", description:"Tap to open"
+            href "setupRemoteControl", title:"Configure Remote Control", description:"Tap to open"
             href "setupActiveEye", title:"Add ActiveEye Motion Sensor", description:"Tap to open"
             if (state.devices?.size()) {
-                href "setupListDevices", title:"List Installed Devices", description:"Tap to open"
+                href "setupShowDevices", title:"Show Installed Devices", description:"Tap to open"
             }
         }
         section("Utilities") {
@@ -171,86 +169,50 @@ private def setupMenu() {
     }
 }
 
-// Show "Add Scene Button" setup page
-private def setupSceneButton() {
-    TRACE("setupSceneButton()")
+// Show "Configure Remote Control" setup page
+private def setupRemoteControl() {
+    TRACE("setupRemoteControl()")
 
     def textAbout =
-        "You can use X10 remote control buttons to activate SmartThings " +
-        "'Hello, Home' actions (scenes). Two different scenes can be " +
-        "assigned to each pair of the 'On' and 'Off' buttons."
+        "You can use X10 remote control to turn SmartThings switches on " +
+        "and off and/or to activate 'Hello, Home' actions. Two different " +
+        "actions can be assigned to each pair of the 'On' and 'Off' buttons."
 
-    def textHelpAddr =
-        "Each pair of the 'On' and 'Off' buttons on a remote control is " +
-        "identified by its X10 address, consisting of two parts - a House " +
-        "Code (letters A through P) and a Unit Code (numbers 1 through 16), " +
-        "for example 'B10'. Please enter the button's X10 address below."
-
-    def scenes = ["none"] + getScenes()
-
-    def inputSceneOn = [
-        name        : "setupSceneOn",
-        type        : "enum",
-        title       : "When 'On' button is pushed",
-        metadata    : [values:scenes],
-        required    : false
-    ]
-
-    def inputSceneOff = [
-        name        : "setupSceneOff",
-        type        : "enum",
-        title       : "When 'Off' button is pushed",
-        metadata    : [values:scenes],
-        required    : false
-    ]
-
-    def inputDeviceName = [
-        name        : "setupSwitchName",
-        type        : "string",
-        title       : "What is your switch name?",
-        required    : true,
-        defaultValue:"X10 Switch"
-    ]
+    def textHouseCode =
+        "X10 remote control transmits commands on one of the 16 channels, " +
+        "knows as 'House Codes' (letters 'A' through 'P'). Please select " +
+        "House Code assigned to your remote control below."
 
     def inputHouseCode = [
-        name        : "setupHouseCode",
+        name        : "remoteHouseCode",
         type        : "enum",
-        title       : "What is your device House Code?",
+        title       : "What is your House Code?",
         metadata    : [values:x10HouseCodes()],
-        required    : true
-    ]
-
-    def inputUnitCode = [
-        name        : "setupUnitCode",
-        type        : "enum",
-        title       : "What is your device Unit Code?",
-        metadata    : [values:x10UnitCodes()],
-        required    : true
+        required    : false
     ]
 
     def pageProperties = [
-        name        : "setupSceneButton",
-        title       : "Add Scene Button",
-        nextPage    : "setupAddDevice",
+        name        : "setupRemoteControl",
+        title       : "Configure Remote Control",
+        nextPage    : "setupMenu",
         install     : false,
-        uninstall   : state.setup.installed
+        uninstall   : state.installed
     ]
 
-    // Set new device type
-    state.setup.deviceType = "button"
+    def hhActions = getHHActions()
 
     return dynamicPage(pageProperties) {
         section {
             paragraph textAbout
-        }
-        section("X10 Address") {
-            paragraph textHelpAddr
+            paragraph textHouseCode
             input inputHouseCode
-            input inputUnitCode
         }
-        section("Activate 'Hello, Home' action ...") {
-            input inputSceneOn
-            input inputSceneOff
+        for (int n = 1; n <= 16; n++) {
+            section("Button ${n}", hideable:true, hidden:true) {
+                input "switches_${n}", "capability.switch", title:"Which switches?", multiple:true, required:false
+                input "actionOn_${n}", "enum", title:"Which action for 'On' button?", metadata:[values:hhActions], required:false
+                input "actionOff_${n}", "enum", title:"Which action for 'Off' button?", metadata:[values:hhActions], required:false
+            }
         }
     }
 }
@@ -259,31 +221,32 @@ private def setupSceneButton() {
 private def setupActiveEye() {
     TRACE("setupActiveEye()")
 
-    def textHelpAddr =
-        "Each X10 device is assigned an address, consisting of two parts - " +
-        "a House Code (letters A through P) and a Unit Code (numbers 1 " +
-        "through 16), for example 'D12'. Please check your device and " +
-        "enter its X10 device address below."
+    def textAddress =
+        "Each ActiveEye motion sensor is assigned an address, consisting " +
+        "of a House Code (letters 'A' - 'P') and a Unit Code (numbers 1 - " +
+        "16), for example 'D12'. Please select the X10 address assigned " +
+        "to your motion sensor below."
 
     def inputDeviceName = [
-        name        : "setupDeviceName",
+        name        : "motionDeviceName",
         type        : "string",
         title       : "What is your sensor name?",
+        defaultValue: "ActiveEye Motion Sensor",
         required    : true
     ]
 
     def inputHouseCode = [
-        name        : "setupHouseCode",
+        name        : "motionHouseCode",
         type        : "enum",
-        title       : "What is your device House Code?",
+        title       : "What is your House Code?",
         metadata    : [values:x10HouseCodes()],
         required    : true
     ]
 
     def inputUnitCode = [
-        name        : "setupUnitCode",
+        name        : "motionUnitCode",
         type        : "enum",
-        title       : "What is your device Unit Code?",
+        title       : "What is your Unit Code?",
         metadata    : [values:x10UnitCodes()],
         required    : true
     ]
@@ -293,17 +256,13 @@ private def setupActiveEye() {
         title:      "Add ActiveEye Motion Sensor",
         nextPage:   "setupAddDevice",
         install:    false,
-        uninstall:  state.setup.installed
+        uninstall:  state.installed
     ]
-
-    state.setup.deviceType = "activeEye"
 
     return dynamicPage(pageProperties) {
         section {
             input inputDeviceName
-        }
-        section("X10 Address") {
-            paragraph textHelpAddr
+            paragraph textAddress
             input inputHouseCode
             input inputUnitCode
         }
@@ -313,35 +272,27 @@ private def setupActiveEye() {
 private def setupAddDevice() {
     TRACE("setupAddDevice()")
 
-    switch (state.setup.deviceType) {
-    case "button":
-        addButton(settings.setupHouseCode, settings.setupUnitCode)
-        break
-
-    case "activeEye":
-        addActiveEye(settings.setupHouseCode, settings.setupUnitCode)
-        break
-    }
-
-    state.setup.deviceType = null
+    addActiveEye(settings.motionHouseCode, settings.motionUnitCode)
     return setupMenu()
 }
 
-private def setupListDevices() {
-    TRACE("setupListDevices()")
+// Show "Show Installed Devices" setup page
+private def setupShowDevices() {
+    TRACE("setupShowDevices()")
 
     def textNoDevices =
-        "You have not configured any X10 devices yet. Tap Done to continue."
+        "You have not configured any X10 devices. Tap Done to continue."
 
     def pageProperties = [
-        name        : "setupListDevices",
+        name        : "setupShowDevices",
         title       : "Installed Devices",
         nextPage    : "setupMenu",
         install     : false,
-        uninstall   : state.setup.installed
+        uninstall   : state.installed
     ]
 
-    if (state.devices.size() == 0) {
+    def devices = getDeviceMap()
+    if (devices.size() == 0) {
         return dynamicPage(pageProperties) {
             section {
                 paragraph textNoDevices
@@ -349,20 +300,14 @@ private def setupListDevices() {
         }
     }
 
-    def buttons = getButtonListAsText()
-    def motionSensors = getDeviceListAsText('motionSensor')
+    devices = devices.sort({ k1, k2 -> k1 <=> k2 } as Comparator)
     return dynamicPage(pageProperties) {
         section {
             paragraph "Tap Done to continue."
         }
-        if (buttons.size()) {
-            section("Remote Control Buttons") {
-                paragraph buttons
-            }
-        }
-        if (motionSensors.size()) {
-            section("ActiveEye Motion Sensors") {
-                paragraph motionSensors
+        section("ActiveEye Motion Sensors") {
+            devices.each { k,v ->
+                paragraph "${k} - ${v}"
             }
         }
     }
@@ -431,7 +376,6 @@ def uninstalled() {
 
 // Handle SmartApp touch event.
 def onAppTouch(evt) {
-    TRACE("onAppTouch(${evt})")
     STATE()
 }
 
@@ -493,59 +437,33 @@ private def initialize() {
     log.trace "${app.name}. ${textVersion()}. ${textCopyright()}"
     STATE()
 
-    state.setup.installed = true
+    state.installed = true
     getAccessToken()
     updateDeviceList()
 
     // for debugging
-    //subscribe(app, onAppTouch)
-}
-
-private def addButton(houseCode, unitCode) {
-    TRACE("addButton(${houseCode}, ${unitCode})")
-
-    String addr = houseCode + unitCode
-    if (state.devices.containsKey(addr)) {
-        log.error "X10 address ${addr} is in use"
-        return false
-    }
-
-    // save device in the app state
-    state.devices[addr] = [
-        'type'    : 'button',
-        'sceneOn' : settings.setupSceneOn,
-        'sceneOff': settings.setupSceneOff,
-    ]
-
-    STATE()
-    return true
+    subscribe(app, onAppTouch)
 }
 
 private def addActiveEye(houseCode, unitCode) {
     TRACE("addActiveEye(${houseCode}, ${unitCode})")
 
-    def addr = "${houseCode}${unitCode}"
-    if (state.devices.containsKey(addr)) {
-        log.error "X10 address ${addr} is in use"
-        return false
-    }
-
-    def dni = "X10:${addr}".toUpperCase()
-    if (getChildDevice(dni)) {
-        log.error "Child device ${dni} already exist"
+    def addr = "${houseCode}${unitCode}".toUpperCase()
+    if (getChildDevice(addr)) {
+        log.error "Child device ${addr} already exist"
         return false
     }
 
     def devFile = "X10 ActiveEye"
     def devParams = [
-        name            : settings.setupDeviceName,
-        label           : settings.setupDeviceName,
+        name            : settings.motionDeviceName,
+        label           : settings.motionDeviceName,
         completedSetup  : true
     ]
 
     log.trace "Creating child device ${devParams}"
     try {
-        def dev = addChildDevice("statusbits", devFile, dni, null, devParams)
+        def dev = addChildDevice("statusbits", devFile, addr, null, devParams)
         dev.refresh()
     } catch (e) {
         log.error "Cannot create child device. Error: ${e}"
@@ -553,21 +471,21 @@ private def addActiveEye(houseCode, unitCode) {
     }
 
     // save device in the app state
-    state.devices[addr1] = [
-        'type'      : 'motionSensor',
-        'dni'       : dni,
+    state.devices[addr] = [
+        'dni'   : addr,
+        'type'  : 'motion',
     ]
 
     // create device for the ActiveEye light sensor
     def unitCode2 = unitCode.toInteger() + 1
     if (unitCode2 <= 16) {
-        def addr2 = "${houseCode}${unitCode2}"
+        def addr2 = "${houseCode}${unitCode2}".toUpperCase()
         if (state.devices.containsKey(addr2)) {
             log.error "X10 address ${addr2} is in use"
         } else {
             state.devices[addr2] = [
-                'type'      : 'lightSensor',
-                'dni'       : dni,
+                'dni'   : addr,
+                'type'  : 'light',
             ]
         }
     }
@@ -576,7 +494,7 @@ private def addActiveEye(houseCode, unitCode) {
     return true
 }
 
-private def getScenes() {
+private def getHHActions() {
     def scenes = []
     location.helloHome?.getPhrases().each {
         scenes << "${it.label}"
@@ -590,11 +508,9 @@ private def updateDeviceList() {
     TRACE("updateDeviceList()")
 
     state.devices.each { k,v ->
-        if (v.containsKey('dni')) {
-            if (!getChildDevice(v.dni)) {
-                log.trace "Removing deleted device ${v.dni}"
-                state.devices.remove(k)
-            }
+        if (!getChildDevice(v.dni)) {
+            log.trace "Removing deleted device ${v.dni}"
+            state.devices.remove(k)
         }
     }
 
@@ -606,49 +522,13 @@ private def updateDeviceList() {
 }
 
 private def getDeviceMap() {
-    def devices = [:]
-    state.devices.each { k,v ->
-        if (!devices.containsKey(v.type)) {
-            devices[v.type] = []
-        }
-        devices[v.type] << k
+    def map = [:]
+    def devices = getChildDevices()
+    devices?.each {
+        map[it.deviceNetworkId] = it.displayName
     }
 
-    return devices
-}
-
-private def getDeviceListAsText(type) {
-    String s = ""
-    state.devices.each { k,v ->
-        if (v.type == type) {
-            if (v.containsKey('dni')) {
-                def dev = getChildDevice(v.dni)
-                if (dev) {
-                    s += "${k} - ${dev.displayName}\n"
-                }
-            } else {
-                s += "${k}\n"
-            }
-        }
-    }
-
-    return s
-}
-
-private def getButtonListAsText() {
-    String s = ""
-    state.devices.each { k,v ->
-        if (v.type == 'button') {
-            if (v.sceneOn) {
-                s += "${k} 'On' - ${v.sceneOn}\n"
-            }
-            if (v.sceneOff) {
-                s += "${k} 'Off' - ${v.sceneOff}\n"
-            }
-        }
-    }
-
-    return s
+    return map
 }
 
 private def getAccessToken() {
@@ -684,9 +564,10 @@ private def textCopyright() {
 
 private def TRACE(message) {
     log.debug message
+    log.debug "state: ${state}"
 }
 
 private def STATE() {
-    log.debug "state: ${state}"
     log.debug "settings: ${settings}"
+    log.debug "state: ${state}"
 }
