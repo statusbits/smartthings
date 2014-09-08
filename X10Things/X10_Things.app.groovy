@@ -61,13 +61,13 @@ preferences {
 mappings {
     path("/devices") {
         action: [
-            GET: "restListDevices"
+            GET: "apiListDevices"
         ]
     }
 
-    path("/device/:unit/:command") {
+    path("/command/:address/:command") {
         action: [
-            GET: "restCommand"
+            GET: "apiCommand"
         ]
     }
 }
@@ -379,58 +379,59 @@ def onAppTouch(evt) {
     STATE()
 }
 
-// '.../devices' REST endpoint handler
-def restListDevices() {
-    TRACE("restListDevices()\n params: ${params}")
+// Handle '.../devices' REST endpoint
+def apiListDevices() {
+    TRACE("apiListDevices()")
+
+    return getDeviceMap()
 }
 
-// '.../device/:unit/:command' REST endpoint handler
-def restCommand() {
-    TRACE("restCommand()\n params: ${params}")
-}
+// Handle '.../command/:address/:command' REST endpoint
+def apiCommand() {
+    TRACE("apiCommand()")
 
-// Excecute X10 'on' command on behalf of child device
-def x10_on(nid) {
-    TRACE("x10_on(${nid})")
-
-    def s = nid?.tokenize(':')
-    if (s.size() < 2 || s[0].toUpperCase() != 'X10') {
-        log.debug "Invalid device network ID ${nid}"
+	def addr = params.address?.toUpperCase()
+	def cmd = params.command?.toLowerCase()
+    if (!addr || !cmd) {
+        log.error "Invalid request: ${params}"
+        httpError(500, "Invalid request")
         return
     }
-}
 
-// Excecute X10 'off' command on behalf of child device
-def x10_off(nid) {
-    TRACE("x10_off(${nid})")
+    if (state.devices.containsKey(addr)) {
+        def dni = state.devices[addr].dni
+        def device = getChildDevice(dni)
+        if (!device) {
+            log.error "Child device \'${dni}\' not found!"
+            httpError(500, "Device \'${dni}\' not found!")
+            state.devices.remove(addr)
+            return
+        }
 
-    def s = nid?.tokenize(':')
-    if (s.size() < 2 || s[0].toUpperCase() != 'X10') {
-        log.debug "Invalid device network ID ${nid}"
-        return
+        def attr = state.devices[addr].type
+        def value = null
+        switch (attr) {
+        case "motion":
+            def motionValues = ['off':0, 'on':1]
+            value = motionValues[cmd]
+            break
+
+        case "light":
+            def lightValues = ['off':1, 'on':0]
+            value = lightValues[cmd]
+            break
+        }
+
+        if (value == null) {
+            log.debug "Command \'${cmd}\' ignored for device \'${dni}\'."
+            return
+        }
+
+        device.parse("${attr}:${value}")
+        return [device:device.displayName, attribute:attr, value:value]
     }
-}
 
-// Excecute X10 'dim' command on behalf of child device
-def x10_dim(nid) {
-    TRACE("x10_dim(${nid})")
-
-    def s = nid?.tokenize(':')
-    if (s.size() < 2 || s[0].toUpperCase() != 'X10') {
-        log.debug "Invalid device network ID ${nid}"
-        return
-    }
-}
-
-// Excecute X10 'bright' command on behalf of child device
-def x10_bright(nid) {
-    TRACE("x10_bright(${nid})")
-
-    def s = nid?.tokenize(':')
-    if (s.size() < 2 || s[0].toUpperCase() != 'X10') {
-        log.debug "Invalid device network ID ${nid}"
-        return
-    }
+    return [address:addr, command:cmd]
 }
 
 private def initialize() {
@@ -464,6 +465,7 @@ private def addActiveEye(houseCode, unitCode) {
     log.trace "Creating child device ${devParams}"
     try {
         def dev = addChildDevice("statusbits", devFile, addr, null, devParams)
+        dev.parse("motion:0, light:0")
         dev.refresh()
     } catch (e) {
         log.error "Cannot create child device. Error: ${e}"

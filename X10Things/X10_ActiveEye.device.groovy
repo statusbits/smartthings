@@ -56,8 +56,8 @@ metadata {
         valueTile("illuminance", "device.illuminance", width:1, height:1, inactiveLabel:false) {
             state "default", label:'${currentValue}', unit:"lux",
                 backgroundColors:[
-                    [value: 10,  color: "#767676"],
-                    [value: 400, color: "#fbd41b"]
+                    [value:10,  color:"#767676"],
+                    [value:400, color:"#fbd41b"]
                 ]
         }
 
@@ -65,28 +65,20 @@ metadata {
             state "default", label:'${currentValue}', inactiveLabel:false
         }
 
-        standardTile("debug", "device.motion", inactiveLabel: false, decoration: "flat") {
+        standardTile("refresh", "device.motion", inactiveLabel:false, decoration:"flat") {
             state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
         }
 
         main(["motion", "illuminance"])
-        details(["motion", "illuminance", "networkId", "debug"])
+        details(["motion", "illuminance", "networkId", "refresh"])
 
         simulator {
             // status messages
-            status "Motion Active":     "motion:active"
-            status "Motion Inactive":   "motion:inactive"
-
-            for (int i = 10; i < 100; i += 20) {
-                status "Illuminance ${i} lux":  "illuminance:${i}"
-            }
-            for (int i = 100; i < 1000; i += 200) {
-                status "Illuminance ${i} lux":  "illuminance:${i}"
-            }
-
-            status "Motion Active, 200 lux":    "motion:active, illuminance:200"
-            status "Invalid value":             "motion:foobar"
-            status "Invalid format":            "foobar"
+            status "Motion: Inactive":  "motion:0"
+            status "Motion: Active":    "motion:1"
+            status "Light: Dark":       "light:0"
+            status "Light: Bright":     "light:1"
+            status "Invalid message":   "foobar:0"
         }
     }
 }
@@ -104,8 +96,8 @@ def parse(String message) {
         parseMotion(msg.motion)
     }
 
-    if (msg.containsKey("illuminance")) {
-        parseIlluminance(msg.illuminance)
+    if (msg.containsKey("light")) {
+        parseLight(msg.light)
     }
 
     return null
@@ -114,39 +106,30 @@ def parse(String message) {
 def refresh() {
     TRACE("refresh()")
 
-    def event = [
-        name  : "networkId",
-        value : device.deviceNetworkId
-    ]
+    // Update device network ID tile
+    sendEvent([name:"networkId", value:device.deviceNetworkId])
 
-    TRACE("event: (${event})")
-    sendEvent(event)
+    STATE()
 }
 
 private def parseMotion(value) {
     TRACE("parseMotion(${value})")
 
-    def values = ["active", "inactive"]
-    if (!values.find {it == value }) {
-        log.error "Invalid value: ${value}"
-        return
-    }
-
     def event = [
         name  : "motion",
-        value : value,
+        value : value.toInteger() > 0 ? "active" : "inactive",
     ]
 
     TRACE("event: (${event})")
     sendEvent(event)
 }
 
-private def parseIlluminance(value) {
-    TRACE("parseIlluminance(${value})")
+private def parseLight(value) {
+    TRACE("parseLight(${value})")
 
     def event = [
         name  : "illuminance",
-        value : value.toInteger(),
+        value : value.toInteger() > 0 ? 400 : 10,
         unit  : "lux",
     ]
 
@@ -156,6 +139,9 @@ private def parseIlluminance(value) {
 
 private def TRACE(message) {
     log.debug message
+}
+
+private def STATE() {
     log.debug "deviceNetworkId : ${device.deviceNetworkId}"
     log.debug "motion          : ${device.currentValue("motion")}"
     log.debug "illuminance     : ${device.currentValue("illuminance")}"
