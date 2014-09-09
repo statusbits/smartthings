@@ -56,6 +56,7 @@ preferences {
     page name:"setupAddDevice"
     page name:"setupShowDevices"
     page name:"setupRestEndpoint"
+    page name:"actionRestEndpoint"
 }
 
 mappings {
@@ -320,31 +321,57 @@ private setupRestEndpoint() {
     def accessToken = getAccessToken()
     TRACE("URI: https://graph.api.smartthings.com/api/token/${accessToken}/smartapps/installations/${app.id}/")
 
-    def textHelp =
-        "The X10 gateway can send X10 commands to the X10 Things using " +
-        "REST API. Please save the REST API endpoint URL and the access " +
-        "token shown below for your reference.\n\n"
-        "Tap Done to continue."
+    def textAbout =
+        "The X10 Gateway sends commands to the X10 Things using REST API. " +
+        "Please note the API endpoint URL and the access token shown below " +
+        "for your reference."
+
+    def textSendSms =
+        "You can send the URL and the access token to yourself via a text " +
+        "message."
+
+    def inputPhone = [
+        name        : "setupPhoneNumber",
+        type        : "phone",
+        title       : "What is your phone number?",
+        required    : false
+    ]
 
     def pageProperties = [
         name        : "setupRestEndpoint",
-        title       : "Application REST API Endpoint",
-        nextPage    : "setupMenu",
+        title       : "Application REST API",
+        nextPage    : "actionRestEndpoint",
         install     : false,
         uninstall   : state.installed
     ]
 
     return dynamicPage(pageProperties) {
         section {
-            paragraph textHelp
+            paragraph textAbout
         }
-        section("REST API Endpoint") {
+        section("REST API Endpoint URL") {
             paragraph getAppUri()
         }
         section("REST API Access Token") {
             paragraph accessToken
         }
+        section("Send it by SMS") {
+            paragraph textSendSms
+            input inputPhone
+        }
     }
+}
+
+private def actionRestEndpoint() {
+    TRACE("actionRestEndpoint()")
+
+    if (settings.setupPhoneNumber) {
+        def msg = "X10 Things API\n{\"appId\":\"${app.id}\",\"token\":\"${getAccessToken()}\"}"
+        TRACE("Sending SMS to ${settings.setupPhoneNumber}: ${msg}")
+        sendSms(settings.setupPhoneNumber, msg)
+    }
+
+    return setupMenu()
 }
 
 def installed() {
