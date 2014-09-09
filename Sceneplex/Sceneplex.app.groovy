@@ -210,7 +210,7 @@ private def pageAddButton() {
 private def completeAddButton() {
     TRACE("completeAddButton()")
 
-    def dni = createButtonId()
+    def dni = createNetworkId()
     def devParams = [
         name            : "Sceneplex Virtual Switch",
         label           : settings.buttonActionOn,
@@ -292,6 +292,39 @@ def initialize() {
     updateButtonList()
     getAccessToken()
     log.debug "URI: https://graph.api.smartthings.com/api/token/${accessToken}/smartapps/installations/${app.id}/"
+
+    def devices = getChildDevices()
+    devices?.each {
+        subscribe(it, "switch", eventSwitch)
+    }
+}
+
+def eventSwitch(evt) {
+    TRACE("eventSwitch(${evt.value})")
+
+    def button = findButton(evt.deviceId)
+    if (!button) {
+        log.error "Device ID ${evt.deviceId} not found"
+        return
+    }
+
+    def dni = button.deviceNetworkId
+    if (!state.buttons.containsKey(dni)) {
+        log.error "Device Network ID ${dni} not found"
+        return
+    }
+
+    def action = null
+    if (evt.value == 'on') {
+        action = state.buttons[dni].actionOn
+    } else if (evt.value == 'off') {
+        action = state.buttons[dni].actionOff
+    }
+
+    if (action) {
+        log.trace "Executing HelloHome action \'${action}\'"
+        location.helloHome.execute(action)
+    }
 }
 
 def listScenes() {
@@ -350,7 +383,14 @@ private def updateButtonList() {
     }
 }
 
-private def createButtonId() {
+private def findButton(id) {
+    TRACE("findButton(${id})")
+
+    def devices = getChildDevices()
+    return devices?.find { it.id == id }
+}
+
+private def createNetworkId() {
     int id = atomicState.buttonId.toInteger() + 1
     state.buttonId = id
 
