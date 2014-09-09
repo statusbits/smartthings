@@ -31,7 +31,8 @@
 
 definition(
     name: "Sceneplex",
-    namespace: "statusbits",
+    //namespace: "statusbits",
+    namespace: "smartthings",
     author: "geko@statusbits.com",
     description: "Execute 'Hello, Home!' actions via REST API from any web client.",
     category: "Convenience",
@@ -46,6 +47,7 @@ preferences {
     page name:"pageEndpoints"
     page name:"pageAddButton"
     page name:"pageShowButtons"
+    page name:"completeAddButton"
 }
 
 mappings {
@@ -65,6 +67,15 @@ mappings {
 private def pageSetup() {
     TRACE("pageSetup()")
 
+    if (state.buttons == null) {
+        // First run - initialize state
+        state.buttons = [:]
+        state.buttonId = 0
+        return pageAbout()
+    }
+
+    updateButtonList()
+
     def pageProperties = [
         name        : "pageSetup",
         title       : "Setup Menu",
@@ -78,7 +89,9 @@ private def pageSetup() {
             href "pageAbout", title:"About", description:"Tap to open"
             href "pageEndpoints", title:"Configure REST API Endpoints", description:"Tap to open"
             href "pageAddButton", title:"Add Scene Button", description:"Tap to open"
-            href "pageShowButtons", title:"Show Scene Buttons", description:"Tap to open"
+            if (state.buttons?.size()) {
+                href "pageShowButtons", title:"Show Scene Buttons", description:"Tap to open"
+            }
         }
         section([title:"Options", mobileOnly:true]) {
             label title:"Assign a name", required:false
@@ -117,8 +130,9 @@ private def pageEndpoints() {
     TRACE("pageEndpoints()")
 
     def textAbout =
-        "Sceneplex provides REST API that allow any web client to execute " +
-        "'Hello, Home' actions over the Internet."
+        "Sceneplex provides REST API that allows a web client to execute " +
+        "up to twelve 'Hello, Home' actions using HTTP GET calls. Scroll " +
+        "to the bottom of the page for the API URL info."
 
     def pageProperties = [
         name        : "pageEndpoints",
@@ -140,8 +154,11 @@ private def pageEndpoints() {
             }
         }
         section("REST API Info") {
-            paragraph "App ID:\n${app.id}"
+            paragraph "API Base URL:\nhttps://graph.api.smartthings.com/api/smartapps/installations/${app.id}"
+            paragraph "Get Scene List:\n<base-url>/scenes"
+            paragraph "Execute Scene <number>:\n<base-url>/scene/<number>"
             paragraph "Access Token:\n${getAccessToken()}"
+            paragraph "App ID:\n${app.id}"
         }
     }
 }
@@ -149,15 +166,33 @@ private def pageEndpoints() {
 private def pageAddButton() {
     TRACE("pageAddButton()")
 
+    def actions = getHHActions()
+
     def textAbout =
-        "Sceneplex can create virtual switches (buttons) that allow you to " +
-        "execute 'Hello, Home' actions from other smart apps, for example " +
-        "IFTTT."
+        "Sceneplex can create virtual switches (buttons) that allow " +
+        "executing 'Hello, Home' actions from other smart apps, for " +
+        "example IFTTT."
+
+    def inputActionOn = [
+        name        : "buttonActionOn",
+        type        : "enum",
+        title       : "Which scene when switch is On?",
+        metadata    : [values:actions],
+        required    : true
+    ]
+
+    def inputActionOff = [
+        name        : "buttonActionOff",
+        type        : "enum",
+        title       : "Which scene when switch is Off?",
+        metadata    : [values:actions],
+        required    : false
+    ]
 
     def pageProperties = [
         name        : "pageAddButton",
         title       : "Add Scene Button",
-        nextPage    : "pageSetup",
+        nextPage    : "completeAddButton",
         install     : false,
         uninstall   : state.installed
     ]
@@ -165,8 +200,37 @@ private def pageAddButton() {
     return dynamicPage(pageProperties) {
         section {
             paragraph textAbout
+            input inputActionOn
+            input inputActionOff
         }
     }
+}
+
+private def completeAddButton() {
+    TRACE("completeAddButton()")
+
+    def dni = createButtonId()
+    def devParams = [
+        name            : "Sceneplex Virtual Switch",
+        label           : settings.buttonActionOn,
+        completedSetup  : true
+    ]
+
+    log.trace "Creating child device: ${dni}, ${devParams}"
+    try {
+        //addChildDevice('smartthings', 'On/Off Button Tile', dni, null, devParams)
+        addChildDevice('statusbits', 'On/Off Switch Tile', dni, null, devParams)
+
+        // save button in the app state
+        state.buttons[dni] = [
+            actionOn    : settings.buttonActionOn,
+            actionOff   : settings.buttonActionOff,
+        ]
+    } catch (e) {
+        log.error "Cannot create child device. Error: ${e}"
+    }
+
+    return pageSetup()
 }
 
 private def pageShowButtons() {
@@ -208,8 +272,9 @@ def initialize() {
     STATE()
 
     state.installed = true
+    updateButtonList()
     getAccessToken()
-    TRACE("URI: https://graph.api.smartthings.com/api/token/${accessToken}/smartapps/installations/${app.id}/")
+    log.debug "URI: https://graph.api.smartthings.com/api/token/${accessToken}/smartapps/installations/${app.id}/"
 }
 
 def listScenes() {
@@ -254,6 +319,25 @@ private restError(description) {
     ]
 
     return error
+}
+
+// Purge buttons that were removed manually
+private def updateButtonList() {
+    TRACE("updateButtonList()")
+
+    state.buttons.each { k,v ->
+        if (!getChildDevice(k)) {
+            log.trace "Removing deleted button ${k}"
+            state.buttons.remove(k)
+        }
+    }
+}
+
+private def createButtonId() {
+    int id = atomicState.buttonId.toInteger() + 1
+    state.buttonId = id
+
+    return "SCENEPLEX.${id}"
 }
 
 private def getHHActions() {
