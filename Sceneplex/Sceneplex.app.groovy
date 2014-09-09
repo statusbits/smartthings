@@ -25,8 +25,9 @@
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/Sceneplex/Sceneplex.app.groovy
  *
- *  Version: 0.9.0
- *  Date: 2014-08-21
+ *  Revision History
+ *  ----------------
+ *  2014-08-21  V0.9.0  Initial check-in.
  */
 
 definition(
@@ -219,7 +220,7 @@ private def completeAddButton() {
     log.trace "Creating child device: ${dni}, ${devParams}"
     try {
         //addChildDevice('smartthings', 'On/Off Button Tile', dni, null, devParams)
-        addChildDevice('statusbits', 'On/Off Switch Tile', dni, null, devParams)
+        addChildDevice('statusbits', 'Scene Switch', dni, null, devParams)
 
         // save button in the app state
         state.buttons[dni] = [
@@ -258,13 +259,29 @@ private def pageShowButtons() {
 
 def installed() {
     TRACE("installed()")
+
     initialize()
 }
 
 def updated() {
     TRACE("updated()")
+
     unsubscribe()
     initialize()
+}
+
+def uninstalled() {
+    TRACE("uninstalled()")
+
+    // delete all child devices
+    def devices = getChildDevices()
+    devices?.each {
+        try {
+            deleteChildDevice(it.deviceNetworkId)
+        } catch (e) {
+            log.error "Cannot delete device ${it.deviceNetworkId}. Error: ${e}"
+        }
+    }
 }
 
 def initialize() {
