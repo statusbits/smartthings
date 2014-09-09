@@ -1,22 +1,26 @@
 /**
  *  Sceneplex
  *
- *  This SmartApp exposes REST endpoints for activating SmartThings scenes
- *  (known as 'Hello Home!' Actions).
+ *  Execute 'Hello, Home' actions via REST API from any web client.
  *
- *  Copyright (c) 2014 Statusbits.com
+ *  --------------------------------------------------------------------------
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License. You may obtain a
- *  copy of the License at:
+ *  Copyright (c) 2014 geko@statusbits.com
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  This program is free software: you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation, either version 3 of the License, or (at your option)
+ *  any later version.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License  for the specific language governing permissions and limitations
- *  under the License.
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ *  for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  --------------------------------------------------------------------------
  *
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/Sceneplex/Sceneplex.app.groovy
@@ -29,7 +33,7 @@ definition(
     name: "Sceneplex",
     namespace: "statusbits",
     author: "geko@statusbits.com",
-    description: "Activate SmartThings scenes (a.k.a. Hello Home Actions) from any web client.",
+    description: "Execute 'Hello, Home!' actions via REST API from any web client.",
     category: "Convenience",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
@@ -37,7 +41,7 @@ definition(
     )
 
 preferences {
-    page name:"setupAuthenticate"
+    page name:"pageSetup"
 }
 
 mappings {
@@ -54,32 +58,38 @@ mappings {
     }
 }
 
-def setupAuthenticate() {
-    TRACE("setupAuthenticate()")
-
-    getHubAddress()
-    log.debug "redirectUrl: ${getRedirectUrl()}"
-
-    def clientId = "9e9abb86-0acc-47ec-ad6d-000d323f97a0"
-    //def callbackUri = "https://graph.api.smartthings.com/oauth/callback"
-    //def callbackUri = "http://statusbits.github.io/stauth/sceneplex.html"
-    def callbackUri = "http://txtmsg.tripod.com/cgi-bin/debug.cgi?foo=bar"
-    //log.debug "callbackUri=${callbackUri}"
-
-    def oauthUrl = "https://graph.api.smartthings.com/oauth/authorize?response_type=code&scope=app&client_id=${clientId}&redirect_uri=${callbackUri.encodeAsURL()}"
-    log.debug "oauthUrl=${oauthUrl}"
+private def pageSetup() {
+    TRACE("pageSetup()")
 
     def pageProperties = [
-        name:       "setupAuthenticate",
-        title:      "Welcome!",
-        nextPage:   null,
-        install:    true,
-        uninstall:  true
+        name        : "pageSetup",
+        title       : "Sceneplex Setup",
+        nextPage    : null,
+        install     : true,
+        uninstall   : state.installed
     ]
 
     return dynamicPage(pageProperties) {
-        section("Configure") {
-            href url:oauthUrl, style:"embedded", title:"Authenticate", description:"Go ahead, tap me.", required:false
+        section {
+            paragraph "${textVersion()}\n${textCopyright()}"
+        }
+        section("Scenes") {
+            def maxScenes = getMaxScenes()
+            def hhActions = getHHActions()
+            for (int n = 1; n <= maxScenes; n++) {
+                input "scene_${n}", "enum", title:"Scene ${n}", metadata:[values:hhActions], required:false
+            }
+        }
+        section("REST API Info") {
+            paragraph "App ID:\n${app.id}"
+            paragraph "Access Token:\n${getAccessToken()}"
+        }
+        section("License") {
+            paragraph textLicense()
+        }
+        section([title:"Options", mobileOnly:true]) {
+            label title:"Assign a name", required:false
+            //mode title:"Set for specific mode(s)", required:false
         }
     }
 }
@@ -96,11 +106,12 @@ def updated() {
 }
 
 def initialize() {
-    TRACE("initialize()")
-    subscribe(app, onAppTouch)
+    log.trace "${app.name}. ${textVersion()}. ${textCopyright()}"
+    STATE()
 
-    def scenes = listScenes()
-    log.debug "Scenes: ${scenes}"
+    state.installed = true
+    getAccessToken()
+    TRACE("URI: https://graph.api.smartthings.com/api/token/${accessToken}/smartapps/installations/${app.id}/")
 }
 
 def listScenes() {
@@ -117,60 +128,93 @@ def listScenes() {
 
 def activateScene() {
     TRACE("activateScene()")
-    log.debug "params: ${params}"
 
-    def id = params.id
-    if (id == null) {
-        log.error "missing id"
-        return
+    if (!params.id.isInteger()) {
+        def msg = "Invalid scene ID - ${params.id}"
+        log.error msg
+        return restError(msg)
     }
 
-    def action = location.helloHome?.getPhrases().find { it.id == id }
-    if (id == null) {
-        log.error "invalid action id ${id}"
-        return
+    def id = params.id.toInteger()
+    def action = settings."scene_${id}"
+    if (!action) {
+        def msg = "Scene ${id} not configured"
+        log.error msg
+        return restError(msg)
     }
 
-    log.debug "id:${params}, action:${action.label}"
+    log.trace "Executing HelloHome action \'${action}\'"
+    location.helloHome.execute(action)
 
-
-    [id:id, action:action.label]
+    return [error:false, scene:action]
 }
 
-def onAppTouch(evt) {
-    TRACE("onAppTouch(${evt})")
+private restError(description) {
+    def error = [
+        error       : true,
+        description : description
+    ]
+
+    return error
 }
 
-def private getRedirectUrl() {
-    TRACE("getRedirectUrl()")
-
-    if (!atomicState.accessToken) {
-        log.debug "Creating access token"
-        def token = createAccessToken()
-        log.debug "accessToken: ${token}"
-        atomicState.accessToken = state.accessToken
-        log.debug "accessToken: ${atomicState.accessToken}"
+private def getHHActions() {
+    def actions = []
+    location.helloHome?.getPhrases().each {
+        actions << "${it.label}"
     }
 
-    return "https://graph.api.smartthings.com/api/token/${atomicState.accessToken}/smartapps/installations/${app.id}"
+    return actions
 }
 
-def private getHubAddress() {
-    TRACE("getHubAddress()")
-
-    location.hubs.each() {
-        log.debug "Hub: ${it.getProperties()}"
-        if (it.type == 'PHYSICAL') {
-            //def ip = it.localIP
-            //def port= it.getDataValue("localSrvPortTCP")
-            //log.debug "Hub Local IP: ${ip}"
-            log.trace "Hub name: ${it.name}, Local IP: ${it.localIP}"
-        }
+private def getAccessToken() {
+    if (atomicState.accessToken) {
+        return atomicState.accessToken
     }
+
+    def token = createAccessToken()
+    TRACE("Created new access token: ${token})")
+
+    return token
+}
+
+private def getAppUri() {
+    return "https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/"
+}
+
+private int getMaxScenes() {
+    return 12
+}
+
+private def textVersion() {
+    return "Version 0.9.0"
+}
+
+private def textCopyright() {
+    return "Copyright (c) 2014 Statusbits.com"
+}
+
+private def textLicense() {
+    def text =
+        "This program is free software: you can redistribute it and/or " +
+        "modify it under the terms of the GNU General Public License as " +
+        "published by the Free Software Foundation, either version 3 of " +
+        "the License, or (at your option) any later version.\n\n" +
+        "This program is distributed in the hope that it will be useful, " +
+        "but WITHOUT ANY WARRANTY; without even the implied warranty of " +
+        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU " +
+        "General Public License for more details.\n\n" +
+        "You should have received a copy of the GNU General Public License " +
+        "along with this program. If not, see <http://www.gnu.org/licenses/>."
+
+    return text
 }
 
 private def TRACE(message) {
     log.debug message
+}
+
+private def STATE() {
     log.debug "settings: ${settings}"
     log.debug "state: ${state}"
 }
