@@ -42,6 +42,10 @@ definition(
 
 preferences {
     page name:"pageSetup"
+    page name:"pageAbout"
+    page name:"pageEndpoints"
+    page name:"pageAddButton"
+    page name:"pageShowButtons"
 }
 
 mappings {
@@ -63,7 +67,7 @@ private def pageSetup() {
 
     def pageProperties = [
         name        : "pageSetup",
-        title       : "Sceneplex Setup",
+        title       : "Setup Menu",
         nextPage    : null,
         install     : true,
         uninstall   : state.installed
@@ -71,7 +75,62 @@ private def pageSetup() {
 
     return dynamicPage(pageProperties) {
         section {
+            href "pageAbout", title:"About", description:"Tap to open"
+            href "pageEndpoints", title:"Configure REST API Endpoints", description:"Tap to open"
+            href "pageAddButton", title:"Add Scene Button", description:"Tap to open"
+            href "pageShowButtons", title:"Show Scene Buttons", description:"Tap to open"
+        }
+        section([title:"Options", mobileOnly:true]) {
+            label title:"Assign a name", required:false
+            //mode title:"Set for specific mode(s)", required:false
+        }
+    }
+}
+
+private def pageAbout() {
+    TRACE("pageAbout()")
+
+    def textAbout =
+        "Sceneplex allows you to execute 'Hello, Home' actions via REST " +
+        "API from any web client."
+
+    def pageProperties = [
+        name        : "pageAbout",
+        title       : "About",
+        nextPage    : "pageSetup",
+        install     : false,
+        uninstall   : state.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph textAbout
             paragraph "${textVersion()}\n${textCopyright()}"
+        }
+        section("License") {
+            paragraph textLicense()
+        }
+    }
+}
+
+private def pageEndpoints() {
+    TRACE("pageEndpoints()")
+
+    def textAbout =
+        "Sceneplex provides REST API that allow any web client to execute " +
+        "'Hello, Home' actions over the Internet."
+
+    def pageProperties = [
+        name        : "pageEndpoints",
+        title       : "Configure REST API Endpoints",
+        nextPage    : "pageSetup",
+        install     : false,
+        uninstall   : state.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph textAbout
         }
         section("Scenes") {
             def maxScenes = getMaxScenes()
@@ -84,12 +143,51 @@ private def pageSetup() {
             paragraph "App ID:\n${app.id}"
             paragraph "Access Token:\n${getAccessToken()}"
         }
-        section("License") {
-            paragraph textLicense()
+    }
+}
+
+private def pageAddButton() {
+    TRACE("pageAddButton()")
+
+    def textAbout =
+        "Sceneplex can create virtual switches (buttons) that allow you to " +
+        "execute 'Hello, Home' actions from other smart apps, for example " +
+        "IFTTT."
+
+    def pageProperties = [
+        name        : "pageAddButton",
+        title       : "Add Scene Button",
+        nextPage    : "pageSetup",
+        install     : false,
+        uninstall   : state.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph textAbout
         }
-        section([title:"Options", mobileOnly:true]) {
-            label title:"Assign a name", required:false
-            //mode title:"Set for specific mode(s)", required:false
+    }
+}
+
+private def pageShowButtons() {
+    TRACE("pageShowButtons()")
+
+    def textAbout =
+        "Sceneplex can create virtual switches (buttons) that allow you to " +
+        "execute 'Hello, Home' actions from other smart apps, for example " +
+        "IFTTT."
+
+    def pageProperties = [
+        name        : "pageShowButtons",
+        title       : "Scene Buttons",
+        nextPage    : "pageSetup",
+        install     : false,
+        uninstall   : state.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph textAbout
         }
     }
 }
@@ -164,7 +262,7 @@ private def getHHActions() {
         actions << "${it.label}"
     }
 
-    return actions
+    return actions.sort()
 }
 
 private def getAccessToken() {
