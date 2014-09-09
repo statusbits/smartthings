@@ -228,6 +228,12 @@ private def setupActiveEye() {
         "16), for example 'D12'. Please select the X10 address assigned " +
         "to your motion sensor below."
 
+    def textLightSensor =
+        "The ActiveEye has a built-in light sensor and can be optionally " +
+        "configured to transmit the light sensor status. If you have " +
+        "enabled this function, you should enable the light sensor here as " +
+        "well to avoid unexpected behavior."
+
     def inputDeviceName = [
         name        : "motionDeviceName",
         type        : "string",
@@ -252,6 +258,14 @@ private def setupActiveEye() {
         required    : true
     ]
 
+    def inputLightSensor = [
+        name        : "motionLightSensor",
+        type        : "bool",
+        title       : "Light Sensor Enabled",
+        defaultValue: false,
+        required    : true
+    ]
+
     def pageProperties = [
         name:       "setupActiveEye",
         title:      "Add ActiveEye Motion Sensor",
@@ -267,13 +281,17 @@ private def setupActiveEye() {
             input inputHouseCode
             input inputUnitCode
         }
+        section("Options") {
+            paragraph textLightSensor
+            input inputLightSensor
+        }
     }
 }
 
 private def setupAddDevice() {
     TRACE("setupAddDevice()")
 
-    addActiveEye(settings.motionHouseCode, settings.motionUnitCode)
+    addActiveEye(settings.motionHouseCode, settings.motionUnitCode, settings.motionLightSensor)
     return setupMenu()
 }
 
@@ -473,8 +491,8 @@ private def initialize() {
     subscribe(app, onAppTouch)
 }
 
-private def addActiveEye(houseCode, unitCode) {
-    TRACE("addActiveEye(${houseCode}, ${unitCode})")
+private def addActiveEye(houseCode, unitCode, enableLightSensor) {
+    TRACE("addActiveEye(${houseCode}, ${unitCode}, ${enableLightSensor})")
 
     def addr = "${houseCode}${unitCode}".toUpperCase()
     if (getChildDevice(addr)) {
@@ -505,18 +523,20 @@ private def addActiveEye(houseCode, unitCode) {
         'type'  : 'motion',
     ]
 
-    // create device for the ActiveEye light sensor
-    def unitCode2 = unitCode.toInteger() + 1
-    if (unitCode2 <= 16) {
-        def addr2 = "${houseCode}${unitCode2}".toUpperCase()
-        if (state.devices.containsKey(addr2)) {
-            log.error "X10 address ${addr2} is in use"
-        } else {
-            state.devices[addr2] = [
-                'dni'   : addr,
-                'type'  : 'light',
-            ]
-        }
+    if (enableLightSensor) {
+        // create device for the ActiveEye light sensor
+        def unitCode2 = unitCode.toInteger() + 1
+        if (unitCode2 <= 16) {
+            def addr2 = "${houseCode}${unitCode2}".toUpperCase()
+            if (state.devices.containsKey(addr2)) {
+                log.error "X10 address ${addr2} is in use"
+            } else {
+                state.devices[addr2] = [
+                    'dni'   : addr,
+                    'type'  : 'light',
+                ]
+            }
+        }    
     }
 
     STATE()
