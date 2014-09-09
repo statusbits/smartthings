@@ -259,7 +259,7 @@ private def setupActiveEye() {
     ]
 
     def inputLightSensor = [
-        name        : "motionLightSensor",
+        name        : "enableLightSensor",
         type        : "bool",
         title       : "Light Sensor Enabled",
         defaultValue: false,
@@ -291,7 +291,7 @@ private def setupActiveEye() {
 private def setupAddDevice() {
     TRACE("setupAddDevice()")
 
-    addActiveEye(settings.motionHouseCode, settings.motionUnitCode, settings.motionLightSensor)
+    addActiveEye(settings.motionHouseCode, settings.motionUnitCode, settings.enableLightSensor)
     return setupMenu()
 }
 
@@ -435,8 +435,10 @@ def apiListDevices() {
 def apiCommand() {
     TRACE("apiCommand()")
 
-	def addr = params.address?.toUpperCase()
-	def cmd = params.command?.toLowerCase()
+    def addr = params.address?.toUpperCase()
+    def cmd = params.command?.toLowerCase()
+    TRACE("addr:${addr}, cmd:${cmd}")
+
     if (!addr || !cmd) {
         log.error "Invalid request: ${params}"
         httpError(500, "Invalid request")
@@ -448,8 +450,8 @@ def apiCommand() {
         def device = getChildDevice(dni)
         if (!device) {
             log.error "Child device \'${dni}\' not found!"
-            httpError(500, "Device \'${dni}\' not found!")
             state.devices.remove(addr)
+            httpError(500, "Device \'${dni}\' not found!")
             return
         }
 
@@ -476,7 +478,57 @@ def apiCommand() {
         return [device:device.displayName, attribute:attr, value:value]
     }
 
-    return [address:addr, command:cmd]
+    def x10addr = parseX10Address(addr)
+    if (x10addr.houseCode != settings.remoteHouseCode || !x10addr.unitCode) {
+        // house code does not match - ignore
+        return [error:false]
+    }
+
+    def switches = settings."switches_${x10addr.unitCode}"
+    def action = null
+    switch (cmd) {
+    case 'on':
+        action = settings."actionOn_${x10addr.unitCode}"
+        switches*.on()
+        break
+
+    case 'off':
+        action = settings."actionOff_${x10addr.unitCode}"
+        switches*.off()
+        break
+    
+    case 'dim':
+        break
+
+    case 'bright':
+        break
+    }
+
+    if (action) {
+        log.trace "Executing HelloHome action \'${action}\'"
+        location.helloHome.execute(action)
+    }
+
+    return [error:false]
+}
+
+private def parseX10Address(addr) {
+    def hc = addr[0]
+    def uc = 0
+
+    if (addr.length() > 1) {
+        // Parse unit code portion of the address
+        def s = addr[1..-1]
+        if (s.isInteger()) {
+            uc = s.toInteger()
+            if (uc < 1 || uc > 16) {
+                log.error "Invalid X10 address '${addr}'"
+                uc = 0
+            }
+        }
+    }
+
+    return [houseCode: hc, unitCode: uc]
 }
 
 private def initialize() {
