@@ -47,8 +47,10 @@ preferences {
     page name:"pageAbout"
     page name:"pageEndpoints"
     page name:"pageAddButton"
+    page name:"pageDeleteButton"
     page name:"pageShowButtons"
     page name:"completeAddButton"
+    page name:"completeDeleteButton"
 }
 
 mappings {
@@ -91,6 +93,7 @@ private def pageSetup() {
             href "pageEndpoints", title:"Configure REST API Endpoints", description:"Tap to open"
             href "pageAddButton", title:"Add Scene Button", description:"Tap to open"
             if (state.buttons?.size()) {
+                href "pageDeleteButton", title:"Delete Scene Button", description:"Tap to open"
                 href "pageShowButtons", title:"Show Scene Buttons", description:"Tap to open"
             }
         }
@@ -234,13 +237,38 @@ private def completeAddButton() {
     return pageSetup()
 }
 
+private def pageDeleteButton() {
+    TRACE("pageDeleteButton()")
+
+    def buttons = getButtons()
+    TRACE("buttons: ${buttons}")
+
+    def inputDeleteButton = [
+        name        : "deleteButton",
+        type        : "enum",
+        title       : "Which button?",
+        metadata    : [values:buttons],
+        required    : true
+    ]
+
+    def pageProperties = [
+        name        : "pageDeleteButton",
+        title       : "Delete Scene Button",
+        //nextPage    : "completeDeleteButton",
+        nextPage    : "pageSetup",
+        install     : false,
+        uninstall   : state.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            input inputDeleteButton
+        }
+    }
+}
+
 private def pageShowButtons() {
     TRACE("pageShowButtons()")
-
-    def textAbout =
-        "Sceneplex can create virtual switches (buttons) that allow you to " +
-        "execute 'Hello, Home' actions from other smart apps, for example " +
-        "IFTTT."
 
     def pageProperties = [
         name        : "pageShowButtons",
@@ -250,9 +278,25 @@ private def pageShowButtons() {
         uninstall   : state.installed
     ]
 
+    def devices = getChildDevices()
     return dynamicPage(pageProperties) {
-        section {
-            paragraph textAbout
+        devices.each {
+            def dni = it.deviceNetworkId
+            if (state.buttons.containsKey(dni)) {
+                def actions = state.buttons[dni]
+                section(it.displayName) {
+                    if (actions.actionOn) {
+                        paragraph "'On' Action: ${actions.actionOn}"
+                    } else {
+                        paragraph "'On' Action: not configured"
+                    }
+                    if (actions.actionOff) {
+                        paragraph "'Off' Action: ${actions.actionOff}"
+                    } else {
+                        paragraph "'Off' Action: not configured"
+                    }
+                }
+            }
         }
     }
 }
@@ -302,7 +346,7 @@ def initialize() {
 def eventSwitch(evt) {
     TRACE("eventSwitch(${evt.value})")
 
-    def button = findButton(evt.deviceId)
+    def button = findButtonById(evt.deviceId)
     if (!button) {
         log.error "Device ID ${evt.deviceId} not found"
         return
@@ -383,8 +427,17 @@ private def updateButtonList() {
     }
 }
 
-private def findButton(id) {
-    TRACE("findButton(${id})")
+private def getButtons() {
+    def buttons = []
+    getChildDevices().each {
+        buttons << "${it.displayName}"
+    }
+
+    return buttons.sort()
+}
+
+private def findButtonById(id) {
+    TRACE("findButtonById(${id})")
 
     def devices = getChildDevices()
     return devices?.find { it.id == id }
