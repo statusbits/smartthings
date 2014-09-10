@@ -240,31 +240,49 @@ private def completeAddButton() {
 private def pageDeleteButton() {
     TRACE("pageDeleteButton()")
 
+    def textAbout =
+        "NOTE: After you have removed the scene button from Sceneplex, you " +
+        "will have to manually delete it from your 'Things' view."
+
     def buttons = getButtons()
-    TRACE("buttons: ${buttons}")
 
     def inputDeleteButton = [
         name        : "deleteButton",
         type        : "enum",
         title       : "Which button?",
         metadata    : [values:buttons],
-        required    : true
+        required    : false
     ]
 
     def pageProperties = [
         name        : "pageDeleteButton",
         title       : "Delete Scene Button",
-        //nextPage    : "completeDeleteButton",
-        nextPage    : "pageSetup",
+        nextPage    : "completeDeleteButton",
         install     : false,
         uninstall   : state.installed
     ]
 
     return dynamicPage(pageProperties) {
         section {
+            paragraph textAbout
             input inputDeleteButton
         }
     }
+}
+
+private def completeDeleteButton() {
+    TRACE("completeDeleteButton()")
+
+    if (settings.deleteButton) {
+        def device = findButtonByName(settings.deleteButton)
+        if (device) {
+            def dni = device.deviceNetworkId
+            log.debug "Deleting device '${device.displayName}' (Network ID: ${dni})"
+            state.buttons.remove(dni)
+        }
+    }
+
+    return pageSetup()
 }
 
 private def pageShowButtons() {
@@ -317,6 +335,9 @@ def updated() {
 def uninstalled() {
     TRACE("uninstalled()")
 
+    unsubscribe()
+    state.buttons = [:]
+
     // delete all child devices
     def devices = getChildDevices()
     devices?.each {
@@ -339,7 +360,17 @@ def initialize() {
 
     def devices = getChildDevices()
     devices?.each {
-        subscribe(it, "switch", eventSwitch)
+        def dni = it.deviceNetworkId
+        if (state.buttons.containsKey(dni)) {
+            subscribe(it, "switch", eventSwitch)
+        } else {
+            try {
+                // FIXME: this throws org.springframework.security.access.AccessDeniedException
+                //deleteChildDevice(it.deviceNetworkId)
+            } catch (e) {
+                log.error "Cannot delete device ${it.deviceNetworkId}. Error: ${e}"
+            }
+        }
     }
 }
 
@@ -441,6 +472,13 @@ private def findButtonById(id) {
 
     def devices = getChildDevices()
     return devices?.find { it.id == id }
+}
+
+private def findButtonByName(name) {
+    TRACE("findButtonByName(${name})")
+
+    def devices = getChildDevices()
+    return devices?.find { it.displayName == name }
 }
 
 private def createNetworkId() {
