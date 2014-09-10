@@ -1,7 +1,10 @@
 /**
  *  Sceneplex
  *
- *  Execute 'Hello, Home' actions via REST API from any web client.
+ *  Sceneplex allows you to create virtual switches (On/Off buttons) to
+ *  execute 'Hello, Home' actions. It also provides a web API to allow any web
+ *  client to execute 'Hello, Home' actions using HTTP GET requests over the
+ *  Internet.
  *
  *  --------------------------------------------------------------------------
  *
@@ -27,15 +30,15 @@
  *
  *  Revision History
  *  ----------------
+ *  2014-09-09  V1.0.0  Initial release.
  *  2014-08-21  V0.9.0  Initial check-in.
  */
 
 definition(
     name: "Sceneplex",
-    //namespace: "statusbits",
-    namespace: "smartthings",
+    namespace: "statusbits",
     author: "geko@statusbits.com",
-    description: "Execute 'Hello, Home!' actions via REST API from any web client.",
+    description: "Execute 'Hello, Home' actions using virtual switches or from any web client via REST API.",
     category: "Convenience",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
@@ -108,8 +111,10 @@ private def pageAbout() {
     TRACE("pageAbout()")
 
     def textAbout =
-        "Sceneplex allows you to execute 'Hello, Home' actions via REST " +
-        "API from any web client."
+        "Sceneplex allows you to create virtual switches (On/Off buttons) " +
+        "to execute 'Hello, Home' actions. It also provides a web API to " +
+        "allow any web client to execute 'Hello, Home' actions using HTTP " +
+        "GET requests over the Internet."
 
     def pageProperties = [
         name        : "pageAbout",
@@ -134,9 +139,9 @@ private def pageEndpoints() {
     TRACE("pageEndpoints()")
 
     def textAbout =
-        "Sceneplex provides REST API that allows a web client to execute " +
-        "up to twelve 'Hello, Home' actions using HTTP GET calls. Scroll " +
-        "to the bottom of the page for the API URL info."
+        "Sceneplex provides a web API that allows a web client to execute " +
+        "up to twelve 'Hello, Home' actions using HTTP GET requests. " +
+        "Scroll to the bottom of the page for the API URL info."
 
     def pageProperties = [
         name        : "pageEndpoints",
@@ -158,7 +163,7 @@ private def pageEndpoints() {
             }
         }
         section("REST API Info") {
-            paragraph "API Base URL:\nhttps://graph.api.smartthings.com/api/smartapps/installations/${app.id}"
+            paragraph "API Base URL:\n${getAppUrl()}"
             paragraph "Get Scene List:\n<base-url>/scenes"
             paragraph "Execute Scene <number>:\n<base-url>/scene/<number>"
             paragraph "Access Token:\n${getAccessToken()}"
@@ -173,8 +178,8 @@ private def pageAddButton() {
     def actions = getHHActions()
 
     def textAbout =
-        "Sceneplex can create virtual switches (buttons) that allow " +
-        "executing 'Hello, Home' actions from other smart apps, for " +
+        "Sceneplex can create virtual switches (On/Off buttons) that " +
+        "allow executing 'Hello, Home' actions from other smart apps, for " +
         "example IFTTT."
 
     def inputActionOn = [
@@ -354,10 +359,11 @@ def initialize() {
     STATE()
 
     state.installed = true
-    updateButtonList()
-    getAccessToken()
-    log.debug "URI: https://graph.api.smartthings.com/api/token/${accessToken}/smartapps/installations/${app.id}/"
+    def token = getAccessToken()
+    log.debug "API URL: ${getAppUrl()}"
+    log.debug "Access Token: ${token}"
 
+    updateButtonList()
     def devices = getChildDevices()
     devices?.each {
         def dni = it.deviceNetworkId
@@ -508,8 +514,8 @@ private def getAccessToken() {
     return token
 }
 
-private def getAppUri() {
-    return "https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/"
+private def getAppUrl() {
+    return "https://graph.api.smartthings.com/api/smartapps/installations/${app.id}"
 }
 
 private int getMaxScenes() {
@@ -517,7 +523,7 @@ private int getMaxScenes() {
 }
 
 private def textVersion() {
-    return "Version 0.9.0"
+    return "Version 1.0.0"
 }
 
 private def textCopyright() {
@@ -541,10 +547,10 @@ private def textLicense() {
 }
 
 private def TRACE(message) {
-    log.debug message
+    //log.debug message
 }
 
 private def STATE() {
-    log.debug "settings: ${settings}"
-    log.debug "state: ${state}"
+    //log.debug "settings: ${settings}"
+    //log.debug "state: ${state}"
 }

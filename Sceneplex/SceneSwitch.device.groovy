@@ -11,7 +11,7 @@
  *
  *  Revision History
  *  ----------------
- *  2014-09-00  V0.9.0  Initial check-in.
+ *  2014-09-09  V1.0.0  Initial release.
  */
 
 metadata {
@@ -70,10 +70,10 @@ def off() {
 }
 
 private def TRACE(message) {
-    log.debug message
+    //log.debug message
 }
 
 private def STATE() {
-    log.debug "deviceNetworkId : ${device.deviceNetworkId}"
-    log.debug "switch          : ${device.currentValue("switch")}"
+    //log.debug "deviceNetworkId : ${device.deviceNetworkId}"
+    //log.debug "switch          : ${device.currentValue("switch")}"
 }
