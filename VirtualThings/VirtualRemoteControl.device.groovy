@@ -25,8 +25,10 @@
 metadata {
     definition (name:"Virtual Remote Control", namespace:"statusbits", author:"geko@statusbits.com") {
         capability "Button"
+        capability "Refresh"
 
         // Custom commands
+        command "parse"     // (String "button:<number>, action:<pushed | held>")
         command "button1"
         command "button2"
         command "button3"
@@ -35,11 +37,17 @@ metadata {
         command "button6"
         command "button7"
         command "button8"
+
+        // Custom attributes
+        //attribute "label1", "string"
+    }
+
+    preferences {
+        //input("label_1", "string", title:"Button 1 Label", required:false, displayDuringSetup:false)
     }
 
     tiles {
-        standardTile("remote", "device.button", width:2, height:2,
-                canChangeIcon:true, canChangeBackground:true) {
+        standardTile("remote", "device.button", canChangeIcon:true, canChangeBackground:true) {
             state "default", label:"", icon:"st.unknown.zwave.remote-controller"
         }
 
@@ -75,11 +83,15 @@ metadata {
             state "default", label:"Button 8", icon:"st.unknown.thing.thing-circle", action:"button8"
         }
 
+        standardTile("refresh", "device.button", inactiveLabel:false, decoration:"flat") {
+            state "default", label:'', icon:"st.secondary.refresh", action:"refresh.refresh"
+        }
+
         main(["remote", "button1", "button2", "button3", "button4", "button5", "button6",
                 "button7", "button8"])
 
         details(["remote", "button1", "button2", "button3", "button4", "button5", "button6",
-                "button7", "button8"])
+                "button7", "button8", "refresh"])
     }
 
     simulator {
@@ -95,13 +107,16 @@ def parse(String message) {
     TRACE("parse(${message})")
 
     def m = stringToMap(message)
-    def button = m?.button
-    if (button == null) {
+    if (m?.button == null || m?.action == null) {
         log.error "Invalid message: ${message}"
         return null
     }
 
-    return buttonEvent(button, m.action)
+    return buttonEvent(m.button, m.action)
+}
+
+def refresh() {
+    TRACE("refresh()")
 }
 
 def button1()   { buttonPush(1) }
@@ -112,7 +127,6 @@ def button5()   { buttonPush(5) }
 def button6()   { buttonPush(6) }
 def button7()   { buttonPush(7) }
 def button8()   { buttonPush(8) }
-
 
 private def buttonPush(btn) {
     TRACE("buttonPush(${btn})")
