@@ -461,6 +461,7 @@ private initialize()
     state.exitDelay = settings.exitDelay ? 45 : 0
     state.entryDelay = settings.entryDelay ? 45 : 0
     state.zones = []
+    state.offSwitches = []
     for (int n = 0; n < state.numZones; n++) {
         state.zones[n] = zoneInit(n)
         if (state.zones[n].alert) {
@@ -489,7 +490,10 @@ def panelReset()
 
     unschedule()
     alarms*.off()
-    switches*.off()
+    if (state.offSwitches) {		// only turn back off those switches WE turned on
+    	state.offSwitches*.off()
+        state.offSwitches = []
+    }
     state.alarm = false
     for (int n = 0; n < state.numZones; n++) {
         zoneReset(n)
@@ -504,7 +508,10 @@ private def panelDisarm()
 
     unschedule()
     alarms*.off()
-    switches*.off()
+    if (state.offSwitches) { 		// only turn back off those switches WE turned on
+    	state.offSwitches*.off()
+        state.offSwitches = []
+    }
     state.armed = false
     state.alarm = false
     for (int n = 0; n < state.numZones; n++) {
@@ -758,8 +765,13 @@ def activateAlarm()
     // Activate alarms and switches
     if (!settings.silent) {
         alarms*.both()
-        switches*.on()
-    }
+        
+        state.offSwitches = switches.findAll { it?.currentSwitch == "off" } // Only turn on those switches that are off
+        if (state.offSwitches) {
+        	state.offSwitches*.on()
+        }
+    	result = true
+  	}
 
     // Send notifications
     def msg = "Alarm at location '${location.name}'!"
