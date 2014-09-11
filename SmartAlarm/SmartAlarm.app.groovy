@@ -28,9 +28,9 @@ definition(
     namespace: "statusbits",
     author: "geko@statusbits.com",
     description: "Multi-Zone Virtual Alarm Panel",
-    category: "My Apps",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png"
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-IsItSafe.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-IsItSafe@2x.png"
 )
 
 preferences {
@@ -461,6 +461,7 @@ private initialize()
     state.exitDelay = settings.exitDelay ? 45 : 0
     state.entryDelay = settings.entryDelay ? 45 : 0
     state.zones = []
+    state.offSwitches = []
     for (int n = 0; n < state.numZones; n++) {
         state.zones[n] = zoneInit(n)
         if (state.zones[n].alert) {
@@ -489,7 +490,10 @@ def panelReset()
 
     unschedule()
     alarms*.off()
-    switches*.off()
+    if (state.offSwitches) {		// only turn back off those switches WE turned on
+    	state.offSwitches*.off()
+        state.offSwitches = []
+    }
     state.alarm = false
     for (int n = 0; n < state.numZones; n++) {
         zoneReset(n)
@@ -504,7 +508,10 @@ private def panelDisarm()
 
     unschedule()
     alarms*.off()
-    switches*.off()
+    if (state.offSwitches) { 		// only turn back off those switches WE turned on
+    	state.offSwitches*.off()
+        state.offSwitches = []
+    }
     state.armed = false
     state.alarm = false
     for (int n = 0; n < state.numZones; n++) {
@@ -518,7 +525,7 @@ private def panelStatus()
 {
     TRACE("panelStatus()")
 
-    def msg = "${location.name} alarm "
+    def msg = "SmartAlarm "
     if (state.armed) {
         def mode = state.stay ? "Stay" : "Away"
         msg += "armed '${mode}'."
@@ -535,10 +542,9 @@ private def panelStatus()
         } else {
             msg += "disarmed"
         }
-
     }
-
-    notify(msg)
+    sendNotificationEvent(msg)
+//    notify(msg)
 }
 
 private def panelPanic()
@@ -682,6 +688,7 @@ private def onAlarm(n, evt)
         if (zone.alert || !state.entryDelay) {
             activateAlarm()
         } else {
+            unschedule(activateAlarm)  //Added to fix issue with RunIn() not executing
             runIn(state.entryDelay, activateAlarm)
         }
     }
@@ -735,6 +742,7 @@ def onLocation(evt)
     state.stay = newStay
     if (newArmed) {
         if (state.exitDelay) {
+            unschedule(panelReset)  //Added to fix issue with RunIn() not executing
             runIn(state.exitDelay, panelReset)
         } else {
             panelReset()
@@ -757,8 +765,13 @@ def activateAlarm()
     // Activate alarms and switches
     if (!settings.silent) {
         alarms*.both()
-        switches*.on()
-    }
+        
+        state.offSwitches = switches.findAll { it?.currentSwitch == "off" } // Only turn on those switches that are off
+        if (state.offSwitches) {
+        	state.offSwitches*.on()
+        }
+    	result = true
+  	}
 
     // Send notifications
     def msg = "Alarm at location '${location.name}'!"
@@ -770,6 +783,7 @@ def activateAlarm()
     notify(msg)
 
     // Reset panel in 3 minutes
+    unschedule(panelReset)  //Added to fix issue with RunIn() not executing
     runIn(180, panelReset)
 }
 
@@ -791,7 +805,7 @@ private def notify(msg)
 }
 
 private def textVersion() {
-    def text = "Version 1.0.1"
+    def text = "Version 1.0.1BAB"
 }
 
 private def textCopyright() {
