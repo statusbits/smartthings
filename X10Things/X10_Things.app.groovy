@@ -49,8 +49,8 @@ definition(
 )
 
 preferences {
-    page name:"setupInit"
-    page name:"setupMenu"
+    page name:"pageSetup"
+    page name:"pageAbout"
     page name:"setupRemoteControl"
     page name:"setupActiveEye"
     page name:"setupAddDevice"
@@ -73,76 +73,21 @@ mappings {
     }
 }
 
-private def setupInit() {
-    TRACE("setupInit()")
+// Show "Setup Menu" page
+private def pageSetup() {
+    TRACE("pageSetup()")
 
-    if (state.installed) {
-        // already initialized, go to setup menu
-        return setupMenu()
+    if (state.devices == null) {
+        // First run - initialize state
+        state.devices = [:]
+        state.installed = false
+        return pageAbout()
     }
 
-    // initialize app state and show welcome page
-    state.installed = false
-    state.devices = [:]
-    return setupWelcome()
-}
-
-// Show setup welcome page
-private def setupWelcome() {
-    TRACE("setupWelcome()")
-
-    def textPara1 =
-        "This smart app allows connecting X10 remote controls and " +
-        "ActiveEye motion sensors to SmartThings. Please note that you " +
-        "don't need SmartThings hub to connect X10 devices. Instead, you " +
-        "will need an X10 receiver (for example MR26A) and an X10 Gateway " +
-        "to send X10 commands directly to SmartThings over the Internet."
-
-    def textPara2 = "${app.name}. ${textVersion()}\n${textCopyright()}"
-
-    def textPara3 =
-        "Please read the License Agreement below. By tapping the 'Next' " +
-        "button at the top of the screen, you agree and accept the terms " +
-        "and conditions of the License Agreement."
-
-    def textLicense =
-        "This program is free software: you can redistribute it and/or " +
-        "modify it under the terms of the GNU General Public License as " +
-        "published by the Free Software Foundation, either version 3 of " +
-        "the License, or (at your option) any later version.\n\n" +
-        "This program is distributed in the hope that it will be useful, " +
-        "but WITHOUT ANY WARRANTY; without even the implied warranty of " +
-        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU " +
-        "General Public License for more details.\n\n" +
-        "You should have received a copy of the GNU General Public License " +
-        "along with this program. If not, see <http://www.gnu.org/licenses/>."
+    updateDeviceList()
 
     def pageProperties = [
-        name        : "setupInit",
-        title       : "Welcome!",
-        nextPage    : "setupMenu",
-        install     : false,
-        uninstall   : state.installed
-    ]
-
-    return dynamicPage(pageProperties) {
-        section {
-            paragraph textPara1
-            paragraph textPara2
-            paragraph textPara3
-        }
-        section("License") {
-            paragraph textLicense
-        }
-    }
-}
-
-// Show "Main Menu" page
-private def setupMenu() {
-    TRACE("setupMenu()")
-
-    def pageProperties = [
-        name        : "setupMenu",
+        name        : "pageSetup",
         title       : "Setup Menu",
         nextPage    : null,
         install     : true,
@@ -151,6 +96,7 @@ private def setupMenu() {
 
     return dynamicPage(pageProperties) {
         section {
+            href "pageAbout", title:"About", description:"Tap to open"
             href "setupRemoteControl", title:"Configure Remote Control", description:"Tap to open"
             href "setupActiveEye", title:"Add ActiveEye Motion Sensor", description:"Tap to open"
             if (state.devices?.size()) {
@@ -164,8 +110,35 @@ private def setupMenu() {
             label title:"Assign a name", required:false
             //mode title:"Set for specific mode(s)", required:false
         }
-        section("About") {
-            paragraph "${app.name}. ${textVersion()}\n${textCopyright()}"
+    }
+}
+
+// Show "About" page
+private def pageAbout() {
+    TRACE("pageAbout()")
+
+    def textAbout =
+        "X10 Things allows you to connect X10 remote controls and " +
+        "ActiveEye motion sensors to SmartThings. Please note that you " +
+        "don't need SmartThings hub to connect X10 devices. Instead, you " +
+        "will need an X10 receiver (for example MR26A) and an X10 Gateway " +
+        "to send X10 commands directly to SmartThings over the Internet."
+
+    def pageProperties = [
+        name        : "pageAbout",
+        title       : "About",
+        nextPage    : "pageSetup",
+        install     : false,
+        uninstall   : state.installed
+    ]
+
+    return dynamicPage(pageProperties) {
+        section {
+            paragraph textAbout
+            paragraph "${textVersion()}\n${textCopyright()}"
+        }
+        section("License") {
+            paragraph textLicense()
         }
     }
 }
@@ -195,7 +168,7 @@ private def setupRemoteControl() {
     def pageProperties = [
         name        : "setupRemoteControl",
         title       : "Configure Remote Control",
-        nextPage    : "setupMenu",
+        nextPage    : "pageSetup",
         install     : false,
         uninstall   : state.installed
     ]
@@ -292,7 +265,7 @@ private def setupAddDevice() {
     TRACE("setupAddDevice()")
 
     addActiveEye(settings.motionHouseCode, settings.motionUnitCode, settings.enableLightSensor)
-    return setupMenu()
+    return pageSetup()
 }
 
 // Show "Show Installed Devices" setup page
@@ -305,7 +278,7 @@ private def setupShowDevices() {
     def pageProperties = [
         name        : "setupShowDevices",
         title       : "Installed Devices",
-        nextPage    : "setupMenu",
+        nextPage    : "pageSetup",
         install     : false,
         uninstall   : state.installed
     ]
@@ -389,7 +362,7 @@ private def actionRestEndpoint() {
         sendSms(settings.setupPhoneNumber, msg)
     }
 
-    return setupMenu()
+    return pageSetup()
 }
 
 def installed() {
@@ -661,6 +634,22 @@ private def textVersion() {
 
 private def textCopyright() {
     return "Copyright (c) 2014 Statusbits.com"
+}
+
+private def textLicense() {
+    def text =
+        "This program is free software: you can redistribute it and/or " +
+        "modify it under the terms of the GNU General Public License as " +
+        "published by the Free Software Foundation, either version 3 of " +
+        "the License, or (at your option) any later version.\n\n" +
+        "This program is distributed in the hope that it will be useful, " +
+        "but WITHOUT ANY WARRANTY; without even the implied warranty of " +
+        "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU " +
+        "General Public License for more details.\n\n" +
+        "You should have received a copy of the GNU General Public License " +
+        "along with this program. If not, see <http://www.gnu.org/licenses/>."
+
+    return text
 }
 
 private def TRACE(message) {
