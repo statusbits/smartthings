@@ -1,25 +1,31 @@
 /**
  *  Filtrete 3M-50 WiFi Thermostat
  *
- *  Copyright (c) 2014 Statusbits.com
+ *  --------------------------------------------------------------------------
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License. You may obtain a
- *  copy of the License at:
+ *  Copyright (c) 2014 geko@statusbits.com
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  This program is free software: you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation, either version 3 of the License, or (at your option)
+ *  any later version.
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License  for the specific language governing permissions and limitations
- *  under the License.
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ *  for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  --------------------------------------------------------------------------
  *
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/RadioThermostat/RadioThermostat.device.groovy
  *
  *  Revision History
  *  ----------------
+ *  2014-09-11: Version: 1.0.0  Released Version 1.0.0
  *  2014-08-12: Version: 0.9.0
  */
 
@@ -30,10 +36,6 @@ preferences {
         required:true, displayDuringSetup: true)
     input("confTcpPort", "number", title:"Thermostat TCP Port",
         defaultValue:"80", required:true, displayDuringSetup:true)
-    input("confAwayHeat", "number", title:"Away Heating Setpoint",
-        defaultValue:"62", required:true, displayDuringSetup:true)
-    input("confAwayCool", "number", title:"Away Cooling Setpoint",
-        defaultValue:"84", required:true, displayDuringSetup:true)
 }
 
 metadata {
@@ -47,7 +49,6 @@ metadata {
         // Custom attributes
         attribute "fanState", "string"  // Fan operating state. Values: "on", "off"
         attribute "hold", "string"      // Target temperature Hold status. Values: "on", "off"
-        attribute "away", "string"      // Away status. Values: "on", "off"
 
         // Custom commands
         command "heatLevelUp"
@@ -56,8 +57,6 @@ metadata {
         command "coolLevelDown"
         command "holdOn"
         command "holdOff"
-        command "awayOn"
-        command "awayOff"
     }
 
     tiles {
@@ -146,26 +145,20 @@ metadata {
 
         standardTile("hold", "device.hold", inactiveLabel:false) {
             state "default", label:'[Hold]'
-            state "on", label:'Hold On', backgroundColor:"#FFDB94", action:"holdOff"
-            state "off", label:'Hold Off', backgroundColor:"#FFFFFF", action:"holdOn"
-        }
-
-        standardTile("away", "device.away", inactiveLabel:false) {
-            state "default", label:'[Away]'
-            state "on", label:'Away On', backgroundColor:"#FFDB94", action:"awayOff"
-            state "off", label:'Away Off', backgroundColor:"#FFFFFF", action:"awayOn"
+            state "on", label:'Hold On', icon:"st.Weather.weather2", backgroundColor:"#FFDB94", action:"holdOff"
+            state "off", label:'Hold Off', icon:"st.Weather.weather2", backgroundColor:"#FFFFFF", action:"holdOn"
         }
 
         standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
             state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
-        main(["temperature", "mode"])
+        main(["temperature"])
 
         details(["temperature", "operatingState", "fanState",
             "heatingSetpoint", "heatLevelDown", "heatLevelUp",
             "coolingSetpoint", "coolLevelDown", "coolLevelUp",
-            "mode", "fanMode", "hold", "away", "refresh"])
+            "mode", "fanMode", "hold", "refresh"])
     }
 
     simulator {
@@ -481,25 +474,19 @@ def holdOff() {
     writeTstatValue("hold", 0)
 }
 
-def awayOn() {
-    TRACE("awayOn()")
-}
-
-def awayOff() {
-    TRACE("awayOff()")
-}
-
 // polling.poll 
 def poll() {
     TRACE("poll()")
-    refresh()
+    return refresh()
 }
 
 // refresh.refresh
 def refresh() {
     TRACE("refresh()")
+    STATE()
+
     setNetworkId(confIpAddr, confTcpPort)
-    apiGet("/tstat")
+    return apiGet("/tstat")
 }
 
 // Sets device Network ID in 'AAAAAAAA:PPPP' format
@@ -628,12 +615,11 @@ private def parseTstatData(Map tstat) {
     }
 
     if (tstat.containsKey("tstate")) {
-        def tstate = parseThermostatState(tstat.tstate)
-        //TRACE("tstate: ${tstate}")
-        if (device.currentState("thermostatOperatingState")?.value != tstate) {
+        def value = parseThermostatState(tstat.tstate)
+        if (device.currentState("thermostatOperatingState")?.value != value) {
             def ev = [
                 name:   "thermostatOperatingState",
-                value:  tstate
+                value:  value
             ]
 
             events << createEvent(ev)
@@ -641,12 +627,11 @@ private def parseTstatData(Map tstat) {
     }
 
     if (tstat.containsKey("fstate")) {
-        def fstate = parseFanState(tstat.fstate)
-        //TRACE("fstate: ${fstate}")
-        if (device.currentState("fanState")?.value != fstate) {
+        def value = parseFanState(tstat.fstate)
+        if (device.currentState("fanState")?.value != value) {
             def ev = [
                 name:   "fanState",
-                value:  fstate
+                value:  value
             ]
 
             events << createEvent(ev)
@@ -654,12 +639,11 @@ private def parseTstatData(Map tstat) {
     }
 
     if (tstat.containsKey("tmode")) {
-        def tmode = parseThermostatMode(tstat.tmode)
-        //TRACE("tmode: ${tmode}")
-        if (device.currentState("thermostatMode")?.value != tmode) {
+        def value = parseThermostatMode(tstat.tmode)
+        if (device.currentState("thermostatMode")?.value != value) {
             def ev = [
                 name:   "thermostatMode",
-                value:  tmode
+                value:  value
             ]
 
             events << createEvent(ev)
@@ -667,12 +651,11 @@ private def parseTstatData(Map tstat) {
     }
 
     if (tstat.containsKey("fmode")) {
-        def fmode = parseFanMode(tstat.fmode)
-        //TRACE("fmode: ${fmode}")
-        if (device.currentState("thermostatFanMode")?.value != fmode) {
+        def value = parseFanMode(tstat.fmode)
+        if (device.currentState("thermostatFanMode")?.value != value) {
             def ev = [
                 name:   "thermostatFanMode",
-                value:  fmode
+                value:  value
             ]
 
             events << createEvent(ev)
@@ -680,12 +663,11 @@ private def parseTstatData(Map tstat) {
     }
 
     if (tstat.containsKey("hold")) {
-        def hold = parseThermostatHold(tstat.hold)
-        //TRACE("hold: ${hold}")
-        if (device.currentState("hold")?.value != hold) {
+        def value = parseThermostatHold(tstat.hold)
+        if (device.currentState("hold")?.value != value) {
             def ev = [
                 name:   "hold",
-                value:  hold
+                value:  value
             ]
 
             events << createEvent(ev)
@@ -764,5 +746,17 @@ private def temperatureFtoC(Float tempF) {
 }
 
 private def TRACE(message) {
-    log.debug message
+    //log.debug message
+}
+
+private def STATE() {
+    log.debug "deviceNetworkId : ${device.deviceNetworkId}"
+    log.debug "temperature : ${device.currentValue("temperature")}"
+    log.debug "heatingSetpoint : ${device.currentValue("heatingSetpoint")}"
+    log.debug "coolingSetpoint : ${device.currentValue("coolingSetpoint")}"
+    log.debug "thermostatMode : ${device.currentValue("thermostatMode")}"
+    log.debug "thermostatFanMode : ${device.currentValue("thermostatFanMode")}"
+    log.debug "thermostatOperatingState : ${device.currentValue("thermostatOperatingState")}"
+    log.debug "fanState : ${device.currentValue("fanState")}"
+    log.debug "hold : ${device.currentValue("hold")}"
 }
