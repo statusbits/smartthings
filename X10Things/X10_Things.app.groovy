@@ -268,7 +268,7 @@ private def setupAddDevice() {
     return pageSetup()
 }
 
-// Show "Show Installed Devices" setup page
+// Show "Installed Devices" setup page
 private def setupShowDevices() {
     TRACE("setupShowDevices()")
 
@@ -295,9 +295,6 @@ private def setupShowDevices() {
     devices = devices.sort({ k1, k2 -> k1 <=> k2 } as Comparator)
     return dynamicPage(pageProperties) {
         section {
-            paragraph "Tap Done to continue."
-        }
-        section("ActiveEye Motion Sensors") {
             devices.each { k,v ->
                 paragraph "${k} - ${v}"
             }
