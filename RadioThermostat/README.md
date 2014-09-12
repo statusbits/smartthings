@@ -1,14 +1,14 @@
 Radio Thermostat
 ================
 
-This Smart Device allows you to integrate
+The **RadioThermostat** Smart Device allows you to integrate
 [Filtrete 3M-50](http://www.radiothermostat.com/filtrete/products/3M-50/)
 WiFi thermostat into the [SmartThings](http://fbuy.me/bb9pe) home automation
 system.
 
 ![Filtrete 3M-50](http://statusbits.github.io/images/Filtrete_3M50.jpg)
 
-Here's a screenshot of the Radio Thermostat devices running inside the
+Here's a screenshot of the **RadioThermostat** device running inside the
 SmartThings iPhone mobile app.
 
 ![RadioThermostat Screenshot](http://statusbits.github.io/images/RadioThermostat.jpg)
@@ -90,7 +90,7 @@ should now appear on the "Things" page.
 Known Issues
 ------------
 
-1. The Radio Thermostat device relies on polling to update its status
+1. The **RadioThermostat** device relies on polling to update its status
 periodically. There's a known issue with the SmartThings built-in polling
 engine -- the engine occasionally quits which results in your device status
 getting out of sync with the thermostat state. To solve this problem, I
