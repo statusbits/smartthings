@@ -1,11 +1,9 @@
 Radio Thermostat
 ================
 
-Under construction ...
-
 This Smart Device allows you to integrate
 [Filtrete 3M-50](http://www.radiothermostat.com/filtrete/products/3M-50/)
-WiFi thermostat with the [SmartThings](http://fbuy.me/bb9pe) home automation
+WiFi thermostat into the [SmartThings](http://fbuy.me/bb9pe) home automation
 system.
 
 ![Filtrete 3M-50](http://statusbits.github.io/images/Filtrete_3M50.jpg)
@@ -21,13 +19,11 @@ Requirements
 
 1. Your Wi-Fi thermostat must be connected to the same local network as your
 SmartThings hub.
-
-2. It is important that the thermostat's IP address remains unchanged even if
+2. It is important that the thermostat's IP address remain unchanged even if
 your router is rebooted. One way to accomplish it is by using "reserved" IP
 address. Please consult your web router manual on how to reserve an IP
 address.
-
-3. Obviously, you need an full-time Internet connection for your hub to
+3. Obviously, you need a funtioning Internet connection for your hub to
 communicate with the SmartThings cloud.
 
 
@@ -35,9 +31,9 @@ Installation
 ------------
 
 **Note:** RadioThermostat is a SmartThings *device handler*. Installing custom
-device is a two step process -- first, you need to install and self-publish
-the **SmartDevice Type**, then you need to create a new SmartDevice instance.
-Both steps must be performed in the SmartThings Web-based
+device is a two-step process -- first, you need to install and self-publish
+the SmartDevice *Type*, then you need to create an instance of the new
+SmartDevice. Both steps must be performed in the SmartThings Web-based
 [IDE](https://graph.api.smartthings.com).
 
 **1. Installing RadioThermostat SmartDevice Type**
@@ -52,14 +48,13 @@ button on the right.
 not matter what you type in the name field since it will be overwritten in the
 next step anyway. Click the blue "Create" button at the bottom of the page. An
 IDE editor window containing device handler template should now open.
-5. In another browser window, open **RadioThermostat**
+5. Copy the **RadioThermostat**
 [source code](https://github.com/statusbits/smartthings/blob/master/RadioThermostat/RadioThermostat.device.groovy)
-on GitHub.
-6. Copy the **RadioThermostat** source code from GitHub and paste it into the
-IDE editor window (see Step 4). Make sure you completely *overwrite*
-content of the editor window with the source code copied from the GitHub.
-7. Click the blue "Save" button above the editor window.
-8. Click the "Publish" button next to it and select "For Me". You have now
+from GitHub and paste it into the IDE editor window (see previous step). Make
+sure you *completely overwrite* contents of the editor window with the source
+code copied from the GitHub.
+6. Click the blue "Save" button above the editor window.
+7. Click the "Publish" button next to it and select "For Me". You have now
 self-published your smart device handler.
 
 **2. Installing RadioThermostat SmartDevice**
@@ -72,8 +67,8 @@ page).
 field. You can use any name here, for example "Radio Thermostat".
 4. Optionally, enter device label in the "Label" field. This is the actual
 label that will displayed in the SmartThings mobile app.
-5. Fill out mandatory "Device Network Id" filed. You can enter any string or
-number here, since it will be overwritten by the device handler anyway.
+5. Fill in the mandatory "Device Network Id" filed. You can enter any string
+or number here, since it will be overwritten by the device handler anyway.
 6. In the mandatory "Type" field, select "Radio Thermostat" from the drop-down
 list.
 7. In the mandatory "Version" field, select "Published" from the drop-down
@@ -81,14 +76,14 @@ list.
 8. In the "Location" field, select location where you want to install new
 device.
 9. In the "Hub" filed, select the name of your SmartThings hub.
-10. Clock the blue "Create" button at the bottom of the page.
+10. Click the blue "Create" button at the bottom of the page.
 
 **3. Refresh Device List in SmartThings Mobile App**
 
-1. Open SmartThings app on your mobile device, go to the Dashboard and log
-out of your SmartThings account.
-2. Exit and restart SmartThings mobile app.
-3. Log back into your SmartThings account. A new RadioThermostat device
+1. Open the SmartThings app on your mobile device, go to the Dashboard and
+*log out* of your SmartThings account.
+2. Exit and *restart* the SmartThings mobile app.
+3. Log back in into your SmartThings account. A new RadioThermostat device
 should now appear on the "Things" page.
 
 
@@ -96,13 +91,14 @@ Known Issues
 ------------
 
 1. The Radio Thermostat device relies on polling to update its status
-periodically. There's a known issue with SmartThings built-in polling engine.
-The polling engine occasionally quits which results in your device status
+periodically. There's a known issue with the SmartThings built-in polling
+engine -- the engine occasionally quits which results in your device status
 getting out of sync with the thermostat state. To solve this problem, I
 strongly recommend using
-[Pollster](https://github.com/statusbits/smartthings/tree/master/Pollster).
-Pollster can also poll your thermostat more as fast every minute, comparing to
-the 10-minutes polling interval of the SmartThings built-in polling engine.
+[Pollster](https://github.com/statusbits/smartthings/tree/master/Pollster)
+smart app. Pollster can also poll your thermostat more as fast every minute,
+comparing to the 10-minutes polling interval of the SmartThings built-in
+polling engine.
 
 
 License
