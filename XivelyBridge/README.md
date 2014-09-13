@@ -1,4 +1,0 @@
-Xively Bridge
-=============
-
-Under construction ...
