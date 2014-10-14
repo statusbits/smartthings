@@ -34,8 +34,8 @@ metadata {
     }
 
     tiles {
-        valueTile("humidity", "device.humidity", inactiveLabel: false) {
-            state "humidity", label:'${currentValue}% humidity', unit:""
+        valueTile("humidity", "device.humidity", inactiveLabel: false, decoration: "flat") {
+            state "humidity", label:'${currentValue}%', unit:"Humidity"
         }
 
         main(["humidity"])
@@ -58,9 +58,10 @@ def parse(String message) {
         return null
     }
 
+    Float val = msg.humidity.toFloat()
     def event = [
         name  : "humidity",
-        value : msg.humidity,
+        value : val.round(1),
         unit  : "%",
     ]
 
