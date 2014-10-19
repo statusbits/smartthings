@@ -71,12 +71,6 @@ def parse(String message) {
     def event = [
         name  : "temperature",
         value : temp.round(1),
-        unit  : "F",
-    ]
-
-    def event = [
-        name  : "temperature",
-        value : temp,
         unit  : tempScale,
     ]
 
