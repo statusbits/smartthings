@@ -6,5 +6,6 @@ automation system.
 
 Currently these include:
 
+* __Dim and Dimmer__ - create lighting scenes
 * __Pollster__ - a SmartThings polling daemon
 * __VirtualThings__ - SmartThings virtual devices
