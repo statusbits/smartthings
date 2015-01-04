@@ -1,28 +1,27 @@
 /**
  *  Virtual Remote Control
  *
- *  --------------------------------------------------------------------------
- *
- *  Copyright (c) 2014 Statusbits.com
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License. You may obtain a
- *  copy of the License at:
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License  for the specific language governing permissions and limitations
- *  under the License.
- *
- *  --------------------------------------------------------------------------
+ *  Version: 1.2  (2015-01-04)
  *
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualRemoteControl.device.groovy
  *
- *  Version: 1.1.0  (2014-11-07)
+ *  --------------------------------------------------------------------------
+ *
+ *  Copyright (c) 2014 Statusbits.com
+ *
+ *  This program is free software: you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation, either version 3 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ *  for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 metadata {
@@ -54,52 +53,52 @@ metadata {
     }
 
     preferences {
-        input("label1", "string", title:"Button 1 Label", defaultValue:"Button 1", required:false, displayDuringSetup:false)
-        input("label2", "string", title:"Button 2 Label", defaultValue:"Button 2", required:false, displayDuringSetup:false)
-        input("label3", "string", title:"Button 3 Label", defaultValue:"Button 3", required:false, displayDuringSetup:false)
-        input("label4", "string", title:"Button 4 Label", defaultValue:"Button 4", required:false, displayDuringSetup:false)
-        input("label5", "string", title:"Button 5 Label", defaultValue:"Button 5", required:false, displayDuringSetup:false)
-        input("label6", "string", title:"Button 6 Label", defaultValue:"Button 6", required:false, displayDuringSetup:false)
-        input("label7", "string", title:"Button 7 Label", defaultValue:"Button 7", required:false, displayDuringSetup:false)
-        input("label8", "string", title:"Button 8 Label", defaultValue:"Button 8", required:false, displayDuringSetup:false)
+        input("label1", "string", title:"Button 1 Label", defaultValue:"Button 1", displayDuringSetup:false)
+        input("label2", "string", title:"Button 2 Label", defaultValue:"Button 2", displayDuringSetup:false)
+        input("label3", "string", title:"Button 3 Label", defaultValue:"Button 3", displayDuringSetup:false)
+        input("label4", "string", title:"Button 4 Label", defaultValue:"Button 4", displayDuringSetup:false)
+        input("label5", "string", title:"Button 5 Label", defaultValue:"Button 5", displayDuringSetup:false)
+        input("label6", "string", title:"Button 6 Label", defaultValue:"Button 6", displayDuringSetup:false)
+        input("label7", "string", title:"Button 7 Label", defaultValue:"Button 7", displayDuringSetup:false)
+        input("label8", "string", title:"Button 8 Label", defaultValue:"Button 8", displayDuringSetup:false)
     }
 
     tiles {
         //standardTile("remote", "device.deviceName", canChangeIcon:true, canChangeBackground:true) {
-        standardTile("remote", "device.deviceName") {
+        standardTile("remote", "device.deviceName", decoration:"flat") {
             state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller"
         }
 
         standardTile("button1", "device.label1", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'${currentValue}', icon:"st.unknown.thing.thing-circle", action:"button1"
+            state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller", action:"button1"
         }
 
         standardTile("button2", "device.label2", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'${currentValue}', icon:"st.unknown.thing.thing-circle", action:"button2"
+            state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller", action:"button2"
         }
 
         standardTile("button3", "device.label3", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'${currentValue}', icon:"st.unknown.thing.thing-circle", action:"button3"
+            state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller", action:"button3"
         }
 
         standardTile("button4", "device.label4", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'${currentValue}', icon:"st.unknown.thing.thing-circle", action:"button4"
+            state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller", action:"button4"
         }
 
         standardTile("button5", "device.label5", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'${currentValue}', icon:"st.unknown.thing.thing-circle", action:"button5"
+            state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller", action:"button5"
         }
 
         standardTile("button6", "device.label6", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'${currentValue}', icon:"st.unknown.thing.thing-circle", action:"button6"
+            state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller", action:"button6"
         }
 
         standardTile("button7", "device.label7", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'${currentValue}', icon:"st.unknown.thing.thing-circle", action:"button7"
+            state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller", action:"button7"
         }
 
         standardTile("button8", "device.label8", inactiveLabel:false, decoration:"flat") {
-            state "default", label:'${currentValue}', icon:"st.unknown.thing.thing-circle", action:"button8"
+            state "default", label:'${currentValue}', icon:"st.unknown.zwave.remote-controller", action:"button8"
         }
 
         standardTile("refresh", "device.button", inactiveLabel:false, decoration:"flat") {
@@ -133,34 +132,60 @@ def parse(String message) {
     return buttonEvent(m.button, m.action)
 }
 
+def button1() {
+    sendEvent(buttonEvent(1, "pushed"))
+    sendEvent(name: "label1", value: settings.label1, isStateChange: true)
+}
+
+def button2() {
+    sendEvent(buttonEvent(2, "pushed"))
+    sendEvent(name: "label2", value: settings.label2, isStateChange: true)
+}
+
+def button3() {
+    sendEvent(buttonEvent(3, "pushed"))
+    sendEvent(name: "label3", value: settings.label3, isStateChange: true)
+}
+
+def button4() {
+    sendEvent(buttonEvent(4, "pushed"))
+    sendEvent(name: "label4", value: settings.label4, isStateChange: true)
+}
+
+def button5() {
+    sendEvent(buttonEvent(5, "pushed"))
+    sendEvent(name: "label5", value: settings.label5, isStateChange: true)
+}
+
+def button6() {
+    sendEvent(buttonEvent(6, "pushed"))
+    sendEvent(name: "label6", value: settings.label6, isStateChange: true)
+}
+
+def button7() {
+    sendEvent(buttonEvent(7, "pushed"))
+    sendEvent(name: "label7", value: settings.label7, isStateChange: true)
+}
+
+def button8() {
+    sendEvent(buttonEvent(8, "pushed"))
+    sendEvent(name: "label8", value: settings.label8, isStateChange: true)
+}
+
 def refresh() {
     TRACE("refresh()")
 
     sendEvent(name: "deviceName", value: device.displayName)
-    sendEvent(name: "label1", value: settings.label1)
-    sendEvent(name: "label2", value: settings.label2)
-    sendEvent(name: "label3", value: settings.label3)
-    sendEvent(name: "label4", value: settings.label4)
-    sendEvent(name: "label5", value: settings.label5)
-    sendEvent(name: "label6", value: settings.label6)
-    sendEvent(name: "label7", value: settings.label7)
-    sendEvent(name: "label8", value: settings.label8)
+    sendEvent(name: "label1", value: settings.label1, isStateChange: true)
+    sendEvent(name: "label2", value: settings.label2, isStateChange: true)
+    sendEvent(name: "label3", value: settings.label3, isStateChange: true)
+    sendEvent(name: "label4", value: settings.label4, isStateChange: true)
+    sendEvent(name: "label5", value: settings.label5, isStateChange: true)
+    sendEvent(name: "label6", value: settings.label6, isStateChange: true)
+    sendEvent(name: "label7", value: settings.label7, isStateChange: true)
+    sendEvent(name: "label8", value: settings.label8, isStateChange: true)
 
     STATE()
-}
-
-def button1()   { buttonPush(1) }
-def button2()   { buttonPush(2) }
-def button3()   { buttonPush(3) }
-def button4()   { buttonPush(4) }
-def button5()   { buttonPush(5) }
-def button6()   { buttonPush(6) }
-def button7()   { buttonPush(7) }
-def button8()   { buttonPush(8) }
-
-private def buttonPush(btn) {
-    TRACE("buttonPush(${btn})")
-    sendEvent(buttonEvent(btn, "pushed"))
 }
 
 private def buttonEvent(button, action) {
