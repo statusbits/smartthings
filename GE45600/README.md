@@ -13,11 +13,10 @@ and sends `button` events for each of 9 remote control buttons.
 
 Click here to watch the [demo video](http://youtu.be/6Uts5BLrYnw).
 
-**Note**
-*To send button commands to SmartThings, you must press the "SCENE" button
-on the remote first (the third button in the top row). To switch back to
-normal remote control mode, press the "LIGHT" button (the third button in
-the top row).*
+**Note:** *To send button commands to SmartThings, you must press the
+"SCENE" button on the remote first (the third button in the top row). To
+switch back to normal remote control mode, press the "LIGHT" button (the
+third button in the top row).*
 
 
 Installation
