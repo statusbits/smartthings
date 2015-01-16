@@ -1,47 +1,52 @@
 /**
- *  Virtual Motion Tile
+ *  Virtual Motion Tile.
  *
- *  Copyright (c) 2014 Statusbits.com
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License. You may obtain a
- *  copy of the License at:
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License  for the specific language governing permissions and limitations
- *  under the License.
+ *  Version 1.2 (01/14/2015)
  *
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualMotionTile.device.groovy
  *
- *  Revision History
- *  ----------------
- *  2014-08-28  V1.1.0  parse takes 'motion:<value>' as an argument
- *  2014-08-10  V1.0.0  Initial release
+ *  --------------------------------------------------------------------------
+ *
+ *  Copyright (c) 2014 Statusbits.com
+ *
+ *  This program is free software: you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation, either version 3 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ *  for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 metadata {
     definition (name:"Virtual Motion Tile", namespace:"statusbits", author:"geko@statusbits.com") {
         capability "Motion Sensor"
         capability "Sensor"
+        capability "Refresh"
 
         // custom commands
-        command "parse"     // (String "motion:<active|inactive>")
+        command "parse", ["string"] // (string: "motion:<active|inactive>")
     }
 
     tiles {
 	    standardTile("motion", "device.motion", width: 2, height: 2) {
-            state "default", label:'[Motion]', backgroundColor:"#C0C0C0"
+            state("default", label:'', backgroundColor:"#999999")
 		    state("active", label:'motion', icon:"st.motion.motion.active", backgroundColor:"#53a7c0")
 		    state("inactive", label:'no motion', icon:"st.motion.motion.inactive", backgroundColor:"#ffffff")
 	    }
 
+        standardTile("refresh", "device.status", inactiveLabel:false, decoration:"flat") {
+            state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
+        }
+
 	    main "motion"
-	    details(["motion"])
+	    details(["motion", "refresh"])
     }
 
     simulator {
@@ -69,14 +74,25 @@ def parse(String message) {
     }
 
     def event = [
-        name  : "motion",
-        value : value,
+        name:   "motion",
+        value:  value,
     ]
 
     TRACE("event: (${event})")
     sendEvent(event)
 }
 
+// refresh.refresh
+def refresh() {
+    TRACE("refresh()")
+    STATE()
+}
+
 private def TRACE(message) {
     //log.debug message
+}
+
+private def STATE() {
+    log.debug "deviceNetworkId: ${device.deviceNetworkId}"
+    log.debug "motion: ${device.currentValue('motion')}"
 }

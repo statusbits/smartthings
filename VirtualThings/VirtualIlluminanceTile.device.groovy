@@ -1,45 +1,54 @@
 /**
- *  Virtual Illuminance Tile
+ *  Virtual Illuminance Tile.
  *
- *  Copyright (c) 2014 Statusbits.com
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License. You may obtain a
- *  copy of the License at:
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License  for the specific language governing permissions and limitations
- *  under the License.
+ *  Version 1.2 (01/14/2015)
  *
  *  The latest version of this file can be found at:
  *  https://github.com/statusbits/smartthings/blob/master/VirtualThings/VirtualIlluminanceTile.device.groovy
  *
- *  Revision History
- *  ----------------
- *  2014-08-28  V1.1.0  parse() takes 'illuminance:<value>' as an argument
- *  2014-08-11  V1.0.0  Initial release
+ *  --------------------------------------------------------------------------
+ *
+ *  Copyright (c) 2014 Statusbits.com
+ *
+ *  This program is free software: you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the Free
+ *  Software Foundation, either version 3 of the License, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ *  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ *  for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 metadata {
     definition (name:"Virtual Illuminance Tile", namespace:"statusbits", author:"geko@statusbits.com") {
         capability "Illuminance Measurement"
         capability "Sensor"
+        capability "Refresh"
 
         // custom commands
-        command "parse"     // (String "illuminance:<value>")
+        command "parse", ["string"] // (string: "illuminance:<value>")
     }
 
     tiles {
         valueTile("illuminance", "device.illuminance", width:2, height:2) {
-            state "luminosity", label:'${currentValue} ${unit}', unit:"lux"
+            state "luminosity", label:'${currentValue} ${unit}', unit:"lux",
+                backgroundColors:[
+                    [value:10,  color:"#999999"],
+                    [value:400, color:"#fbd41b"]
+                ]
+        }
+
+        standardTile("refresh", "device.status", inactiveLabel:false, decoration:"flat") {
+            state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
         main(["illuminance"])
-        details(["illuminance"])
+        details(["illuminance", "refresh"])
     }
 
     simulator {
@@ -62,15 +71,26 @@ def parse(String message) {
     }
 
     def event = [
-        name  : "illuminance",
-        value : msg.illuminance,
-        unit  : "lux"
+        name:   "illuminance",
+        value:  msg.illuminance,
+        unit:   "lux"
     ]
 
     TRACE("event: (${event})")
     sendEvent(event)
 }
 
+// refresh.refresh
+def refresh() {
+    TRACE("refresh()")
+    STATE()
+}
+
 private def TRACE(message) {
     //log.debug message
+}
+
+private def STATE() {
+    log.debug "deviceNetworkId: ${device.deviceNetworkId}"
+    log.debug "illuminance: ${device.currentValue('illuminance')}"
 }
