@@ -5,7 +5,7 @@ Many [SmartThings](http://fbuy.me/bb9pe) devices rely on frequent polling to
 update their status periodically. These devices have 'polling' capability and
 implement poll() command that the SmartThings polling engine calls
 approximately every 10 minutes. The polling rate is not user-configurable and
-is may not be frequent enough for some devices. Also, the SmartThings polling
+may not be frequent enough for some devices. Also, the SmartThings polling
 engine has been known to have bad days now and then, when it works
 intermittently or stops working for hours and even days.
 
@@ -14,7 +14,7 @@ periodically calls poll() or refresh() command for selected devices. Devices
 can be arranged into four groups with independently configurable polling
 intervals. The polling interval can be as short as one minute.
 
-![](https://sites.google.com/site/statusbits/pictures/Pollster.jpg)
+![Pollster Screenshot](http://statusbits.github.io/images/Pollster_1.2.jpg)
 
 Installation
 ------------
