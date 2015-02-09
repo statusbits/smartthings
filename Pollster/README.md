@@ -1,13 +1,13 @@
 Pollster
 ========
 
-Many [SmartThings](http://fbuy.me/bb9pe) devices rely on polling to update
-their status periodically. These devices have 'polling' capability and
+Many [SmartThings](http://fbuy.me/bb9pe) devices rely on frequent polling to
+update their status periodically. These devices have 'polling' capability and
 implement poll() command that the SmartThings polling engine calls
-approximately every 10 minutes. The polling rate is not user-configurable
-and, unfortunately, the SmartThings polling engine has been known to have
-dad days when it works intermittently or stops working for hours and even
-days.
+approximately every 10 minutes. The polling rate is not user-configurable and
+is may not be frequent enough for some devices. Also, the SmartThings polling
+engine has been known to have bad days now and then, when it works
+intermittently or stops working for hours and even days.
 
 Here comes Pollster to the rescue! Pollster works behind the scenes and
 periodically calls poll() or refresh() command for selected devices. Devices
@@ -56,7 +56,7 @@ Revision History
 ----------------
 
 **Version 1.2. Released 2/8/2015**
-* Added ability to update device that provide 'refresh' capability.
+* Added ability to update devices that provide 'refresh' capability.
 * Added "Poll Now" feature. You can now start the poll manually by touching
 the app icon.
 
@@ -77,7 +77,7 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy
 of the License at:
 
-    http://www.apache.org/licenses/LICENSE-2.0
+<http://www.apache.org/licenses/LICENSE-2.0>
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
