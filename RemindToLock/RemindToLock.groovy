@@ -8,7 +8,7 @@
  *  Version 1.0.2 (2014-12-06)
  *
  *  The latest version of this file can be found at:
- *  https://github.com/statusbits/remindtolock
+ *  https://github.com/statusbits/smartthings/tree/master/RemindToLock
  *
  *  Credits:
  *  This program is partially based on the "Left It Unlocked" app written by
