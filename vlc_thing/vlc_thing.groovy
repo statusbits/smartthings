@@ -7,7 +7,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Copyright (c) 2014 geko@statusbits.com
+ *  Copyright (c) 2014 Statusbits.com
  *
  *  This program is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the Free
@@ -27,14 +27,14 @@
  *  The latest version of this file can be found at:
  *  <https://github.com/statusbits/smartthings/tree/master/vlc_thing/>
  *
- *  Version 1.1.0 (2014-11-03)
+ *  Version 1.2.0 (06/28/2015)
  */
 
 import groovy.json.JsonSlurper
 
 preferences {
     input("confIpAddr", "string", title:"Enter VLC IP address",
-        required:true, displayDuringSetup: true)
+        required:true, displayDuringSetup:true)
     input("confTcpPort", "number", title:"Enter VLC TCP port",
         defaultValue:"8080", required:true, displayDuringSetup:true)
     input("confPassword", "password", title:"Enter your VLC password",
@@ -51,7 +51,6 @@ metadata {
         capability "Polling"
 
         // Custom attributes
-        attribute "savedVolume", "string"
 
         // Custom commands
         command "enqueue", ["string"]
@@ -140,6 +139,23 @@ metadata {
     }
 }
 
+def updated() {
+    log.info "VLC Thing. ${textVersion()}. ${textCopyright()}"
+	LOG("$device.displayName updated with settings: ${settings.inspect()}")
+
+    setNetworkId(settings.confIpAddr, settings.confTcpPort)
+    state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
+    if (settings.confPassword) {
+        String auth = ":${settings.confPassword}".bytes.encodeBase64()
+        state.userAuth = auth
+    } else {
+        state.userAuth = null
+    }
+
+    setDefaults()
+    return refresh()
+}
+
 def parse(String message) {
     def msg = stringToMap(message)
     if (msg.containsKey("simulator")) {
@@ -185,7 +201,7 @@ def off() {
 
 // MusicPlayer.play
 def play() {
-    TRACE("play()")
+    LOG("play()")
 
     def command
     if (device.currentValue('status') == 'paused') {
@@ -199,21 +215,21 @@ def play() {
 
 // MusicPlayer.stop
 def stop() {
-    TRACE("stop()")
+    LOG("stop()")
 
     return vlcCommand("command=pl_stop", 500)
 }
 
 // MusicPlayer.pause
 def pause() {
-    TRACE("pause()")
+    LOG("pause()")
 
     return vlcCommand("command=pl_forcepause")
 }
 
 // MusicPlayer.playTrack
 def playTrack(uri) {
-    TRACE("playTrack(${uri})")
+    LOG("playTrack(${uri})")
 
     def command = "command=in_play&input=" + URLEncoder.encode(uri, "UTF-8")
     return vlcCommand(command, 500)
@@ -221,47 +237,47 @@ def playTrack(uri) {
 
 // MusicPlayer.playText
 def playText(text) {
-    TRACE("playText(${text})")
+    LOG("playText(${text})")
 
-    def sound = textToSpeech(text, true)
+    def sound = myTextToSpeech(text)
     return playTrack(sound.uri)
 }
 
 // MusicPlayer.setTrack
 def setTrack(name) {
-    TRACE("setTrack(${name}) not implemented")
+    LOG("setTrack(${name}) not implemented")
     return null
 }
 
 // MusicPlayer.resumeTrack
 def resumeTrack(name) {
-    TRACE("resumeTrack(${name}) not implemented")
+    LOG("resumeTrack(${name}) not implemented")
     return null
 }
 
 // MusicPlayer.restoreTrack
 def restoreTrack(name) {
-    TRACE("restoreTrack(${name}) not implemented")
+    LOG("restoreTrack(${name}) not implemented")
     return null
 }
 
 // MusicPlayer.nextTrack
 def nextTrack() {
-    TRACE("nextTrack()")
+    LOG("nextTrack()")
 
     return vlcCommand("command=pl_next", 500)
 }
 
 // MusicPlayer.previousTrack
 def previousTrack() {
-    TRACE("previousTrack()")
+    LOG("previousTrack()")
 
     return vlcCommand("command=pl_previous", 500)
 }
 
 // MusicPlayer.setLevel
 def setLevel(number) {
-    TRACE("setLevel(${number})")
+    LOG("setLevel(${number})")
 
     if (device.currentValue('mute') == 'muted') {
         sendEvent(name:'mute', value:'unmuted')
@@ -274,24 +290,25 @@ def setLevel(number) {
 
 // MusicPlayer.mute
 def mute() {
-    TRACE("mute()")
+    LOG("mute()")
 
     if (device.currentValue('mute') == 'muted') {
         return null
     }
 
-    sendEvent(name:'savedVolume', value:device.currentValue('level'), displayed:false)
+    state.savedVolume = device.currentValue('level')
     sendEvent(name:'mute', value:'muted')
     sendEvent(name:'level', value:0)
+
     return vlcCommand("command=volume&val=0")
 }
 
 // MusicPlayer.unmute
 def unmute() {
-    TRACE("unmute()")
+    LOG("unmute()")
 
     if (device.currentValue('mute') == 'muted') {
-        return setLevel(device.currentValue('savedVolume').toInteger())
+        return setLevel(state.savedVolume.toInteger())
     }
 
     return null
@@ -299,52 +316,47 @@ def unmute() {
 
 // SpeechSynthesis.speak
 def speak(text) {
-    TRACE("speak(${text})")
+    LOG("speak(${text})")
 
-    def sound = textToSpeech(text, true)
+    def sound = myTextToSpeech(text)
     return playTrack(sound.uri)
 }
 
 // polling.poll 
 def poll() {
-    TRACE("poll()")
+    LOG("poll()")
     return refresh()
 }
 
 // refresh.refresh
 def refresh() {
-    TRACE("refresh()")
+    LOG("refresh()")
     STATE()
-
-    setNetworkId(settings.confIpAddr, settings.confTcpPort)
-    if (device.currentValue('status') == null) {
-        setDefaults()
-    }
 
     return vlcGetStatus()
 }
 
 def enqueue(uri) {
-    TRACE("enqueue(${uri})")
+    LOG("enqueue(${uri})")
     def command = "command=in_enqueue&input=" + URLEncoder.encode(uri, "UTF-8")
     return vlcCommand(command)
 }
 
 def seek(trackNumber) {
-    TRACE("seek(${trackNumber})")
+    LOG("seek(${trackNumber})")
     def command = "command=pl_play&id=${trackNumber}"
     return vlcCommand(command, 500)
 }
 
 def playTrackAndResume(uri, duration, volume = null) {
-    TRACE("playTrackAndResume(${uri}, ${duration}, ${volume})")
+    LOG("playTrackAndResume(${uri}, ${duration}, ${volume})")
 
     // FIXME
     return playTrackAndRestore(uri, duration, volume)
 }
 
 def playTrackAndRestore(uri, duration, volume = null) {
-    TRACE("playTrackAndRestore(${uri}, ${duration}, ${volume})")
+    LOG("playTrackAndRestore(${uri}, ${duration}, ${volume})")
 
     def currentStatus = device.currentValue('status')
     def currentVolume = device.currentValue('level')
@@ -382,35 +394,35 @@ def playTrackAndRestore(uri, duration, volume = null) {
 }
 
 def playTextAndResume(text, volume = null) {
-    TRACE("playTextAndResume(${text}, ${volume})")
+    LOG("playTextAndResume(${text}, ${volume})")
 
-    def sound = textToSpeech(text, true)
+    def sound = myTextToSpeech(text)
     return playTrackAndResume(sound.uri, (sound.duration as Integer) + 1, volume)
 }
 
 def playTextAndRestore(text, volume = null) {
-    TRACE("playTextAndRestore(${text}, ${volume})")
+    LOG("playTextAndRestore(${text}, ${volume})")
 
-    def sound = textToSpeech(text, true)
+    def sound = myTextToSpeech(text)
     return playTrackAndRestore(sound.uri, (sound.duration as Integer) + 1, volume)
 }
 
 def playSoundAndTrack(uri, duration, trackData, volume = null) {
-    TRACE("playSoundAndTrack(${uri}, ${duration}, ${trackData}, ${volume})")
+    LOG("playSoundAndTrack(${uri}, ${duration}, ${trackData}, ${volume})")
 
     // FIXME
     return playTrackAndRestore(uri, duration, volume)
 }
 
 def __testTTS() {
-    TRACE("__testTTS()")
+    LOG("__testTTS()")
     def text = "VLC for Smart Things is brought to you by Statusbits.com"
     return playTextAndResume(text)
 }
 
 // Sets device Network ID in 'AAAAAAAA:PPPP' format
 private String setNetworkId(ipaddr, port) {
-    TRACE("setNetworkId(${ipaddr}, ${port})")
+    LOG("setNetworkId(${ipaddr}, ${port})")
 
     def hexIp = ipaddr.tokenize('.').collect {
         String.format('%02X', it.toInteger())
@@ -418,20 +430,18 @@ private String setNetworkId(ipaddr, port) {
 
     def hexPort = String.format('%04X', port.toInteger())
     device.deviceNetworkId = "${hexIp}:${hexPort}"
-    log.debug "device.deviceNetworkId = ${device.deviceNetworkId}"
 }
 
 private vlcGet(String path) {
-    TRACE("vlcGet(${path})")
+    LOG("vlcGet(${path})")
 
     def headers = [
-        HOST:       getHostAddress(),
+        HOST:       state.hostAddress,
         Accept:     "*/*"
     ]
-
-    if (settings.confPassword) {
-        def auth = ":${settings.confPassword}".bytes.encodeBase64()
-        headers['Authorization'] = "Basic ${auth}"
+    
+    if (state.userAuth != null) {
+        headers['Authorization'] = "Basic ${state.userAuth}"
     }
 
     def httpRequest = [
@@ -445,7 +455,7 @@ private vlcGet(String path) {
 }
 
 private def delayHubAction(ms) {
-    TRACE("delayHubAction(${ms})")
+    LOG("delayHubAction(${ms})")
     return new physicalgraph.device.HubAction("delay ${ms}")
 }
 
@@ -454,7 +464,7 @@ private vlcGetStatus() {
 }
 
 private vlcCommand(command, refresh = 0) {
-    TRACE("vlcCommand(${command})")
+    LOG("vlcCommand(${command})")
 
     def actions = [
         vlcGet("/requests/status.json?${command}")
@@ -469,7 +479,7 @@ private vlcCommand(command, refresh = 0) {
 }
 
 private def vlcGetPlaylists() {
-    TRACE("getPlaylists()")
+    LOG("getPlaylists()")
     return vlcGet("/requests/playlist.json")
 }
 
@@ -487,13 +497,13 @@ private parseHttpHeaders(String headers) {
 }
 
 private def parseHttpResponse(Map data) {
-    TRACE("parseHttpResponse(${data})")
+    LOG("parseHttpResponse(${data})")
 
     def events = []
 
     if (data.containsKey('state')) {
         def vlcState = data.state
-        //TRACE("VLC state: ${vlcState})")
+        //LOG("VLC state: ${vlcState})")
         events << createEvent(name:"status", value:vlcState)
         if (vlcState == 'stopped') {
             events << createEvent([name:'trackDescription', value:''])
@@ -501,7 +511,7 @@ private def parseHttpResponse(Map data) {
     }
 
     if (data.containsKey('volume')) {
-        //TRACE("VLC volume: ${data.volume})")
+        //LOG("VLC volume: ${data.volume})")
         def volume = ((data.volume.toInteger() * 100) / 512) as int
         events << createEvent(name:'level', value:volume)
     }
@@ -515,11 +525,11 @@ private def parseHttpResponse(Map data) {
 }
 
 private def parseTrackInfo(events, Map info) {
-    //TRACE("parseTrackInfo(${events}, ${info})")
+    //LOG("parseTrackInfo(${events}, ${info})")
 
     if (info.containsKey('category') && info.category.containsKey('meta')) {
         def meta = info.category.meta
-        TRACE("Track info: ${meta})")
+        LOG("Track info: ${meta})")
         if (meta.containsKey('filename')) {
             if (meta.filename.contains("//s3.amazonaws.com/smartapp-")) {
                 log.trace "Skipping event generation for sound file ${meta.filename}"
@@ -548,8 +558,14 @@ private def parseTrackInfo(events, Map info) {
     }
 }
 
+private def myTextToSpeech(text) {
+    def sound = textToSpeech(text, true)
+    sound.uri = sound.uri.replace('https:', 'http:')
+    return sound
+}
+
 private def setDefaults() {
-    TRACE("setDefaults()")
+    LOG("setDefaults()")
 
     def events = []
 
@@ -574,18 +590,23 @@ private def setDefaults() {
     }
 }
 
-private def getHostAddress() {
-    return "${settings.confIpAddr}:${settings.confTcpPort}"
+private def textVersion() {
+    def text = "Version 1.2.0 (06/28/2015)"
 }
 
-private def TRACE(message) {
-    //log.debug message
+private def textCopyright() {
+    def text = "Copyright (c) 2014 Statusbits.com"
+}
+
+private def LOG(message) {
+    //log.trace message
 }
 
 private def STATE() {
-    log.debug "deviceNetworkId: ${device.deviceNetworkId}"
-    log.debug "status: ${device.currentValue('status')}"
-    log.debug "level: ${device.currentValue('level')}"
-    log.debug "mute: ${device.currentValue('mute')}"
-    log.debug "trackDescription: ${device.currentValue('trackDescription')}"
+    log.trace "deviceNetworkId: ${device.deviceNetworkId}"
+    log.trace "state: ${state}"
+    log.trace "status: ${device.currentValue('status')}"
+    log.trace "level: ${device.currentValue('level')}"
+    log.trace "mute: ${device.currentValue('mute')}"
+    log.trace "trackDescription: ${device.currentValue('trackDescription')}"
 }

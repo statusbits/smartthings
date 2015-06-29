@@ -138,13 +138,17 @@ for SmartThings is brought to you by Statusbits.com."
 Revision History
 ----------------
 
-**Version 1.1.0. Released 2014-11-03**
+**Version 1.2.0. Released 06/28/2015**
+* Fixed Issue #4 (Unable to play text-to-speech on 64-bit Windows).
+* Minor performance improvements.
+
+**Version 1.1.0. Released 11/03/2014**
 * Implemented new 'Speech Synthesis' capability for text-to-speech applications.
 
-**Version 1.0.1. Released 2014-10-05**
+**Version 1.0.1. Released 10/05/2014**
 * Fixed Issue #1 - Exception thrown when calling device.playTrackAndRestore().
 
-**Version 1.0.0. Released 2014-10-04**
+**Version 1.0.0. Released 10/04/2014**
 * First public release.
 
 
