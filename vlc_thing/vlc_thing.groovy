@@ -429,7 +429,8 @@ private String setNetworkId(ipaddr, port) {
     }.join()
 
     def hexPort = String.format('%04X', port.toInteger())
-    device.deviceNetworkId = "${hexIp}:${hexPort}"
+    //device.deviceNetworkId = "${hexIp}:${hexPort}"
+    device.setDeviceNetworkId("${hexIp}:${hexPort}")
 }
 
 private vlcGet(String path) {
