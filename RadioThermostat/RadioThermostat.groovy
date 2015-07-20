@@ -1,9 +1,12 @@
 /**
- *  Filtrete 3M-50 WiFi Thermostat
+ *  Filtrete 3M-50 WiFi Thermostat.
+ *
+ *  For more information, please visit:
+ *  <https://github.com/statusbits/smartthings/tree/master/RadioThermostat/>
  *
  *  --------------------------------------------------------------------------
  *
- *  Copyright (c) 2014 geko@statusbits.com
+ *  Copyright (c) 2014 Statusbits.com
  *
  *  This program is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the Free
@@ -20,14 +23,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  The latest version of this file can be found at:
- *  <https://github.com/statusbits/smartthings/tree/master/RadioThermostat/>
- *
- *  Revision History
- *  ----------------
- *  2014-09-13: Version: 1.0.1  Fixed fan control bug
- *  2014-09-11: Version: 1.0.0  Released Version 1.0.0
- *  2014-08-12: Version: 0.9.0
+ *  Version 1.0.2 (07/20/2015)
  */
 
 import groovy.json.JsonSlurper
@@ -182,8 +178,19 @@ metadata {
     }
 }
 
+def updated() {
+    log.info "Radio Thermostat. ${textVersion()}. ${textCopyright()}"
+	LOG("$device.displayName updated with settings: ${settings.inspect()}")
+
+    setNetworkId(settings.confIpAddr, settings.confTcpPort)
+    state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
+    //setDefaults()
+
+    return refresh()
+}
+
 def parse(String message) {
-    TRACE("parse(${message})")
+    LOG("parse(${message})")
 
     def msg = stringToMap(message)
 
@@ -191,7 +198,7 @@ def parse(String message) {
         // parse HTTP response headers
         def headers = new String(msg.headers.decodeBase64())
         def parsedHeaders = parseHttpHeaders(headers)
-        TRACE("parsedHeaders: ${parsedHeaders}")
+        LOG("parsedHeaders: ${parsedHeaders}")
         if (parsedHeaders.status != 200) {
             log.error "Server error: ${parsedHeaders.reason}"
             return null
@@ -218,7 +225,7 @@ def parse(String message) {
 
 // thermostat.setThermostatMode
 def setThermostatMode(mode) {
-    TRACE("setThermostatMode(${mode})")
+    LOG("setThermostatMode(${mode})")
 
     switch (mode) {
     case "off":             return off()
@@ -233,7 +240,7 @@ def setThermostatMode(mode) {
 
 // thermostat.off
 def off() {
-    TRACE("off()")
+    LOG("off()")
 
     if (device.currentValue("thermostatMode") == "off") {
         return null
@@ -245,7 +252,7 @@ def off() {
 
 // thermostat.heat
 def heat() {
-    TRACE("heat()")
+    LOG("heat()")
 
     if (device.currentValue("thermostatMode") == "heat") {
         return null
@@ -257,7 +264,7 @@ def heat() {
 
 // thermostat.cool
 def cool() {
-    TRACE("cool()")
+    LOG("cool()")
 
     if (device.currentValue("thermostatMode") == "cool") {
         return null
@@ -269,7 +276,7 @@ def cool() {
 
 // thermostat.auto
 def auto() {
-    TRACE("auto()")
+    LOG("auto()")
 
     if (device.currentValue("thermostatMode") == "auto") {
         return null
@@ -281,14 +288,14 @@ def auto() {
 
 // thermostat.emergencyHeat
 def emergencyHeat() {
-    TRACE("emergencyHeat()")
+    LOG("emergencyHeat()")
     log.warn "'emergency heat' mode is not supported"
     return null
 }
 
 // thermostat.setThermostatFanMode
 def setThermostatFanMode(fanMode) {
-    TRACE("setThermostatFanMode(${fanMode})")
+    LOG("setThermostatFanMode(${fanMode})")
 
     switch (fanMode) {
     case "auto":        return fanAuto()
@@ -301,7 +308,7 @@ def setThermostatFanMode(fanMode) {
 
 // thermostat.fanAuto
 def fanAuto() {
-    TRACE("fanAuto()")
+    LOG("fanAuto()")
 
     if (device.currentValue("thermostatFanMode") == "auto") {
         return null
@@ -313,14 +320,14 @@ def fanAuto() {
 
 // thermostat.fanCirculate
 def fanCirculate() {
-    TRACE("fanCirculate()")
+    LOG("fanCirculate()")
     log.warn "Fan 'Circulate' mode is not supported"
     return null
 }
 
 // thermostat.fanOn
 def fanOn() {
-    TRACE("fanOn()")
+    LOG("fanOn()")
 
     if (device.currentValue("thermostatFanMode") == "on") {
         return null
@@ -332,7 +339,7 @@ def fanOn() {
 
 // thermostat.setHeatingSetpoint
 def setHeatingSetpoint(tempHeat) {
-    TRACE("setHeatingSetpoint(${tempHeat})")
+    LOG("setHeatingSetpoint(${tempHeat})")
 
     def ev = [
         name:   "heatingSetpoint",
@@ -351,7 +358,7 @@ def setHeatingSetpoint(tempHeat) {
 
 // thermostat.setCoolingSetpoint
 def setCoolingSetpoint(tempCool) {
-    TRACE("setCoolingSetpoint(${tempCool})")
+    LOG("setCoolingSetpoint(${tempCool})")
 
     def ev = [
         name:   "coolingSetpoint",
@@ -369,7 +376,7 @@ def setCoolingSetpoint(tempCool) {
 }
 
 def heatLevelDown() {
-    TRACE("heatLevelDown()")
+    LOG("heatLevelDown()")
 
     def currentT = device.currentValue("heatingSetpoint")?.toFloat()
     if (!currentT) {
@@ -389,7 +396,7 @@ def heatLevelDown() {
 }
 
 def heatLevelUp() {
-    TRACE("heatLevelUp()")
+    LOG("heatLevelUp()")
 
     def currentT = device.currentValue("heatingSetpoint")?.toFloat()
     if (!currentT) {
@@ -409,7 +416,7 @@ def heatLevelUp() {
 }
 
 def coolLevelDown() {
-    TRACE("coolLevelDown()")
+    LOG("coolLevelDown()")
 
     def currentT = device.currentValue("coolingSetpoint")?.toFloat()
     if (!currentT) {
@@ -429,7 +436,7 @@ def coolLevelDown() {
 }
 
 def coolLevelUp() {
-    TRACE("coolLevelUp()")
+    LOG("coolLevelUp()")
 
     def currentT = device.currentValue("coolingSetpoint")?.toFloat()
     if (!currentT) {
@@ -449,7 +456,7 @@ def coolLevelUp() {
 }
 
 def holdOn() {
-    TRACE("holdOn()")
+    LOG("holdOn()")
 
     if (device.currentValue("hold") == "on") {
         return null
@@ -460,7 +467,7 @@ def holdOn() {
 }
 
 def holdOff() {
-    TRACE("holdOff()")
+    LOG("holdOff()")
 
     if (device.currentValue("hold") == "off") {
         return null
@@ -472,22 +479,20 @@ def holdOff() {
 
 // polling.poll 
 def poll() {
-    TRACE("poll()")
+    LOG("poll()")
     return refresh()
 }
 
 // refresh.refresh
 def refresh() {
-    TRACE("refresh()")
+    LOG("refresh()")
     STATE()
-
-    setNetworkId(confIpAddr, confTcpPort)
     return apiGet("/tstat")
 }
 
 // Sets device Network ID in 'AAAAAAAA:PPPP' format
 private String setNetworkId(ipaddr, port) { 
-    TRACE("setNetworkId(${ipaddr}, ${port})")
+    LOG("setNetworkId(${ipaddr}, ${port})")
 
     def hexIp = ipaddr.tokenize('.').collect {
         String.format('%02X', it.toInteger())
@@ -499,10 +504,10 @@ private String setNetworkId(ipaddr, port) {
 }
 
 private apiGet(String path) {
-    TRACE("apiGet(${path})")
+    LOG("apiGet(${path})")
 
     def headers = [
-        HOST:       "${confIpAddr}:${confTcpPort}",
+        HOST:       state.hostAddress,
         Accept:     "*/*"
     ]
 
@@ -516,10 +521,10 @@ private apiGet(String path) {
 }
 
 private apiPost(String path, data) {
-    TRACE("apiPost(${path}, ${data})")
+    LOG("apiPost(${path}, ${data})")
 
     def headers = [
-        HOST:       "${confIpAddr}:${confTcpPort}",
+        HOST:       state.hostAddress,
         Accept:     "*/*"
     ]
 
@@ -534,9 +539,7 @@ private apiPost(String path, data) {
 }
 
 private def writeTstatValue(name, value) {
-    TRACE("writeTstatValue(${name}, ${value})")
-
-    setNetworkId(confIpAddr, confTcpPort)
+    LOG("writeTstatValue(${name}, ${value})")
 
     def json = "{\"${name}\": ${value}}"
     def hubActions = [
@@ -566,7 +569,7 @@ private parseHttpHeaders(String headers) {
 }
 
 private def parseTstatData(Map tstat) {
-    TRACE("parseTstatData(${tstat})")
+    LOG("parseTstatData(${tstat})")
 
     def events = []
     if (tstat.containsKey("error_msg")) {
@@ -670,7 +673,7 @@ private def parseTstatData(Map tstat) {
         }
     }
 
-    TRACE("events: ${events}")
+    LOG("events: ${events}")
     return events
 }
 
@@ -741,18 +744,26 @@ private def temperatureFtoC(Float tempF) {
     return t.round(1)
 }
 
-private def TRACE(message) {
-    //log.debug message
+private def textVersion() {
+    return "Version 1.0.2 (07/20/2015)"
+}
+
+private def textCopyright() {
+    return "Copyright (c) 2014 Statusbits.com"
+}
+
+private def LOG(message) {
+    //log.trace message
 }
 
 private def STATE() {
-    log.debug "deviceNetworkId : ${device.deviceNetworkId}"
-    log.debug "temperature : ${device.currentValue("temperature")}"
-    log.debug "heatingSetpoint : ${device.currentValue("heatingSetpoint")}"
-    log.debug "coolingSetpoint : ${device.currentValue("coolingSetpoint")}"
-    log.debug "thermostatMode : ${device.currentValue("thermostatMode")}"
-    log.debug "thermostatFanMode : ${device.currentValue("thermostatFanMode")}"
-    log.debug "thermostatOperatingState : ${device.currentValue("thermostatOperatingState")}"
-    log.debug "fanState : ${device.currentValue("fanState")}"
-    log.debug "hold : ${device.currentValue("hold")}"
+    log.trace "deviceNetworkId : ${device.deviceNetworkId}"
+    log.trace "temperature : ${device.currentValue("temperature")}"
+    log.trace "heatingSetpoint : ${device.currentValue("heatingSetpoint")}"
+    log.trace "coolingSetpoint : ${device.currentValue("coolingSetpoint")}"
+    log.trace "thermostatMode : ${device.currentValue("thermostatMode")}"
+    log.trace "thermostatFanMode : ${device.currentValue("thermostatFanMode")}"
+    log.trace "thermostatOperatingState : ${device.currentValue("thermostatOperatingState")}"
+    log.trace "fanState : ${device.currentValue("fanState")}"
+    log.trace "hold : ${device.currentValue("hold")}"
 }
