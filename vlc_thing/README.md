@@ -1,8 +1,8 @@
 VLC Thing
 =========
 
-**VLC Thing** is a [SmartThings](http://fbuy.me/bb9pe) device handler that
-allows to control [VLC Media Player](http://www.videolan.org) remotely.
+**VLC Thing** is a [SmartThings](http://www.smartthings.com) device handler
+for controlling [VLC Media Player](http://www.videolan.org) remotely.
 
 VLC is a free and open source cross-platform multimedia player and framework
 that plays most multimedia files as well as DVDs, Audio CDs, VCDs, and various
@@ -130,20 +130,25 @@ preferences page.
 the computer with installed VLC Media Player and a password you have
 configured during VLC Media Player configuration.
 4. Tap the "Done" button in the upper right corner of the preferences page.
-5. To verify that the **VLC Thing** and the VLC player are configured correctly,
-tap the "Test" tile below the volume control. You should hear a phrase "VLC
-for SmartThings is brought to you by Statusbits.com."
+5. To verify that the **VLC Thing** and the VLC player are configured
+correctly, tap the "Test" tile below the volume control. You should hear a
+phrase "VLC for SmartThings is brought to you by Statusbits.com."
 
 
 Revision History
 ----------------
+
+**Version 1.2.1. Released 07/29/2015**
+* Fixed an issue with truncated sounds when played using Sonos extensions
+(i.e. playTrackAndRestore, playTrackAndResume, etc.)
 
 **Version 1.2.0. Released 06/28/2015**
 * Fixed Issue #4 (Unable to play text-to-speech on 64-bit Windows).
 * Minor performance improvements.
 
 **Version 1.1.0. Released 11/03/2014**
-* Implemented new 'Speech Synthesis' capability for text-to-speech applications.
+* Implemented new 'Speech Synthesis' capability for text-to-speech
+applications.
 
 **Version 1.0.1. Released 10/05/2014**
 * Fixed Issue #1 - Exception thrown when calling device.playTrackAndRestore().

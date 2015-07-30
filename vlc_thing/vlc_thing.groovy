@@ -27,7 +27,7 @@
  *  The latest version of this file can be found at:
  *  <https://github.com/statusbits/smartthings/tree/master/vlc_thing/>
  *
- *  Version 1.2.0 (06/28/2015)
+ *  Version 1.2.1 (07/29/2015)
  */
 
 import groovy.json.JsonSlurper
@@ -595,7 +595,7 @@ private def setDefaults() {
 }
 
 private def textVersion() {
-    def text = "Version 1.2.0 (06/28/2015)"
+    def text = "Version 1.2.1 (07/29/2015)"
 }
 
 private def textCopyright() {
