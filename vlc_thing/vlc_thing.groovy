@@ -375,8 +375,11 @@ def playTrackAndRestore(uri, duration, volume = null) {
         actions << delayHubAction(500)
     }
 
+    def delay = (duration.toInteger() + 1) * 1000
+    //log.debug "delay = ${delay}"
+
     actions << playTrack(uri)
-    actions << delayHubAction((duration + 1) * 1000)
+    actions << delayHubAction(delay)
     actions << vlcCommand("command=pl_stop")
     actions << delayHubAction(500)
 
