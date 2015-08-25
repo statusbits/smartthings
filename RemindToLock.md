@@ -2,7 +2,7 @@ Remind To Lock
 ==============
 
 **Remind To Lock** is a home security application for the
-[SmartThings](http://fbuy.me/bb9pe) home automation system monitors a door
+[SmartThings](http://www.smartthings.com) home automation system monitors a door
 lock and sends push notifications, text messages and/or voice notifications if
 the door is left unlocked for longer than a specified period of time.
 
@@ -19,6 +19,15 @@ the door is left unlocked for longer than a specified period of time.
 ### Screenshots
 
 ![Screenshot](http://statusbits.github.io/images/RemindToLock.jpg)
+
+
+Installation
+------------
+
+Before you can install Pollster using your SmartThings smart phone app, you
+have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
+Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
+for more information.
 
 
 ### Revision History

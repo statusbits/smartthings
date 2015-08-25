@@ -3,8 +3,8 @@ Radio Thermostat
 
 The **RadioThermostat** Smart Device handler allows you to connect
 [Filtrete 3M-50](http://www.radiothermostat.com/filtrete/products/3M-50/)
-WiFi thermostat to the [SmartThings](http://fbuy.me/bb9pe) home automation
-system.
+WiFi thermostat to the [SmartThings](http://www.smartthings.com) home
+automation system.
 
 ![Filtrete 3M-50](http://statusbits.github.io/images/Filtrete_3M50.jpg)
 
@@ -49,7 +49,7 @@ not matter what you type in the name field since it will be overwritten in the
 next step anyway. Click the blue "Create" button at the bottom of the page. An
 IDE editor window containing device handler template should now open.
 5. Copy the **RadioThermostat**
-[source code](https://github.com/statusbits/smartthings/blob/master/RadioThermostat/RadioThermostat.groovy)
+[source code](https://github.com/statusbits/smartthings/blob/master/devicetypes/statusbits/radio-thermostat.src/radio-thermostat.groovy)
 from GitHub and paste it into the IDE editor window (see previous step). Make
 sure you *completely overwrite* contents of the editor window with the source
 code copied from the GitHub.

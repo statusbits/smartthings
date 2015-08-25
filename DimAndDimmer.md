@@ -1,44 +1,17 @@
 Dim and Dimmer
 ==============
 
-This [SmartThings](http://fbuy.me/bb9pe) app allows you to create lighting
+This [SmartThings](http://www.smartthings.com) app allows you to create lighting
 scenes by setting dimmers to different levels depending on the home mode.
 
 
 Installation
 ------------
 
-Dim and Dimmer is available in the "Convenience" section of the Shared Smart
-Apps in [SmartThings IDE](https://graph.api.smartthings.com).
-
-1. Go to "My SmartApps" section and click on the "+ New SmartApp" button on
-the right.
-
-2. On the "New SmartApp" page, fill out mandatory "Name" and "Description"
-fields (it does not matter what you put there), then click the "Create" button
-at the bottom.
-
-3. When a new app template opens in the IDE, click on the "Browse SmartApps"
-drop-down list in the upper right corner and select "Browse Shared SmartApps".
-A list of shared SmartApps will appear on the left side of the editor window.
-
-4. Scroll down to "Convenience" section and click on it.
-
-5. Select "Dim and Dimmer" from the list and click the red "Overwrite" button
-in the bottom right corner.
-
-6. Click the blue "Save" button above the editor window.
-
-7. Click the "Publish" button next to it and select "For Me". You have now
-self-published your SmartApp.
-
-8. Open SmartThings mobile app on iPhone or Android and go to the Dashboard.
-
-9. Tap on the round "+" button and navigate to "My Apps" section by swiping the
-menu ribbon all the way to the left.
-
-10. "Dim and Dimmer" app should be available in the list that appears below the
-menu ribbon. Tap it and follow setup instructions.
+Before you can install Pollster using your SmartThings smart phone app, you
+have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
+Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
+for more information.
 
 
 Revision History
