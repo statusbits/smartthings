@@ -136,7 +136,7 @@ used.
 **Version 2.1.0. Released 2014-11-04**
 * Added voice notifications using devices with 'Speech Synthesis' capability.
 Currently, implemented only in the
-[VLC Thing](https://github.com/statusbits/smartthings/tree/master/vlc_thing),
+[VLC Thing](https://github.com/statusbits/smartthings/tree/master/VlcThing.md),
 as far as I know.
 * New notification options. You can now select notification options for alarm
 notifications and status change separately.
