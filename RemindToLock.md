@@ -24,8 +24,8 @@ the door is left unlocked for longer than a specified period of time.
 Installation
 ------------
 
-Before you can install Pollster using your SmartThings smart phone app, you
-have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
+Before you can install this Smart App using your SmartThings smart phone app,
+you will have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
 Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
 for more information.
 

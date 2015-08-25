@@ -8,8 +8,8 @@ scenes by setting dimmers to different levels depending on the home mode.
 Installation
 ------------
 
-Before you can install Pollster using your SmartThings smart phone app, you
-have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
+Before you can install this SmartApp using your SmartThings smart phone app,
+you will have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
 Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
 for more information.
 
