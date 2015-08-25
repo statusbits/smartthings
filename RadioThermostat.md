@@ -94,11 +94,17 @@ Known Issues
 periodically. There's a known issue with the SmartThings built-in polling
 engine -- the engine occasionally quits which results in your device status
 getting out of sync with the thermostat state. To solve this problem, I
-strongly recommend using
-[Pollster](https://github.com/statusbits/smartthings/tree/master/Pollster)
-smart app. Pollster can also poll your thermostat more as fast every minute,
+created [Pollster](https://github.com/statusbits/smartthings/tree/master/Pollster.md)
+Smart App. Pollster can poll your thermostat as fast as every minute,
 comparing to the 10-minutes polling interval of the SmartThings built-in
 polling engine.
+
+
+Revision History
+----------------
+
+**Version 1.0.3. Released 08/25/2015**
+* Fixed an issue with DNI not being updated.
 
 
 License

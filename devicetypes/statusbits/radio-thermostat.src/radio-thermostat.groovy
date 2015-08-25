@@ -23,7 +23,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.0.2 (07/20/2015)
+ *  Version 1.0.3 (07/20/2015)
  */
 
 import groovy.json.JsonSlurper
@@ -32,7 +32,7 @@ preferences {
     input("confIpAddr", "string", title:"Thermostat IP Address",
         required:true, displayDuringSetup: true)
     input("confTcpPort", "number", title:"Thermostat TCP Port",
-        defaultValue:"80", required:true, displayDuringSetup:true)
+        required:true, displayDuringSetup:true)
 }
 
 metadata {
@@ -182,11 +182,10 @@ def updated() {
     log.info "Radio Thermostat. ${textVersion()}. ${textCopyright()}"
 	LOG("$device.displayName updated with settings: ${settings.inspect()}")
 
-    setNetworkId(settings.confIpAddr, settings.confTcpPort)
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
-    //setDefaults()
+    state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
 
-    return refresh()
+    STATE()
 }
 
 def parse(String message) {
@@ -486,21 +485,27 @@ def poll() {
 // refresh.refresh
 def refresh() {
     LOG("refresh()")
-    STATE()
+    //STATE()
     return apiGet("/tstat")
 }
 
-// Sets device Network ID in 'AAAAAAAA:PPPP' format
-private String setNetworkId(ipaddr, port) { 
-    LOG("setNetworkId(${ipaddr}, ${port})")
+// Creates Device Network ID in 'AAAAAAAA:PPPP' format
+private String createDNI(ipaddr, port) { 
+    LOG("createDNI(${ipaddr}, ${port})")
 
     def hexIp = ipaddr.tokenize('.').collect {
         String.format('%02X', it.toInteger())
     }.join()
 
     def hexPort = String.format('%04X', port.toInteger())
-    device.deviceNetworkId = "${hexIp}:${hexPort}"
-    log.debug "device.deviceNetworkId = ${device.deviceNetworkId}"
+
+    return "${hexIp}:${hexPort}"
+}
+
+private updateDNI() { 
+    if (device.deviceNetworkId != state.dni) {
+        device.deviceNetworkId = state.dni
+    }
 }
 
 private apiGet(String path) {
@@ -516,6 +521,8 @@ private apiGet(String path) {
         path:       path,
         headers:    headers
     ]
+
+    updateDNI()
 
     return new physicalgraph.device.HubAction(httpRequest)
 }
@@ -534,6 +541,8 @@ private apiPost(String path, data) {
         headers:    headers,
         body:       data
     ]
+
+    updateDNI()
 
     return new physicalgraph.device.HubAction(httpRequest)
 }
@@ -745,7 +754,7 @@ private def temperatureFtoC(Float tempF) {
 }
 
 private def textVersion() {
-    return "Version 1.0.2 (07/20/2015)"
+    return "Version 1.0.3 (08/25/2015)"
 }
 
 private def textCopyright() {
@@ -757,13 +766,14 @@ private def LOG(message) {
 }
 
 private def STATE() {
-    log.trace "deviceNetworkId : ${device.deviceNetworkId}"
-    log.trace "temperature : ${device.currentValue("temperature")}"
-    log.trace "heatingSetpoint : ${device.currentValue("heatingSetpoint")}"
-    log.trace "coolingSetpoint : ${device.currentValue("coolingSetpoint")}"
-    log.trace "thermostatMode : ${device.currentValue("thermostatMode")}"
-    log.trace "thermostatFanMode : ${device.currentValue("thermostatFanMode")}"
-    log.trace "thermostatOperatingState : ${device.currentValue("thermostatOperatingState")}"
-    log.trace "fanState : ${device.currentValue("fanState")}"
-    log.trace "hold : ${device.currentValue("hold")}"
+    log.trace "state: ${state}"
+    log.trace "deviceNetworkId: ${device.deviceNetworkId}"
+    log.trace "temperature: ${device.currentValue("temperature")}"
+    log.trace "heatingSetpoint: ${device.currentValue("heatingSetpoint")}"
+    log.trace "coolingSetpoint: ${device.currentValue("coolingSetpoint")}"
+    log.trace "thermostatMode: ${device.currentValue("thermostatMode")}"
+    log.trace "thermostatFanMode: ${device.currentValue("thermostatFanMode")}"
+    log.trace "thermostatOperatingState: ${device.currentValue("thermostatOperatingState")}"
+    log.trace "fanState: ${device.currentValue("fanState")}"
+    log.trace "hold: ${device.currentValue("hold")}"
 }
