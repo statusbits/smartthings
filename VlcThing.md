@@ -138,6 +138,9 @@ phrase "VLC for SmartThings is brought to you by Statusbits.com."
 Revision History
 ----------------
 
+**Version 1.2.2. Released 08/25/2015**
+* Fixed an issue with DNI update not persisting.
+
 **Version 1.2.1. Released 07/29/2015**
 * Fixed an issue with truncated sounds when played using Sonos extensions
 (i.e. playTrackAndRestore, playTrackAndResume, etc.)

@@ -3,7 +3,7 @@
  *  player.
  *
  *  For more information, please visit
- *  <https://github.com/statusbits/smartthings/tree/master/vlc_thing/>
+ *  <https://github.com/statusbits/smartthings/tree/master/VlcThing.md/>
  *
  *  --------------------------------------------------------------------------
  *
@@ -24,10 +24,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  The latest version of this file can be found at:
- *  <https://github.com/statusbits/smartthings/tree/master/vlc_thing/>
- *
- *  Version 1.2.1 (07/29/2015)
+ *  Version 1.2.2 (08/25/2015)
  */
 
 import groovy.json.JsonSlurper
@@ -36,7 +33,7 @@ preferences {
     input("confIpAddr", "string", title:"Enter VLC IP address",
         required:true, displayDuringSetup:true)
     input("confTcpPort", "number", title:"Enter VLC TCP port",
-        defaultValue:"8080", required:true, displayDuringSetup:true)
+        required:true, displayDuringSetup:true)
     input("confPassword", "password", title:"Enter your VLC password",
         required:false, displayDuringSetup:true)
 }
@@ -143,7 +140,7 @@ def updated() {
     log.info "VLC Thing. ${textVersion()}. ${textCopyright()}"
 	LOG("$device.displayName updated with settings: ${settings.inspect()}")
 
-    setNetworkId(settings.confIpAddr, settings.confTcpPort)
+    state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
     if (settings.confPassword) {
         String auth = ":${settings.confPassword}".bytes.encodeBase64()
@@ -153,7 +150,6 @@ def updated() {
     }
 
     setDefaults()
-    return refresh()
 }
 
 def parse(String message) {
@@ -423,17 +419,23 @@ def __testTTS() {
     return playTextAndResume(text)
 }
 
-// Sets device Network ID in 'AAAAAAAA:PPPP' format
-private String setNetworkId(ipaddr, port) {
-    LOG("setNetworkId(${ipaddr}, ${port})")
+// Creates Device Network ID in 'AAAAAAAA:PPPP' format
+private String createDNI(ipaddr, port) { 
+    LOG("createDNI(${ipaddr}, ${port})")
 
     def hexIp = ipaddr.tokenize('.').collect {
         String.format('%02X', it.toInteger())
     }.join()
 
     def hexPort = String.format('%04X', port.toInteger())
-    //device.deviceNetworkId = "${hexIp}:${hexPort}"
-    device.setDeviceNetworkId("${hexIp}:${hexPort}")
+
+    return "${hexIp}:${hexPort}"
+}
+
+private updateDNI() { 
+    if (device.deviceNetworkId != state.dni) {
+        device.deviceNetworkId = state.dni
+    }
 }
 
 private vlcGet(String path) {
@@ -455,6 +457,8 @@ private vlcGet(String path) {
     ]
 
     //log.debug "httpRequest: ${httpRequest}"
+    updateDNI()
+
     return new physicalgraph.device.HubAction(httpRequest)
 }
 
@@ -595,7 +599,7 @@ private def setDefaults() {
 }
 
 private def textVersion() {
-    def text = "Version 1.2.1 (07/29/2015)"
+    def text = "Version 1.2.2 (08/25/2015)"
 }
 
 private def textCopyright() {
@@ -607,8 +611,8 @@ private def LOG(message) {
 }
 
 private def STATE() {
-    log.trace "deviceNetworkId: ${device.deviceNetworkId}"
     log.trace "state: ${state}"
+    log.trace "deviceNetworkId: ${device.deviceNetworkId}"
     log.trace "status: ${device.currentValue('status')}"
     log.trace "level: ${device.currentValue('level')}"
     log.trace "mute: ${device.currentValue('mute')}"
