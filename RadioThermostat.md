@@ -49,7 +49,7 @@ not matter what you type in the name field since it will be overwritten in the
 next step anyway. Click the blue "Create" button at the bottom of the page. An
 IDE editor window containing device handler template should now open.
 5. Copy the **RadioThermostat**
-[source code](https://github.com/statusbits/smartthings/blob/master/devicetypes/statusbits/radio-thermostat.src/radio-thermostat.groovy)
+[source code](https://raw.githubusercontent.com/statusbits/smartthings/master/devicetypes/statusbits/radio-thermostat.src/radio-thermostat.groovy)
 from GitHub and paste it into the IDE editor window (see previous step). Make
 sure you *completely overwrite* contents of the editor window with the source
 code copied from the GitHub.
