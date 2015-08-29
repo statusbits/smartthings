@@ -1,12 +1,11 @@
 Pollster
 ========
 
-**Please note that although Pollster has proven to be indispensable to
-overcome SmartThings device polling issue, it was brought to my attention
-that it does not meet SmartThings smart app approval criteria because polling
-of the devices does not play nicely with SmartThings platform and in some
-cases may lead to degraded system performance. Therefore, I do not recommend
-using Pollster and no longer support it. Use it at your own risk.**
+**Please note that excessive polling of some devices (particularly Zigbee and
+Z-Wave) may cause network congestion and lead to degraded system performance.
+Therefore, polling rate faster than 5 minutes is not recommended. The author
+of this software bears no responsibility for your system performance. Use it
+at your own risk.**
 
 ----
 
@@ -40,12 +39,12 @@ Revision History
 
 **Version 1.3. Released 8/29/2015**
 * Added watchdog feature. Watchdog task runs every 15 minutes and checks to
-  see that polling tasks are running. If watchdog detects that one of the
+  see that the polling tasks are running. If watchdog detects that one of the
   polling tasks has stopped, it will send a notification message and attempt
   to restart Pollster. 
 * The number of polling groups is reduced to three. The forth scheduling slot
   is reserved for the watchdog.
-* Fixed a bug in "Poll Now" feature.
+* Fixed a bug in the "Poll Now" feature.
 * Randomize seconds in the cron schedules.
 
 **Version 1.2. Released 2/8/2015**
