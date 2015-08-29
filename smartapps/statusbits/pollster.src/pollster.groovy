@@ -163,22 +163,25 @@ private def initialize() {
     state.trun2 = 0
     state.trun3 = 0
 
+    Random rand = new Random(now())
     def numTasks = 0
     (1..3).each() { n ->
         def minutes = settings."interval_${n}".toInteger()
+        def seconds = rand.nextInt(60)
         def size1 = settings["group_${n}"]?.size() ?: 0
         def size2 = settings["refresh_${n}"]?.size() ?: 0
 
         if (minutes > 0 && (size1 + size2) > 0) {
             LOG("Scheduling polling task ${n} to run every ${minutes} minutes.")
-            def sched = "0 0/${minutes} * * * ?"
+            def sched = "${seconds} 0/${minutes} * * * ?"
             schedule(sched, "pollingTask${n}")
             numTasks++
         }
     }
 
     if (numTasks) {
-        schedule("0 1/15 * * * ?", watchdogTask)
+        def seconds = rand.nextInt(60)
+        schedule("${seconds} 1/15 * * * ?", watchdogTask)
     }
 
     subscribe(app, onAppTouch)
