@@ -1,17 +1,12 @@
 /**
  *  Pollster - The SmartThings Polling Daemon.
  *
- *  Many SmartThings devices rely on polling to update their status
- *  periodically. SmartThings' built-in polling engine has a fixed polling
- *  interval of approximately 10 minutes, which may not be fast enough for
- *  some devices. Pollster, on the other hand, can poll devices as fast as
- *  every minute. Devices can be arranged into four groups with configurable
- *  polling intervals.
+ *  Pollster works behind the scenes and periodically calls 'poll' or
+ *  'refresh' commands for selected devices. Devices can be arranged into
+ *  three polling groups with configurable polling intervals down to 1 minute.
  *
- *  Version 1.2 (2/8/2015)
- *
- *  The latest version of this file can be found at:
- *  https://github.com/statusbits/smartthings/blob/master/Pollster/Pollster.groovy
+ *  Please visit [https://github.com/statusbits/smartthings] for more
+ *  information. 
  *
  *  --------------------------------------------------------------------------
  *
@@ -28,6 +23,10 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  *  License  for the specific language governing permissions and limitations
  *  under the License.
+ *
+ *  --------------------------------------------------------------------------
+ *
+ *  Version 1.3 (08/29/2015)
  */
 
 definition(
@@ -41,14 +40,11 @@ definition(
 
 preferences {
     section("About") {
-        paragraph "Pollster works behind the scenes and periodically calls " +
-        "poll() or refresh() command for selected devices. Devices can be " +
-        "arranged into four polling groups with configurable polling " +
-        "intervals down to 1 minute."
+        paragraph textAbout()
         paragraph "${textVersion()}\n${textCopyright()}"
     }
 
-    for (int n = 1; n <= 4; n++) {
+    (1..3).each() { n ->
         section("Polling Group ${n}") {
             input "group_${n}", "capability.polling", title:"Select devices to be polled", multiple:true, required:false
             input "refresh_${n}", "capability.refresh", title:"Select devices to be refreshed", multiple:true, required:false
@@ -67,12 +63,12 @@ def updated() {
 }
 
 def onAppTouch(event) {
-    TRACE("onAppTouch(${event.value})")
+    LOG("onAppTouch(${event.value})")
 
     def devPoll = []
     def devRefresh = []
 
-    for (int n = 1; n <= 4; n++) {
+    (1..3).each() { n ->
         if (settings["group_${n}"]) {
             devPoll.addAll(settings["group_${n}"])
         }
@@ -82,12 +78,17 @@ def onAppTouch(event) {
         }
     }
 
-    defPoll*.poll()
-    defRefresh*.refresh()
+    log.debug "devPoll: ${devPoll}"
+    log.debug "devRefresh: ${devRefresh}"
+
+    devPoll*.poll()
+    devRefresh*.refresh()
 }
 
 def pollingTask1() {
-    TRACE("pollingTask1()")
+    LOG("pollingTask1()")
+
+    state.trun1 = now()
 
     if (settings.group_1) {
         settings.group_1*.poll()
@@ -99,7 +100,9 @@ def pollingTask1() {
 }
 
 def pollingTask2() {
-    TRACE("pollingTask2()")
+    LOG("pollingTask2()")
+
+    state.trun2 = now()
 
     if (settings.group_2) {
         settings.group_2*.poll()
@@ -111,7 +114,9 @@ def pollingTask2() {
 }
 
 def pollingTask3() {
-    TRACE("pollingTask3()")
+    LOG("pollingTask3()")
+
+    state.trun3 = now()
 
     if (settings.group_3) {
         settings.group_3*.poll()
@@ -122,58 +127,84 @@ def pollingTask3() {
     }
 }
 
-def pollingTask4() {
-    TRACE("pollingTask4()")
+def watchdogTask() {
+    LOG("watchdogTask()")
 
-    if (settings.group_4) {
-        settings.group_4*.poll()
+    if (settings.interval_1 && state.trun1) {
+        def t = now() - state.trun1
+        if (t > (settings.interval_1 * 120000)) {
+            log.warn "Polling task #1 is toast. Restarting..."
+            return restart()
+        }
     }
 
-    if (settings.refresh_4) {
-        settings.refresh_4*.refresh()
+    if (settings.interval_2 && state.trun2) {
+        def t = now() - state.trun2
+        if (t > (settings.interval_2 * 120000)) {
+            log.warn "Polling task #2 is toast. Restarting..."
+            return restart()
+        }    
+    }
+
+    if (settings.interval_3 && state.trun3) {
+        def t = now() - state.trun3
+        if (t > (settings.interval_3 * 120000)) {
+            log.warn "Polling task #3 is toast. Restarting..."
+            return restart()
+        }
     }
 }
 
 private def initialize() {
     log.info "Pollster. ${textVersion()}. ${textCopyright()}"
-    TRACE("initialize() with settings: ${settings}")
+    LOG("initialize() with settings: ${settings}")
 
-    for (int n = 1; n <= 4; n++) {
+    state.trun1 = 0
+    state.trun2 = 0
+    state.trun3 = 0
+
+    def numTasks = 0
+    (1..3).each() { n ->
         def minutes = settings."interval_${n}".toInteger()
         def size1 = settings["group_${n}"]?.size() ?: 0
         def size2 = settings["refresh_${n}"]?.size() ?: 0
 
         if (minutes > 0 && (size1 + size2) > 0) {
-            TRACE("Scheduling polling task ${n} to run every ${minutes} minutes.")
+            LOG("Scheduling polling task ${n} to run every ${minutes} minutes.")
             def sched = "0 0/${minutes} * * * ?"
-            switch (n) {
-            case 1:
-                schedule(sched, pollingTask1)
-                break;
-            case 2:
-                schedule(sched, pollingTask2)
-                break;
-            case 3:
-                schedule(sched, pollingTask3)
-                break;
-            case 4:
-                schedule(sched, pollingTask4)
-                break;
-            }
+            schedule(sched, "pollingTask${n}")
+            numTasks++
         }
+    }
+
+    if (numTasks) {
+        schedule("0 1/15 * * * ?", watchdogTask)
     }
 
     subscribe(app, onAppTouch)
 }
 
+private def restart() {
+    sendNotification("Pollster is toast. Restarting...")
+    updated()
+}
+
+private def textAbout() {
+    return '''\
+Pollster works behind the scenes and periodically calls 'poll' or 'refresh' \
+commands for selected devices. Devices can be arranged into three polling \
+groups with configurable polling intervals down to 1 minute.\
+'''
+}
+
 private def textVersion() {
-    def text = "Version 1.2 (2/8/2015)"
+    return "Version 1.3 (08/29/2015)"
 }
 
 private def textCopyright() {
-    def text = "Copyright © 2014 Statusbits.com"
+    return "Copyright © 2014 Statusbits.com"
 }
 
-private def TRACE(message) {
+private def LOG(message) {
     //log.trace message
 }
