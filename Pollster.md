@@ -12,15 +12,15 @@ using Pollster and no longer support it. Use it at your own risk.**
 
 Many [SmartThings](http://www.smartthings.com) devices rely on frequent
 polling to update their status periodically. These devices have 'polling'
-capability and implement poll() command that the SmartThings polling engine
+capability and implement 'poll' command that the SmartThings polling engine
 calls approximately every 10 minutes. The polling rate is not user-configurable
 and may not be frequent enough for some devices. Also, the SmartThings polling
 engine has been known to have bad days now and then, when it works
-intermittently or stops working for hours and even days.
+intermittently or stops working for hours or even days.
 
 Here comes Pollster to the rescue! Pollster works behind the scenes and
-periodically calls poll() or refresh() command for selected devices. Devices
-can be arranged into four groups with independently configurable polling
+periodically calls 'poll' or 'refresh' command for selected devices. Devices
+can be arranged into three groups with independently configurable polling
 intervals. The polling interval can be as short as one minute.
 
 ![Pollster Screenshot](http://statusbits.github.io/images/Pollster_1.2.jpg)
@@ -37,6 +37,16 @@ for more information.
 
 Revision History
 ----------------
+
+**Version 1.3. Released 8/29/2015**
+* Added watchdog feature. Watchdog task runs every 15 minutes and checks to
+  see that polling tasks are running. If watchdog detects that one of the
+  polling tasks has stopped, it will send a notification message and attempt
+  to restart Pollster. 
+* The number of polling groups is reduced to three. The forth scheduling slot
+  is reserved for the watchdog.
+* Fixed a bug in "Poll Now" feature.
+* Randomize seconds in the cron schedules.
 
 **Version 1.2. Released 2/8/2015**
 * Added ability to update devices that provide 'refresh' capability.
