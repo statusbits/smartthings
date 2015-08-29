@@ -30,8 +30,11 @@ Installation
 
 Before you can install Pollster using your SmartThings smart phone app, you
 have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
+
 Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
 for more information.
+
+Pollster source: [click here](https://raw.githubusercontent.com/statusbits/smartthings/master/smartapps/statusbits/pollster.src/pollster.groovy)
 
 
 Revision History
