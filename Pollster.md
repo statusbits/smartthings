@@ -44,10 +44,10 @@ Revision History
   see that the polling tasks are running. If watchdog detects that one of the
   polling tasks has stopped, it will send a notification message and attempt
   to restart Pollster. 
-* The number of polling groups is reduced to three. The forth scheduling slot
+* The number of polling groups is reduced to three. The fourth scheduling slot
   is reserved for the watchdog.
 * Fixed a bug in the "Poll Now" feature.
-* Randomize seconds in the cron schedules.
+* Randomized seconds in the cron schedules.
 
 **Version 1.2. Released 2/8/2015**
 * Added ability to update devices that provide 'refresh' capability.
