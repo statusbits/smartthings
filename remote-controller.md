@@ -24,7 +24,7 @@ action.
 
 ### Screenshots
 
-Coming soon...
+![Remote Controller Screenshot](http://statusbits.github.io/images/RemoteController-01.jpg)
 
 
 ### Installation
