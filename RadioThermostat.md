@@ -1,5 +1,7 @@
+[Back to SmartThings Projects](https://github.com/statusbits/smartthings)
+
 Radio Thermostat
-================
+----------------
 
 The **RadioThermostat** Smart Device handler allows you to connect
 [Filtrete 3M-50](http://www.radiothermostat.com/filtrete/products/3M-50/)
@@ -14,8 +16,7 @@ SmartThings iPhone mobile app.
 ![RadioThermostat Screenshot](http://statusbits.github.io/images/RadioThermostat.jpg)
 
 
-Requirements
-------------
+### Requirements
 
 1. Your Wi-Fi thermostat must be connected to the same local network as your
 SmartThings hub.
@@ -27,8 +28,7 @@ address.
 communicate with the SmartThings cloud.
 
 
-Installation
-------------
+### Installation
 
 **Note:** RadioThermostat is a SmartThings *device handler*. Installing custom
 device is a two-step process -- first, you need to install and self-publish
@@ -87,8 +87,7 @@ device.
 should now appear on the "Things" page.
 
 
-Known Issues
-------------
+### Known Issues
 
 1. The **RadioThermostat** device relies on polling to update its status
 periodically. There's a known issue with the SmartThings built-in polling
@@ -100,17 +99,15 @@ comparing to the 10-minutes polling interval of the SmartThings built-in
 polling engine.
 
 
-Revision History
-----------------
+### Revision History
 
 **Version 1.0.3. Released 08/25/2015**
 * Fixed an issue with DNI not being updated.
 
 
-License
--------
+### License
 
-Copyright (C) 2014 geko@statusbits.com
+Copyright © 2014 Statusbits.com
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

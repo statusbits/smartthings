@@ -1,7 +1,7 @@
 [Back to SmartThings Projects](https://github.com/statusbits/smartthings)
 
 Remote Controller
-=================
+-----------------
 
 **Remote Controller** SmartApp allows using remote controls, such as [Aeon Labs
 Minimote](http://www.amazon.com/Aeon-Labs-DSA03202-v1-Minimote/dp/B00KU7ERAW/),

@@ -1,12 +1,13 @@
+[Back to SmartThings Projects](https://github.com/statusbits/smartthings)
+
 Dim and Dimmer
-==============
+--------------
 
 This [SmartThings](http://www.smartthings.com) app allows you to create lighting
 scenes by setting dimmers to different levels depending on the home mode.
 
 
-Installation
-------------
+### Installation
 
 Before you can install this SmartApp using your SmartThings smart phone app,
 you will have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
@@ -14,17 +15,15 @@ Please refer to [SmartThings Developer Documentation](http://docs.smartthings.co
 for more information.
 
 
-Revision History
-----------------
+### Revision History
 
 **Version 1.0.0. Released 2014-12-21**
 * Released to SmartThings community.
 
 
-License
--------
+### License
 
-Copyright (C) 2014 Statusbits.com
+Copyright © 2014 Statusbits.com
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

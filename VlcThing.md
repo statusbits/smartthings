@@ -1,5 +1,7 @@
+[Back to SmartThings Projects](https://github.com/statusbits/smartthings)
+
 VLC Thing
-=========
+---------
 
 **VLC Thing** is a [SmartThings](http://www.smartthings.com) device handler
 for controlling [VLC Media Player](http://www.videolan.org) remotely.
@@ -32,8 +34,7 @@ You can also click here to watch the
 [YouTube demo video](http://youtu.be/laCar-03Jq4).
 
 
-Requirements
-------------
+### Requirements
 
 1. Laptop or desktop computer. VLC Media Player can be installed on virtually
 any computer running Linux, Windows or Mac OS.
@@ -45,8 +46,7 @@ accomplished by using either "static" or "reserved" IP address.
 communicate with the SmartThings cloud.
 
 
-Installing and Configuring VLC Media Player
--------------------------------------------
+### Installing and Configuring VLC Media Player
 
 1. Download the latest version of VLC Media player from
 [videolan.org](http://www.videolan.org)
@@ -60,8 +60,7 @@ interface by following the instructions available here:
  - for [Mac OS](http://hobbyistsoftware.com/vlcsetup-mac-manual)
 
 
-Installing and Configuring VLC Thing Device Handler
----------------------------------------------------
+### Installing and Configuring VLC Thing Device Handler
 
 **Note:** VLC Thing is a SmartThings *device handler*. Installing SmartThings
 custom device is a somewhat complicated process, so please read these
@@ -135,8 +134,7 @@ correctly, tap the "Test" tile below the volume control. You should hear a
 phrase "VLC for SmartThings is brought to you by Statusbits.com."
 
 
-Revision History
-----------------
+### Revision History
 
 **Version 1.2.2. Released 08/25/2015**
 * Fixed an issue with DNI update not persisting.
@@ -160,10 +158,9 @@ applications.
 * First public release.
 
 
-License
--------
+### License
 
-Copyright (C) 2014 geko@statusbits.com
+Copyright © 2014 Statusbits.com
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

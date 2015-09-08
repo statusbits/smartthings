@@ -1,4 +1,7 @@
-## Smart Alarm
+[Back to SmartThings Projects](https://github.com/statusbits/smartthings)
+
+Smart Alarm
+-----------
 
 Smart Alarm is a versatile home security application for the
 [SmartThings](http://www.smartthings.com) home automation system.
@@ -185,10 +188,9 @@ addition to turning on sirens and light switches
 * First public release.
 
 
-License
--------
+### License
 
-Copyright (C) 2014 Statusbits.com
+Copyright © 2014 Statusbits.com
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

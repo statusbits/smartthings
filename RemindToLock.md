@@ -1,5 +1,7 @@
+[Back to SmartThings Projects](https://github.com/statusbits/smartthings)
+
 Remind To Lock
-==============
+--------------
 
 **Remind To Lock** is a home security application for the
 [SmartThings](http://www.smartthings.com) home automation system monitors a door
@@ -21,8 +23,7 @@ the door is left unlocked for longer than a specified period of time.
 ![Screenshot](http://statusbits.github.io/images/RemindToLock.jpg)
 
 
-Installation
-------------
+### Installation
 
 Before you can install this Smart App using your SmartThings smart phone app,
 you will have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
@@ -39,10 +40,9 @@ for more information.
 * First public release.
 
 
-License
--------
+### License
 
-Copyright (C) 2014 Statusbits.com
+Copyright © 2014 Statusbits.com
 
 This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the Free

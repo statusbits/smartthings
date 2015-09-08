@@ -1,5 +1,7 @@
+[Back to SmartThings Projects](https://github.com/statusbits/smartthings)
+
 Pollster
-========
+--------
 
 **Please note that excessive polling of some devices (particularly Zigbee and
 Z-Wave) may cause network congestion and lead to degraded system performance.
@@ -25,8 +27,7 @@ intervals. The polling interval can be as short as one minute.
 ![Pollster Screenshot](http://statusbits.github.io/images/Pollster_1.2.jpg)
 
 
-Installation
-------------
+### Installation
 
 Before you can install Pollster using your SmartThings smart phone app, you
 have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
@@ -36,8 +37,7 @@ for more information.
 Pollster source code: [click here](https://raw.githubusercontent.com/statusbits/smartthings/master/smartapps/statusbits/pollster.src/pollster.groovy)
 
 
-Revision History
-----------------
+### Revision History
 
 **Version 1.3. Released 8/29/2015**
 * Added watchdog feature. Watchdog task runs every 15 minutes and checks to
@@ -62,10 +62,9 @@ interval.
 * Published to SmartThings shared apps directory.
 
 
-License
--------
+### License
 
-Copyright (C) 2014 Statusbits.com
+Copyright © 2014 Statusbits.com
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy
