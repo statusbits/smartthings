@@ -1,3 +1,5 @@
+[Back to SmartThings Projects](https://github.com/statusbits/smartthings)
+
 Remote Controller
 =================
 
@@ -21,14 +23,12 @@ Controller to perform different actions depending on the type of button
 action.
 
 
-Screenshots
------------
+### Screenshots
 
 Coming soon...
 
 
-Installation
-------------
+### Installation
 
 1. First, you have to self-publish Remote Controller SmartApp in the
 [SmartThings IDE](https://graph.api.smartthings.com). Please refer to the
@@ -41,15 +41,13 @@ The Remote Controller source code: [click here](https://raw.githubusercontent.co
 the 'My Apps' section in the SmartThings Marketplace.
 
 
-Revision History
-----------------
+### Revision History
 
 **Version 1.0.0. Released 9/7/2015**
 * Initial public release.
 
 
-License
--------
+### License
 
 Copyright © 2015 Statusbits.com
 

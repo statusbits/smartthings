@@ -21,7 +21,7 @@ mode changes.
 * [__Remind to Lock__](RemindToLock.md) - Notify me when a door is left
 unlocked.
 * [__Remote Controller__](remote-controller.md) - Use remote controls to
-execute Routines, change Modes and set Alarm System mode..
+execute Routines, change Modes and set Alarm System mode.
 * [__Smart Alarm__](SmartAlarm.md) - A multi-zone virtual alarm panel.
 
 ### Device Handlers
