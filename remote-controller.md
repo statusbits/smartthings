@@ -3,7 +3,7 @@
 Remote Controller
 =================
 
-Remote Controller SmartApp allows using remote controls, such as [Aeon Labs
+**Remote Controller** SmartApp allows using remote controls, such as [Aeon Labs
 Minimote](http://www.amazon.com/Aeon-Labs-DSA03202-v1-Minimote/dp/B00KU7ERAW/),
 to control essential functions of the [SmartThings](http://www.smartthings.com)
 home automation system.
@@ -12,10 +12,10 @@ Remote Controller supports remote control with up to 99 buttons. Each button
 can be individually configured to perform any (or all) of the following
 actions:
 
-* Execute [Routines](https://support.smartthings.com/hc/en-us/articles/205380034-Meet-Routines)
-* Change [Modes](https://support.smartthings.com/hc/en-us/articles/200962880-How-Do-Modes-Work-)
+* Execute [Routine](https://support.smartthings.com/hc/en-us/articles/205380034-Meet-Routines)
+* Change [Mode](https://support.smartthings.com/hc/en-us/articles/200962880-How-Do-Modes-Work-)
 * Set [Smart Home Monitor](https://support.smartthings.com/hc/en-us/articles/205380154-Meet-Smart-Home-Monitor)
-modes (Armed/Away, Armed/Stay, Off)
+mode (Armed/Away, Armed/Stay, Off)
 
 Some remote controls, for example Aeon Labs Minimote, can recognize whether
 the button was pushed momentarily or held down. You can configure Remote
@@ -33,9 +33,7 @@ Coming soon...
 1. First, you have to self-publish Remote Controller SmartApp in the
 [SmartThings IDE](https://graph.api.smartthings.com). Please refer to the
 [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
-for more information.
-
-The Remote Controller source code: [click here](https://raw.githubusercontent.com/statusbits/smartthings/master/smartapps/statusbits/remote-controller.src/remote-controller.groovy)
+for more information. The Remote Controller source code: [click here](https://raw.githubusercontent.com/statusbits/smartthings/master/smartapps/statusbits/remote-controller.src/remote-controller.groovy)
 
 2. Once you self-published it, Remote Controller SmartApp will be available in
 the 'My Apps' section in the SmartThings Marketplace.
