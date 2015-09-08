@@ -15,9 +15,13 @@ further development by making donation via PayPal.*
 
 ### Smart Apps
 
-* [__Dim and Dimmer__](DimAndDimmer.md) - Create lighting scenes triggered by mode changes.
+* [__Dim and Dimmer__](DimAndDimmer.md) - Create lighting scenes triggered by
+mode changes.
 * [__Pollster__](Pollster.md) - A SmartThings polling daemon.
-* [__Remind to Lock__](RemindToLock.md) - Notify me when a door is left unlocked.
+* [__Remind to Lock__](RemindToLock.md) - Notify me when a door is left
+unlocked.
+* [__Remote Controller__](remote-controller.md) - Use remote controls to
+execute Routines, change Modes and set Alarm System mode..
 * [__Smart Alarm__](SmartAlarm.md) - A multi-zone virtual alarm panel.
 
 ### Device Handlers

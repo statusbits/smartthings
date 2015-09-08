@@ -6,8 +6,9 @@ Minimote](http://www.amazon.com/Aeon-Labs-DSA03202-v1-Minimote/dp/B00KU7ERAW/),
 to control essential functions of the [SmartThings](http://www.smartthings.com)
 home automation system.
 
-Each button of the remote control can be individually configured to
-perform any (or all) of the following actions:
+Remote Controller supports remote control with up to 99 buttons. Each button
+can be individually configured to perform any (or all) of the following
+actions:
 
 * Execute [Routines](https://support.smartthings.com/hc/en-us/articles/205380034-Meet-Routines)
 * Change [Modes](https://support.smartthings.com/hc/en-us/articles/200962880-How-Do-Modes-Work-)
