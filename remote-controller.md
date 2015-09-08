@@ -14,8 +14,7 @@ actions:
 
 * Execute [Routine](https://support.smartthings.com/hc/en-us/articles/205380034-Meet-Routines)
 * Change [Mode](https://support.smartthings.com/hc/en-us/articles/200962880-How-Do-Modes-Work-)
-* Set [Smart Home Monitor](https://support.smartthings.com/hc/en-us/articles/205380154-Meet-Smart-Home-Monitor)
-mode (Armed/Away, Armed/Stay, Off)
+* Arm/Disarm [Smart Home Monitor](https://support.smartthings.com/hc/en-us/articles/205380154-Meet-Smart-Home-Monitor)
 
 Some remote controls, for example Aeon Labs Minimote, can recognize whether
 the button was pushed momentarily or held down. You can configure Remote
