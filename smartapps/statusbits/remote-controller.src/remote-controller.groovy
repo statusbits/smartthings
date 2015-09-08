@@ -339,5 +339,5 @@ under the License.\
 }
 
 private def LOG(message) {
-    log.trace message
+    //log.trace message
 }
