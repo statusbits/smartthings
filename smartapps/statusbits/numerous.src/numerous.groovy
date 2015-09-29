@@ -22,7 +22,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.0.0 (09/27/2015)
+ *  Version 1.1.0 (09/28/2015)
  */
 
 import groovy.json.JsonSlurper
@@ -112,6 +112,14 @@ private def pageSetup() {
         required:   false
     ]
 
+    def inputBattery = [
+        name:       "devBattery",
+        type:       "capability.battery",
+        title:      "Batteries",
+        multiple:   true,
+        required:   false
+    ]
+
     def hrefAbout = [
         url:        "http://statusbits.github.io/smartthings/",
         style:      "embedded",
@@ -140,15 +148,12 @@ private def pageSetup() {
             input inputIlluminance
             input inputPower
             input inputEnergy
+            input inputBattery
         }
 
         section("About") {
             paragraph textAbout
             href hrefAbout
-        }
-
-        section("License") {
-            paragraph textLicense()
         }
 
         section([title:"Options", mobileOnly:true]) {
@@ -194,7 +199,7 @@ def onHumidity(evt) {
         createHumidityMetric(device)
     } else {
         def data = [
-            value: evt.value
+            value: evt.integerValue / 100
         ]
 
         apiUpdateValue(metricId, data)
@@ -249,6 +254,22 @@ def onEnergy(evt) {
     }
 }
 
+def onBattery(evt) {
+    LOG("onBattery($evt.value)")
+
+    def device = evt.device
+    def metricId = getMetricId(device.id, "battery")
+    if (!metricId) {
+        createBatteryMetric(device)
+    } else {
+        def data = [
+            value: evt.integerValue / 100
+        ]
+
+        apiUpdateValue(metricId, data)
+    }
+}
+
 private def setupInit() {
     LOG("setupInit()")
 
@@ -278,6 +299,7 @@ private def initialize() {
         subscribe(settings.devIlluminance, "illuminance", onIlluminance)
         subscribe(settings.devPower, "power", onPower)
         subscribe(settings.devEnergy, "energy", onEnergy)
+        subscribe(settings.devBattery, "battery", onBattery)
     }
 
     STATE()
@@ -320,6 +342,13 @@ private def createMetrics() {
             createEnergyMetric(it)
         }
     }
+
+    settings.devBattery?.each() {
+        def metricId = getMetricId(it.id, "battery")
+        if (!metricId) {
+            createBatteryMetric(it)
+        }
+    }
 }
 
 private def createTemperatureMetric(device) {
@@ -327,7 +356,7 @@ private def createTemperatureMetric(device) {
 
     def data = [
         label:          device.displayName,
-        description:    "SmartThings: ${location.name}",
+        description:    "Temperature of ${device.displayName} at ${location.name}",
         kind:           "temperature",
         precision:      1,
         unit:           "°F",
@@ -344,10 +373,10 @@ private def createHumidityMetric(device) {
 
     def data = [
         label:          device.displayName,
-        description:    "SmartThings: ${location.name}",
+        description:    "Relative Humidity of ${device.displayName} at ${location.name}",
         kind:           "percent",
         visibility:     "private",
-        value:          device.currentHumidity,
+        value:          device.currentHumidity.toInteger() / 100,
     ]
 
     apiCreateMetric(device.id, "humidity", data)
@@ -358,7 +387,7 @@ private def createIlluminanceMetric(device) {
 
     def data = [
         label:          device.displayName,
-        description:    "SmartThings: ${location.name}",
+        description:    "Illuminance of ${device.displayName} at ${location.name}",
         kind:           "number",
         unit:           "Lux",
         units:          "Lux",
@@ -374,7 +403,7 @@ private def createPowerMetric(device) {
 
     def data = [
         label:          device.displayName,
-        description:    "SmartThings: ${location.name}",
+        description:    "Power of ${device.displayName} at ${location.name}",
         kind:           "number",
         precision:      1,
         unit:           "W",
@@ -391,7 +420,7 @@ private def createEnergyMetric(device) {
 
     def data = [
         label:          device.displayName,
-        description:    "SmartThings: ${location.name}",
+        description:    "Energy of ${device.displayName} at ${location.name}",
         kind:           "number",
         precision:      1,
         unit:           "kWh",
@@ -401,6 +430,20 @@ private def createEnergyMetric(device) {
     ]
 
     apiCreateMetric(device.id, "energy", data)
+}
+
+private def createBatteryMetric(device) {
+    LOG("createBatteryMetric(${device})")
+
+    def data = [
+        label:          device.displayName,
+        description:    "Battery Level of ${device.displayName} at ${location.name}",
+        kind:           "percent",
+        visibility:     "private",
+        value:          device.currentBattery.toInteger() / 100,
+    ]
+
+    apiCreateMetric(device.id, "battery", data)
 }
 
 private def apiCreateMetric(deviceId, deviceType, Map data) {
@@ -427,7 +470,7 @@ private def apiCreateMetric(deviceId, deviceType, Map data) {
             }
 
             def metric = response.getData()
-            log.debug "metric: ${metric}"
+            LOG("metric: ${metric}")
             def key = "${deviceType}_${deviceId}"
             state.metrics[key] = metric.id
         }
@@ -459,7 +502,7 @@ private def apiUpdateMetric(metricId, Map data) {
                 return
             }
 
-            //log.debug "data: ${response.getData()}"
+            LOG("data: ${response.getData()}")
         }
     } catch (e) {
         log.error "${e}"
@@ -478,7 +521,7 @@ private def apiDeleteMetric(metricId) {
         headers:    headers,
     ]
 
-    log.debug "params: ${params}"
+    //log.debug "params: ${params}"
 
     try {
         httpDelete(params) { response ->
@@ -508,7 +551,7 @@ private def apiReadMetric(metricId) {
         headers:    headers,
     ]
 
-    log.debug "params: ${params}"
+    //log.debug "params: ${params}"
 
     try {
         httpGet(params) { response ->
@@ -550,7 +593,7 @@ private def apiUpdateValue(metricId, Map data) {
                 return
             }
 
-            log.debug "data: ${response.getData()}"
+            LOG("data: ${response.getData()}")
         }
     } catch (e) {
         log.error "${e}"
@@ -567,28 +610,11 @@ private def toJson(Map m) {
 }
 
 private def getVersion() {
-    return "1.0.0"
+    return "1.1.0"
 }
 
 private def textCopyright() {
     return "Copyright © 2015 Statusbits.com"
-}
-
-private def textLicense() {
-    return '''\
-This program is free software: you can redistribute it and/or modify it \
-under the terms of the GNU General Public License as published by the Free \
-Software Foundation, either version 3 of the License, or (at your option) \
-any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT \
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or \
-FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for \
-more details.
-
-You should have received a copy of the GNU General Public License along with \
-this program. If not, see <http://www.gnu.org/licenses/>.\
-'''
 }
 
 private def LOG(message) {

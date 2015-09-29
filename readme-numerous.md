@@ -29,6 +29,7 @@ Currently, you can connect the following SmartThings devices to Numerous:
 * Illuminance sensors
 * Power meters
 * Energy meters
+* Battery levels
 
 ---
 
@@ -69,6 +70,11 @@ section of the Marketplace.
 
 
 ### Revision History
+
+**Version 1.1.0. Released 9/28/2015**
+
+* Added battery level metrics.
+* Fixed an issue with percents not displaying correctly.
 
 **Version 1.0.0. Released 9/27/2015**
 
