@@ -618,9 +618,9 @@ private def textCopyright() {
 }
 
 private def LOG(message) {
-    log.trace message
+    //log.trace message
 }
 
 private def STATE() {
-    log.trace "state: ${state}"
+    //log.trace "state: ${state}"
 }
