@@ -1,8 +1,8 @@
 /**
  *  Remote Controller.
  *
- *  This smart app allows using remote controls, for example Aeon Labs
- *  Minimote, to execute Routines, change Modes and set Alarm System mode.
+ *  This smart app allows using remote controls (e.g. Aeon Labs Minimote) to
+ *  execute routines, change modes and set the Smart Home Monitor mode.
  *
  *  --------------------------------------------------------------------------
  *
@@ -22,7 +22,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.0.0 (09/07/2015)
+ *  Version 1.0.1 (10/04/2015)
  */
 
 import groovy.json.JsonSlurper
@@ -31,7 +31,8 @@ definition(
     name: "Remote Controller",
     namespace: "statusbits",
     author: "geko@statusbits.com",
-    description: "Use remote controls to execute Routines, change Modes and set Alarm System mode.",
+    description: "Use remote controls to execute routines, change modes " +
+        "and set the Smart Home Monitor mode.",
     category: "Convenience",
     iconUrl: "https://s3.amazonaws.com/smartthings-device-icons/unknown/zwave/remote-controller@2x.png",
     iconX2Url: "https://s3.amazonaws.com/smartthings-device-icons/unknown/zwave/remote-controller@2x.png",
@@ -50,13 +51,10 @@ private def pageSetup() {
 
     def buttons = getButtons()
 
-    def inputRemotes = [
-        name:       "remotes",
-        type:       "capability.button",
-        title:      "Which remote controls?",
-        multiple:   true,
-        required:   false
-    ]
+    def textAbout =
+        "Version ${getVersion()}\n${textCopyright()}\n\n" +
+        "You can contribute to the development of this app by making a " +
+        "PayPal donation to geko@statusbits.com. We appreciate your support."
 
     def hrefAbout = [
         url:        "http://statusbits.github.io/smartthings/",
@@ -66,42 +64,40 @@ private def pageSetup() {
         required:   false
     ]
 
+    def inputRemotes = [
+        name:       "remotes",
+        type:       "capability.button",
+        title:      "Which remote controls?",
+        multiple:   true,
+        required:   false
+    ]
+
     def pageProperties = [
         name:       "pageSetup",
-        title:      "Setup",
+        //title:      "Setup",
         nextPage:   null,
         install:    true,
         uninstall:  state.installed ?: false
     ]
 
     return dynamicPage(pageProperties) {
-        section() {
-            input inputRemotes
-            href "pageAddButton", title:"Add button", description:"Tap to open"
+        section("About") {
+            paragraph textAbout
+            href hrefAbout
         }
 
-        if (buttons.size() > 0) {
-            section("Configure Buttons") {
+        section("Setup Menu") {
+            input inputRemotes
+            href "pageAddButton", title:"Add button", description:"Tap to open"
             buttons.each() { button ->
                 def n = button.button.toInteger()
-                href "pageEditButton", params:[button:n], title:"Button ${n}",
+                href "pageEditButton", params:[button:n], title:"Configure button ${n}",
                     description:"Tap to open"
-                }
             }
         }
 
         section([title:"Options", mobileOnly:true]) {
             label title:"Assign a name", required:false
-            //icon title:"Select icon", required:false
-        }
-
-        section("About") {
-            paragraph "Version ${getVersion()}\n${textCopyright()}"
-            href hrefAbout
-        }
-
-        section("License") {
-            paragraph textLicense()
         }
     }
 }
@@ -142,8 +138,8 @@ private def pageEditButton(params) {
     }
 
     def textHelp =
-        "You can configure remote control buttons to execute Routines, " +
-        "change Modes or set Alarm System mode.\n\n" +
+        "You can configure buttons to execute routines, change modes and " +
+        "set the Smart Home Monitor mode.\n\n" +
         "Some remote controls, for example Aeon Labs Minimote, can " +
         "recognize whether the button was pushed momentarily or held down. " +
         "You can configure Remote Controller to perform different actions " +
@@ -164,21 +160,21 @@ private def pageEditButton(params) {
             paragraph textHelp
         }
 
-        section("Configure 'Push' Button Actions") {
-            input "push_${button}_routine", "enum", title:"Execute Routine",
+        section("'Push' Button Actions") {
+            input "push_${button}_routine", "enum", title:"Execute routine",
                     options:routines, required:false
-            input "push_${button}_mode", "enum", title:"Change Mode to...",
+            input "push_${button}_mode", "enum", title:"Change the mode to",
                     options:modes, required:false
-            input "push_${button}_alarm", "enum", title:"Set Alarm System Mode",
+            input "push_${button}_alarm", "enum", title:"Set Smart Home Monitor to",
                     options:alarmModes, required:false
         }
 
-        section("Configure 'Hold' Button Actions") {
-            input "hold_${button}_routine", "enum", title:"Execute Routine",
+        section("'Hold' Button Actions") {
+            input "hold_${button}_routine", "enum", title:"Execute routine",
                     options:routines, required:false
-            input "hold_${button}_mode", "enum", title:"Change Mode to...",
+            input "hold_${button}_mode", "enum", title:"Change the mode to",
                     options:modes, required:false
-            input "hold_${button}_alarm", "enum", title:"Set Alarm System Mode",
+            input "hold_${button}_alarm", "enum", title:"Set Smart Home Monitor to",
                     options:alarmModes, required:false
         }
     }
@@ -276,7 +272,7 @@ private def getButtons() {
         buttons = buttons.sort() { it.button }
     }
 
-    LOG("buttons: ${buttons}")
+    //log.debug "buttons: ${buttons}"
     return buttons
 }
 
@@ -315,27 +311,11 @@ private def setAlarmMode(name) {
 }
 
 private def getVersion() {
-    return "1.0.0"
+    return "1.0.1"
 }
 
 private def textCopyright() {
     return "Copyright © 2015 Statusbits.com"
-}
-
-private def textLicense() {
-    return '''\
-Licensed under the Apache License, Version 2.0 (the "License"); you may not \
-use this file except in compliance with the License. You may obtain a copy \
-of the License at:
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software \
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT \
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the \
-License for the specific language governing permissions and limitations \
-under the License.\
-'''
 }
 
 private def LOG(message) {

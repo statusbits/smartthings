@@ -21,6 +21,13 @@ the button was pushed momentarily or held down. You can configure Remote
 Controller to perform different actions depending on the type of button
 action.
 
+---
+
+*If you like this app, please consider supporting its development by making a
+donation via PayPal.*
+
+[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
+
 
 ### Screenshots
 
@@ -29,20 +36,26 @@ action.
 
 ### Installation
 
-1. First, you have to self-publish Remote Controller SmartApp in the
-[SmartThings IDE](https://graph.api.smartthings.com). Please refer to the
+1. Self-publish Remote Controller SmartApp by creating a new SmartApp in the
+[SmartThings IDE](https://graph.api.smartthings.com) and pasting the
+[source code](https://raw.githubusercontent.com/statusbits/smartthings/master/smartapps/statusbits/remote-controller.src/remote-controller.groovy)
+in the "From Code" tab. Please refer to the
 [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
-for more information. The Remote Controller source code: [click here](https://raw.githubusercontent.com/statusbits/smartthings/master/smartapps/statusbits/remote-controller.src/remote-controller.groovy)
+for more information.
 
-2. Once you self-published it, Remote Controller SmartApp will be available in
-the 'My Apps' section in the SmartThings Marketplace.
+2. Open SmartThings mobile app and locate 'Remote Controller' SmartApp in the
+"My Apps" section of the Marketplace.
 
 
 ### Revision History
 
-**Version 1.0.0. Released 9/7/2015**
-* Initial public release.
+**Version 1.0.1. Released 10/4/2015**
 
+* Minor UI changes.
+
+**Version 1.0.0. Released 9/7/2015**
+
+* Initial public release.
 
 ### License
 
