@@ -49,7 +49,7 @@ for more information.
 
 ### Revision History
 
-**Version 1.0.1. Released 10/4/2015**
+**Version 1.0.2. Released 10/4/2015**
 
 * Minor UI changes.
 

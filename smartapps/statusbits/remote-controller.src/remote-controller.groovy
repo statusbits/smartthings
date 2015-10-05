@@ -1,7 +1,7 @@
 /**
  *  Remote Controller.
  *
- *  This smart app allows using remote controls (e.g. Aeon Labs Minimote) to
+ *  This SmartApp allows using remote controls (e.g. Aeon Labs Minimote) to
  *  execute routines, change modes and set the Smart Home Monitor mode.
  *
  *  --------------------------------------------------------------------------
@@ -22,7 +22,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.0.1 (10/04/2015)
+ *  Version 1.0.2 (10/04/2015)
  */
 
 import groovy.json.JsonSlurper
@@ -51,11 +51,6 @@ private def pageSetup() {
 
     def buttons = getButtons()
 
-    def textAbout =
-        "Version ${getVersion()}\n${textCopyright()}\n\n" +
-        "You can contribute to the development of this app by making a " +
-        "PayPal donation to geko@statusbits.com. We appreciate your support."
-
     def hrefAbout = [
         url:        "http://statusbits.github.io/smartthings/",
         style:      "embedded",
@@ -81,8 +76,8 @@ private def pageSetup() {
     ]
 
     return dynamicPage(pageProperties) {
-        section("About") {
-            paragraph textAbout
+        section("About", hideable:true, hidden:true) {
+            paragraph about()
             href hrefAbout
         }
 
@@ -233,7 +228,7 @@ def onButtonEvent(evt) {
 }
 
 private def initialize() {
-    log.info "Remote. Version ${getVersion()}. ${textCopyright()}"
+    log.info "Remote. Version ${version()}. ${copyright()}"
     LOG("initialize with ${settings}")
 
     if (settings.remotes) {
@@ -310,12 +305,22 @@ private def setAlarmMode(name) {
     sendLocationEvent(event)
 }
 
-private def getVersion() {
-    return "1.0.1"
+private def version() {
+    return "1.0.2"
 }
 
-private def textCopyright() {
+private def copyright() {
     return "Copyright © 2015 Statusbits.com"
+}
+
+private def about() {
+    def text =
+        "This SmartApp allows using remote controls (e.g. Aeon Labs " +
+        "Minimote) to execute routines, change modes and set the Smart " +
+        "Home Monitor mode.\n\n" +
+        "Version ${version()}\n${copyright()}\n\n" +
+        "You can contribute to the development of this app by making a " +
+        "PayPal donation to geko@statusbits.com. We appreciate your support."
 }
 
 private def LOG(message) {
