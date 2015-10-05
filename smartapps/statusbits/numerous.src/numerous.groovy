@@ -22,7 +22,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.1.0 (09/28/2015)
+ *  Version 1.1.1 (10/05/2015)
  */
 
 import groovy.json.JsonSlurper
@@ -46,7 +46,7 @@ preferences {
 private def pageSetup() {
     LOG("pageSetup()")
 
-    if (state.version != getVersion()) {
+    if (state.version != version()) {
         setupInit()
     }
 
@@ -60,11 +60,6 @@ private def pageSetup() {
         "'metric') will be created. All metrics are created private by " +
         "default. You can change the metric properties in the Numerous " +
         "mobile app."
-
-    def textAbout =
-        "Version ${getVersion()}\n${textCopyright()}\n\n" +
-        "You can contribute to the development of this app by making a " +
-        "PayPal donation to geko@statusbits.com. We appreciate your support."
 
     def inputApiKey = [
         name:       "apiKey",
@@ -136,6 +131,11 @@ private def pageSetup() {
     ]
 
     return dynamicPage(pageProperties) {
+        section("About", hideable:true, hidden:true) {
+            paragraph about()
+            href hrefAbout
+        }
+
         section("API Key") {
             paragraph textApiKey
             input inputApiKey
@@ -149,11 +149,6 @@ private def pageSetup() {
             input inputPower
             input inputEnergy
             input inputBattery
-        }
-
-        section("About") {
-            paragraph textAbout
-            href hrefAbout
         }
 
         section([title:"Options", mobileOnly:true]) {
@@ -278,12 +273,12 @@ private def setupInit() {
         state.metrics = [:]
     }
 
-    state.version = getVersion()
+    state.version = version()
     return true
 }
 
 private def initialize() {
-    log.info "Numerous. Version ${getVersion()}. ${textCopyright()}"
+    log.info "Numerous. Version ${version()}. ${copyright()}"
 
     if (!settings.apiKey) {
         log.error "Missing API key!"
@@ -302,7 +297,7 @@ private def initialize() {
         subscribe(settings.devBattery, "battery", onBattery)
     }
 
-    STATE()
+    LOG("state: ${state}")
 }
 
 private def createMetrics() {
@@ -609,18 +604,23 @@ private def toJson(Map m) {
 	return new org.codehaus.groovy.grails.web.json.JSONObject(m).toString()
 }
 
-private def getVersion() {
-    return "1.1.0"
+private def version() {
+    return "1.1.1"
 }
 
-private def textCopyright() {
+private def copyright() {
     return "Copyright © 2015 Statusbits.com"
 }
 
-private def LOG(message) {
-    //log.trace message
+private def about() {
+    def text =
+        "This SmartApp allows you to view your SmartThings data in " +
+        "Numerous (www.numerousapp.com).\n\n" +
+        "Version ${version()}\n${copyright()}\n\n" +
+        "You can contribute to the development of this app by making a " +
+        "PayPal donation to geko@statusbits.com. We appreciate your support."
 }
 
-private def STATE() {
-    //log.trace "state: ${state}"
+private def LOG(message) {
+    log.trace message
 }

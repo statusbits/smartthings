@@ -31,17 +31,14 @@ Currently, you can connect the following SmartThings devices to Numerous:
 * Energy meters
 * Battery levels
 
+![Screenshot](http://statusbits.github.io/images/Numerous-01.jpg)
+
 ---
 
 *If you like this app, please consider supporting its development by making a
 donation via PayPal.*
 
 [![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
-
-
-### Screenshots
-
-![Screenshot](http://statusbits.github.io/images/Numerous-01.jpg)
 
 
 ### Installation
@@ -70,6 +67,10 @@ section of the Marketplace.
 
 
 ### Revision History
+
+**Version 1.1.1. Released 10/5/2015**
+
+* Made 'About' section hidden by default.
 
 **Version 1.1.0. Released 9/28/2015**
 
