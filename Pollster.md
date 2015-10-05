@@ -26,20 +26,36 @@ intervals. The polling interval can be as short as one minute.
 
 ![Pollster Screenshot](http://statusbits.github.io/images/Pollster_1.2.jpg)
 
+---
+
+*If you like this app, please consider supporting its development by making a
+donation via PayPal.*
+
+[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
+
 
 ### Installation
 
-Before you can install Pollster using your SmartThings smart phone app, you
-have to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
-Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
+1. Self-publish Pollster SmartApp by creating a new SmartApp in the
+[SmartThings IDE](https://graph.api.smartthings.com) and pasting the
+[source code](https://raw.githubusercontent.com/statusbits/smartthings/master/smartapps/statusbits/pollster.src/pollster.groovy)
+in the "From Code" tab. Please refer to the
+[SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
 for more information.
 
-Pollster source code: [click here](https://raw.githubusercontent.com/statusbits/smartthings/master/smartapps/statusbits/pollster.src/pollster.groovy)
+2. Open SmartThings mobile app and locate "Pollster" SmartApp in the "My Apps"
+section of the Marketplace.
 
 
 ### Revision History
 
+**Version 1.3.1. Released 10/4/2015**
+
+* Disabled push notification on restart.
+* Made 'About' section hidden by default.
+
 **Version 1.3. Released 8/29/2015**
+
 * Added watchdog feature. Watchdog task runs every 15 minutes and checks to
   see that the polling tasks are running. If watchdog detects that one of the
   polling tasks has stopped, it will send a notification message and attempt
@@ -50,15 +66,18 @@ Pollster source code: [click here](https://raw.githubusercontent.com/statusbits/
 * Randomized seconds in the cron schedules.
 
 **Version 1.2. Released 2/8/2015**
+
 * Added ability to update devices that provide 'refresh' capability.
 * Added "Poll Now" feature. You can now start the poll manually by touching
 the app icon.
 
 **Version 1.1. Released 8/23/2014**
+
 * Devices can be arranged into 4 polling groups with different polling
 interval.
 
 **Version 1.0. Released 7/14/2014** 
+
 * Published to SmartThings shared apps directory.
 
 

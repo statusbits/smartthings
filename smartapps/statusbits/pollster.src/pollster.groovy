@@ -10,7 +10,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Copyright (c) 2014 Statusbits.com
+ *  Copyright © 2014 Statusbits.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
  *  not use this file except in compliance with the License. You may obtain a
@@ -26,7 +26,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.3 (08/29/2015)
+ *  Version 1.3.1 (10/04/2015)
  */
 
 definition(
@@ -39,9 +39,17 @@ definition(
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
 
 preferences {
-    section("About") {
-        paragraph textAbout()
-        paragraph "${textVersion()}\n${textCopyright()}"
+    section("About", hideable:true, hidden:true) {
+        def hrefAbout = [
+            url:        "http://statusbits.github.io/smartthings/",
+            style:      "embedded",
+            title:      "Tap for more information...",
+            description:"http://statusbits.github.io/smartthings/",
+            required:   false
+        ]
+
+        paragraph about()
+        href hrefAbout
     }
 
     (1..3).each() { n ->
@@ -134,7 +142,8 @@ def watchdogTask() {
         def t = now() - state.trun1
         if (t > (settings.interval_1 * 120000)) {
             log.warn "Polling task #1 is toast. Restarting..."
-            return restart()
+            restart()
+            return
         }
     }
 
@@ -142,7 +151,8 @@ def watchdogTask() {
         def t = now() - state.trun2
         if (t > (settings.interval_2 * 120000)) {
             log.warn "Polling task #2 is toast. Restarting..."
-            return restart()
+            restart()
+            return
         }    
     }
 
@@ -150,13 +160,14 @@ def watchdogTask() {
         def t = now() - state.trun3
         if (t > (settings.interval_3 * 120000)) {
             log.warn "Polling task #3 is toast. Restarting..."
-            return restart()
+            restart()
+            return
         }
     }
 }
 
 private def initialize() {
-    log.info "Pollster. ${textVersion()}. ${textCopyright()}"
+    log.info "Pollster. Version ${version()}. ${copyright()}"
     LOG("initialize() with settings: ${settings}")
 
     state.trun1 = 0
@@ -185,26 +196,31 @@ private def initialize() {
     }
 
     subscribe(app, onAppTouch)
+
+    LOG("state: ${state}")
 }
 
 private def restart() {
-    sendNotification("Pollster is toast. Restarting...")
+    //sendNotification("Pollster is toast. Restarting...")
     updated()
 }
 
-private def textAbout() {
-    return '''\
-Pollster works behind the scenes and periodically calls 'poll' or 'refresh' \
-commands for selected devices. Devices can be arranged into three polling \
-groups with configurable polling intervals down to 1 minute.\
-'''
+private def about() {
+    def text =
+        "Pollster works behind the scenes and periodically calls 'poll' or " +
+        "'refresh' commands for selected devices. Devices can be arranged " +
+        "into three polling groups with configurable polling intervals " +
+        "down to 1 minute.\n\n" +
+        "Version ${version()}\n${copyright()}\n\n" +
+        "You can contribute to the development of this app by making a " +
+        "PayPal donation to geko@statusbits.com. We appreciate your support."
 }
 
-private def textVersion() {
-    return "Version 1.3 (08/29/2015)"
+private def version() {
+    return "Version 1.3.1"
 }
 
-private def textCopyright() {
+private def copyright() {
     return "Copyright © 2014 Statusbits.com"
 }
 
