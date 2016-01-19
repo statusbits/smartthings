@@ -3,7 +3,7 @@
 Pollster
 --------
 
-**Please note that excessive polling of some devices (particularly Zigbee and
+**Please note that frequent polling of some devices (particularly Zigbee and
 Z-Wave) may cause network congestion and lead to degraded system performance.
 Therefore, polling rate faster than 5 minutes is not recommended. The author
 of this software bears no responsibility for your system performance. Use it
@@ -21,7 +21,7 @@ intermittently or stops working for hours or even days.
 
 Here comes Pollster to the rescue! Pollster works behind the scenes and
 periodically calls 'poll' or 'refresh' command for selected devices. Devices
-can be arranged into three groups with independently configurable polling
+can be arranged into four groups with independently configurable polling
 intervals. The polling interval can be as short as one minute.
 
 ![Pollster Screenshot](http://statusbits.github.io/images/Pollster_1.2.jpg)
@@ -48,6 +48,15 @@ section of the Marketplace.
 
 
 ### Revision History
+
+**Version 1.4. Released 1/19/2016**
+
+* Four polling groups.
+* Execute watchdog process upon app touch and location events (sunrise, sunset
+  or mode change).
+* Watchdog process will restart Pollster if any of the polling schedules is
+  late by 10 minutes or more.
+* Don't use "hideable" section attribute due to UI rendering bug.
 
 **Version 1.3.1. Released 10/4/2015**
 

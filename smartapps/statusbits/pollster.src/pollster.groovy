@@ -9,7 +9,6 @@
  *  information. 
  *
  *  --------------------------------------------------------------------------
- *
  *  Copyright © 2014 Statusbits.com
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -23,10 +22,9 @@
  *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  *  License  for the specific language governing permissions and limitations
  *  under the License.
- *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.3.1 (10/04/2015)
+ *  Version 1.4.0 (01/19/2016)
  */
 
 definition(
@@ -39,7 +37,7 @@ definition(
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
 
 preferences {
-    section("About", hideable:true, hidden:true) {
+    section("About") {
         def hrefAbout = [
             url:        "http://statusbits.github.io/smartthings/",
             style:      "embedded",
@@ -49,10 +47,10 @@ preferences {
         ]
 
         paragraph about()
-        href hrefAbout
+        //href hrefAbout
     }
 
-    (1..3).each() { n ->
+    (1..4).each() { n ->
         section("Polling Group ${n}") {
             input "group_${n}", "capability.polling", title:"Select devices to be polled", multiple:true, required:false
             input "refresh_${n}", "capability.refresh", title:"Select devices to be refreshed", multiple:true, required:false
@@ -73,24 +71,17 @@ def updated() {
 def onAppTouch(event) {
     LOG("onAppTouch(${event.value})")
 
-    def devPoll = []
-    def devRefresh = []
+    watchdog()
+    pollingTask1()
+    pollingTask2()
+    pollingTask3()
+    pollingTask4()
+}
 
-    (1..3).each() { n ->
-        if (settings["group_${n}"]) {
-            devPoll.addAll(settings["group_${n}"])
-        }
+def onLocation(event) {
+    LOG("onLocation(${event.value})")
 
-        if (settings["refresh_${n}"]) {
-            devRefresh.addAll(settings["refresh_${n}"])
-        }
-    }
-
-    log.debug "devPoll: ${devPoll}"
-    log.debug "devRefresh: ${devRefresh}"
-
-    devPoll*.poll()
-    devRefresh*.refresh()
+    watchdog()
 }
 
 def pollingTask1() {
@@ -135,31 +126,29 @@ def pollingTask3() {
     }
 }
 
-def watchdogTask() {
-    LOG("watchdogTask()")
+def pollingTask4() {
+    LOG("pollingTask4()")
 
-    if (settings.interval_1 && state.trun1) {
-        def t = now() - state.trun1
-        if (t > (settings.interval_1 * 120000)) {
-            log.warn "Polling task #1 is toast. Restarting..."
-            restart()
-            return
-        }
+    state.trun3 = now()
+
+    if (settings.group_4) {
+        settings.group_4*.poll()
     }
 
-    if (settings.interval_2 && state.trun2) {
-        def t = now() - state.trun2
-        if (t > (settings.interval_2 * 120000)) {
-            log.warn "Polling task #2 is toast. Restarting..."
-            restart()
-            return
-        }    
+    if (settings.refresh_4) {
+        settings.refresh_4*.refresh()
     }
+}
 
-    if (settings.interval_3 && state.trun3) {
-        def t = now() - state.trun3
-        if (t > (settings.interval_3 * 120000)) {
-            log.warn "Polling task #3 is toast. Restarting..."
+def watchdog() {
+    LOG("watchdog()")
+
+    (1..4).each() { n ->
+        def interval = settings."interval_${n}".toInteger()
+        def trun = state."trun${n}"
+
+        if (interval && trun && ((now() - trun) > ((interval + 10) * 60000))) {
+            log.warn "Polling task #${n} stalled. Restarting..."
             restart()
             return
         }
@@ -173,10 +162,11 @@ private def initialize() {
     state.trun1 = 0
     state.trun2 = 0
     state.trun3 = 0
+    state.trun4 = 0
 
     Random rand = new Random(now())
     def numTasks = 0
-    (1..3).each() { n ->
+    (1..4).each() { n ->
         def minutes = settings."interval_${n}".toInteger()
         def seconds = rand.nextInt(60)
         def size1 = settings["group_${n}"]?.size() ?: 0
@@ -191,33 +181,30 @@ private def initialize() {
     }
 
     if (numTasks) {
-        def seconds = rand.nextInt(60)
-        schedule("${seconds} 1/15 * * * ?", watchdogTask)
+        subscribe(app, onAppTouch)
+        subscribe(location, onLocation)
+        subscribe(location, "position", onLocation)
+        subscribe(location, "sunrise", onLocation)
+        subscribe(location, "sunset", onLocation)
     }
-
-    subscribe(app, onAppTouch)
 
     LOG("state: ${state}")
 }
 
 private def restart() {
-    //sendNotification("Pollster is toast. Restarting...")
+    //sendNotification("Pollster stalled. Restarting...")
     updated()
 }
 
 private def about() {
     def text =
-        "Pollster works behind the scenes and periodically calls 'poll' or " +
-        "'refresh' commands for selected devices. Devices can be arranged " +
-        "into three polling groups with configurable polling intervals " +
-        "down to 1 minute.\n\n" +
         "Version ${version()}\n${copyright()}\n\n" +
         "You can contribute to the development of this app by making a " +
         "PayPal donation to geko@statusbits.com. We appreciate your support."
 }
 
 private def version() {
-    return "Version 1.3.1"
+    return "Version 1.4.0"
 }
 
 private def copyright() {
