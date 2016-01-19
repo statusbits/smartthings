@@ -24,7 +24,7 @@
  *  under the License.
  *  --------------------------------------------------------------------------
  *
- *  Version 1.4.0 (01/19/2016)
+ *  Version 1.4.1 (01/19/2016)
  */
 
 definition(
@@ -129,7 +129,7 @@ def pollingTask3() {
 def pollingTask4() {
     LOG("pollingTask4()")
 
-    state.trun3 = now()
+    state.trun4 = now()
 
     if (settings.group_4) {
         settings.group_4*.poll()
@@ -204,7 +204,7 @@ private def about() {
 }
 
 private def version() {
-    return "Version 1.4.0"
+    return "Version 1.4.1"
 }
 
 private def copyright() {
@@ -212,5 +212,5 @@ private def copyright() {
 }
 
 private def LOG(message) {
-    //log.trace message
+    log.trace message
 }

@@ -49,7 +49,7 @@ section of the Marketplace.
 
 ### Revision History
 
-**Version 1.4. Released 1/19/2016**
+**Version 1.4.1. Released 1/19/2016**
 
 * Four polling groups.
 * Execute watchdog process upon app touch and location events (sunrise, sunset
