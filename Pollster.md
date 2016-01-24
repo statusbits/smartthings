@@ -49,6 +49,10 @@ section of the Marketplace.
 
 ### Revision History
 
+**Version 1.4.2. Released 1/23/2016**
+
+* Work around UndeclaredThrowableException thrown by unschedule().
+
 **Version 1.4.1. Released 1/19/2016**
 
 * Four polling groups.

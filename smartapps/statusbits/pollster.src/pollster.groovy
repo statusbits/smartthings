@@ -24,7 +24,7 @@
  *  under the License.
  *  --------------------------------------------------------------------------
  *
- *  Version 1.4.1 (01/19/2016)
+ *  Version 1.4.2 (01/23/2016)
  */
 
 definition(
@@ -64,7 +64,6 @@ def installed() {
 }
 
 def updated() {
-    unschedule()
     initialize()
 }
 
@@ -172,6 +171,8 @@ private def initialize() {
         def size1 = settings["group_${n}"]?.size() ?: 0
         def size2 = settings["refresh_${n}"]?.size() ?: 0
 
+        safeUnschedule("pollingTask${n}")
+
         if (minutes > 0 && (size1 + size2) > 0) {
             LOG("Scheduling polling task ${n} to run every ${minutes} minutes.")
             def sched = "${seconds} 0/${minutes} * * * ?"
@@ -191,6 +192,26 @@ private def initialize() {
     LOG("state: ${state}")
 }
 
+private def safeUnschedule() {
+    try {
+        unschedule()
+    }
+
+    catch(e) {
+        log.error ${e}
+    }
+}
+
+private def safeUnschedule(handler) {
+    try {
+        unschedule(handler)
+    }
+
+    catch(e) {
+        log.error ${e}
+    }
+}
+
 private def restart() {
     //sendNotification("Pollster stalled. Restarting...")
     updated()
@@ -204,7 +225,7 @@ private def about() {
 }
 
 private def version() {
-    return "Version 1.4.1"
+    return "Version 1.4.2"
 }
 
 private def copyright() {
