@@ -25,6 +25,7 @@
  *  --------------------------------------------------------------------------
  *
  *  Version 1.4.2 (01/23/2016)
+ *  Modified ERS for better watchdog
  */
 
 definition(
@@ -86,57 +87,73 @@ def onLocation(event) {
 def pollingTask1() {
     LOG("pollingTask1()")
 
-    state.trun1 = now()
+    long t1 = now()
+    state.trun1 = 0L
 
     if (settings.group_1) {
         settings.group_1*.poll()
+        state.trun1 = t1
     }
 
     if (settings.refresh_1) {
         settings.refresh_1*.refresh()
+        state.trun1 = t1
     }
+    watchdog()
 }
 
 def pollingTask2() {
     LOG("pollingTask2()")
 
-    state.trun2 = now()
+    long t2 = now()
+    state.trun2 = 0L
 
     if (settings.group_2) {
         settings.group_2*.poll()
+        state.trun2 = t2
     }
 
     if (settings.refresh_2) {
         settings.refresh_2*.refresh()
+        state.trun2 = t2
     }
+    watchdog()
 }
 
 def pollingTask3() {
     LOG("pollingTask3()")
 
-    state.trun3 = now()
+    long t3 = now()
+    state.trun3 = 0L
 
     if (settings.group_3) {
         settings.group_3*.poll()
+        state.trun3 = t3
     }
 
     if (settings.refresh_3) {
         settings.refresh_3*.refresh()
+        state.trun3 = t3
     }
+    watchdog()
 }
 
 def pollingTask4() {
     LOG("pollingTask4()")
 
-    state.trun4 = now()
+    long t4 = now()
+    state.trun4= 0L
 
     if (settings.group_4) {
         settings.group_4*.poll()
+        state.trun4 = t4
     }
 
     if (settings.refresh_4) {
         settings.refresh_4*.refresh()
+        state.trun4 = t4
     }
+    watchdog()
 }
 
 def watchdog() {
@@ -144,10 +161,13 @@ def watchdog() {
 
     (1..4).each() { n ->
         def interval = settings."interval_${n}".toInteger()
-        def trun = state."trun${n}"
+        long trun = state."trun${n}"
+        long tt = now()
+        long ttt = tt - trun
+        long tttt = (interval + 10) * 60000L
 
-        if (interval && trun && ((now() - trun) > ((interval + 10) * 60000))) {
-            log.warn "Polling task #${n} stalled. Restarting..."
+        if (interval && trun && ((now() - trun) > ((interval + 10) * 60000L))) {
+            log.warn "Polling task #${n} stalled. Restarting...  now: $tt  last run: $trun delta: $ttt  max interval: $tttt   intervalmins: $interval"
             restart()
             return
         }
@@ -158,12 +178,15 @@ private def initialize() {
     log.info "Pollster. Version ${version()}. ${copyright()}"
     LOG("initialize() with settings: ${settings}")
 
-    state.trun1 = 0
-    state.trun2 = 0
-    state.trun3 = 0
-    state.trun4 = 0
+    state.trun1 = 0L
+    state.trun2 = 0L
+    state.trun3 = 0L
+    state.trun4 = 0L
 
     Random rand = new Random(now())
+
+    safeUnsubscribe()
+
     def numTasks = 0
     (1..4).each() { n ->
         def minutes = settings."interval_${n}".toInteger()
@@ -171,12 +194,13 @@ private def initialize() {
         def size1 = settings["group_${n}"]?.size() ?: 0
         def size2 = settings["refresh_${n}"]?.size() ?: 0
 
-        safeUnschedule("pollingTask${n}")
+	safeUnschedule("pollingTask${n}")
 
         if (minutes > 0 && (size1 + size2) > 0) {
             LOG("Scheduling polling task ${n} to run every ${minutes} minutes.")
-            def sched = "${seconds} 0/${minutes} * * * ?"
+            def sched = "${seconds} 3/${minutes} * * * ?"
             schedule(sched, "pollingTask${n}")
+            state."trun${n}" = now()
             numTasks++
         }
     }
@@ -187,9 +211,21 @@ private def initialize() {
         subscribe(location, "position", onLocation)
         subscribe(location, "sunrise", onLocation)
         subscribe(location, "sunset", onLocation)
+    } else {
+        safeUnschedule()
     }
 
     LOG("state: ${state}")
+}
+
+private def safeUnsubscribe() {
+    try {
+        unsubscribe()
+    }
+
+    catch(e) {
+        log.error ${e}
+    }
 }
 
 private def safeUnschedule() {
