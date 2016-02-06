@@ -5,6 +5,8 @@ Numerous
 
 **Please note that Numerous service is shutting down on May 1, 2016**
 
+---
+
 The **Numerous** SmartApp allows you to display numeric values from your
 [SmartThings](http://www.smartthings.com) sensors in the
 [Numerous](http://numerousapp.com) mobile app for iPhone, iPad or Android.
@@ -36,12 +38,6 @@ Currently, you can connect the following SmartThings devices to Numerous:
 ![Screenshot](http://statusbits.github.io/images/Numerous-01.jpg)
 
 ---
-
-*If you like this app, please consider supporting its development by making a
-donation via PayPal.*
-
-[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
-
 
 ### Installation
 
