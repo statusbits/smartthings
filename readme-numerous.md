@@ -3,8 +3,7 @@
 Numerous
 --------
 
-** Please note that Numerous service is shutting down on May 1, 2016 **
-----
+**Please note that Numerous service is shutting down on May 1, 2016**
 
 The **Numerous** SmartApp allows you to display numeric values from your
 [SmartThings](http://www.smartthings.com) sensors in the
