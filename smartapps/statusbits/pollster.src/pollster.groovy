@@ -24,7 +24,7 @@
  *  under the License.
  *  --------------------------------------------------------------------------
  *
- *  Version 1.4.2 (01/23/2016)
+ *  Version 1.5.0 (02/08/2016)
  */
 
 definition(
@@ -51,11 +51,24 @@ preferences {
     }
 
     (1..4).each() { n ->
-        section("Polling Group ${n}") {
+        section("Scheduled Polling Group ${n}") {
             input "group_${n}", "capability.polling", title:"Select devices to be polled", multiple:true, required:false
             input "refresh_${n}", "capability.refresh", title:"Select devices to be refreshed", multiple:true, required:false
             input "interval_${n}", "number", title:"Set polling interval (in minutes)", defaultValue:5
         }
+    }
+
+    section("REST API Polling Group") {
+        paragraph "Poll these devices via REST API endpoint."
+        input "enableRestApi", "bool", title:"Enable REST endpoint", defaultValue:false
+        input "restPoll", "capability.polling", title:"Select devices to be polled", multiple:true, required:false
+        input "restRefresh", "capability.refresh", title:"Select devices to be refreshed", multiple:true, required:false
+    }
+}
+
+mappings {
+    path("/poll") {
+        action: [ GET: "apiPoll" ]
     }
 }
 
@@ -75,6 +88,14 @@ def onAppTouch(event) {
     pollingTask2()
     pollingTask3()
     pollingTask4()
+
+    if (settings.restPoll) {
+        settings.restPoll*.poll()
+    }
+
+    if (settings.restRefresh) {
+        settings.restRefresh*.refresh()
+    }
 }
 
 def onLocation(event) {
@@ -139,6 +160,23 @@ def pollingTask4() {
     }
 }
 
+// Handle '.../poll' REST endpoint
+def apiPoll() {
+    LOG("apiPoll()")
+
+    if (settings.restPoll) {
+        settings.restPoll*.poll()
+    }
+
+    if (settings.restRefresh) {
+        settings.restRefresh*.refresh()
+    }
+
+    watchdog()
+
+    return [status:"ok"]
+}
+
 def watchdog() {
     LOG("watchdog()")
 
@@ -157,6 +195,10 @@ def watchdog() {
 private def initialize() {
     log.info "Pollster. Version ${version()}. ${copyright()}"
     LOG("initialize() with settings: ${settings}")
+
+    if (settings.enableRestApi && state.accessToken == null) {
+        initAccessToken()
+    }
 
     state.trun1 = 0
     state.trun2 = 0
@@ -192,6 +234,22 @@ private def initialize() {
     LOG("state: ${state}")
 }
 
+private def initAccessToken() {
+    LOG("initAccessToken()")
+
+    try {
+        def token = createAccessToken()
+        log.info "Created access token: ${token})"
+        state.url = "https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/poll?access_token=${token}"
+    } catch (e) {
+        log.error "Cannot create access token. ${e}"
+        state.url = null
+        return false
+    }
+
+    return true
+}
+
 private def safeUnschedule() {
     try {
         unschedule()
@@ -225,7 +283,7 @@ private def about() {
 }
 
 private def version() {
-    return "Version 1.4.2"
+    return "Version 1.5.0"
 }
 
 private def copyright() {

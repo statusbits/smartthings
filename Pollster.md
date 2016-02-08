@@ -49,6 +49,12 @@ section of the Marketplace.
 
 ### Revision History
 
+**Version 1.5.0. Released 2/8/2016**
+
+* Added polling via REST API endpoint. Note: you have to enable OAuth in the
+  IDE to use this feature. The access point URL can be found in the Installed
+  SmartApp properties in the IDE.
+
 **Version 1.4.2. Released 1/23/2016**
 
 * Work around UndeclaredThrowableException thrown by unschedule().
