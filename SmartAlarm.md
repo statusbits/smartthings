@@ -6,10 +6,10 @@ Smart Alarm
 Smart Alarm is a versatile home security application for the
 [SmartThings](http://www.smartthings.com) home automation system.
 
-Please note that this app is provided here *as is* and is no longer supported.
-Smart Alarm user are advised to switch to
+__Please note that this app is provided here *as is* and is no longer supported.
+Smart Alarm users are advised to switch to
 [Smart Home Monitor (SHM)](https://support.smartthings.com/hc/en-us/articles/205380154),
-the native home security application developed and supported by SmartThings.
+the native home security application developed and supported by SmartThings.__
 
 ### Features
 
