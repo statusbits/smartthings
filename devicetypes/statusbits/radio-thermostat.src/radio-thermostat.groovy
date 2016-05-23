@@ -23,7 +23,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.0.3 (07/20/2015)
+ *  Version 1.1.0 (05/22/2016)
  */
 
 import groovy.json.JsonSlurper
@@ -754,7 +754,7 @@ private def temperatureFtoC(Float tempF) {
 }
 
 private def textVersion() {
-    return "Version 1.0.3 (08/25/2015)"
+    return "Version 1.1.0 (05/22/2016)"
 }
 
 private def textCopyright() {
@@ -762,7 +762,7 @@ private def textCopyright() {
 }
 
 private def LOG(message) {
-    //log.trace message
+    log.trace message
 }
 
 private def STATE() {

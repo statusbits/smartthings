@@ -101,6 +101,9 @@ polling engine.
 
 ### Revision History
 
+**Version 1.1.0. Released xx/xx/2016**
+* TBD.
+
 **Version 1.0.3. Released 08/25/2015**
 * Fixed an issue with DNI not being updated.
 
