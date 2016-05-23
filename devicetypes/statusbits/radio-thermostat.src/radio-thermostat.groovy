@@ -6,7 +6,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Copyright (c) 2014 Statusbits.com
+ *  Copyright © 2014 Statusbits.com
  *
  *  This program is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the Free
@@ -56,8 +56,47 @@ metadata {
         command "holdOff"
     }
 
-    tiles {
-        valueTile("temperature", "device.temperature") {
+    tiles(scale:2) {
+        multiAttributeTile(name:"thermostat", type:"thermostat", width:6, height:4) {
+		    tileAttribute ("device.temperature", key:"PRIMARY_CONTROL") {
+			    attributeState "temperature", label:'${currentValue}°',
+				    backgroundColors:[
+					    [value: 31, color: "#153591"],
+					    [value: 44, color: "#1e9cbb"],
+					    [value: 59, color: "#90d2a7"],
+					    [value: 74, color: "#44b621"],
+					    [value: 84, color: "#f1d801"],
+					    [value: 95, color: "#d04e00"],
+					    [value: 96, color: "#bc2323"]
+				    ]
+	        }
+			tileAttribute("device.temperature", key: "VALUE_CONTROL") {
+				attributeState("VALUE_UP", action:"tempUp")
+				attributeState("VALUE_DOWN", action:"tempDown")
+			}
+			tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
+				attributeState("default", label:'${currentValue}%', unit:"%")
+			}
+			tileAttribute("device.thermostatOperatingState", key:"OPERATING_STATE") {
+				attributeState("idle", backgroundColor:"#44b621")
+				attributeState("heating", backgroundColor:"#ea5462")
+				attributeState("cooling", backgroundColor:"#269bd2")
+			}
+			tileAttribute("device.thermostatMode", key:"THERMOSTAT_MODE") {
+				attributeState("off", label:'${name}')
+				attributeState("heat", label:'${name}')
+				attributeState("cool", label:'${name}')
+				attributeState("auto", label:'${name}')
+			}
+			tileAttribute("device.heatingSetpoint", key:"HEATING_SETPOINT") {
+				attributeState("default", label:'${currentValue}', unit:"dF")
+			}
+			tileAttribute("device.coolingSetpoint", key: "COOLING_SETPOINT") {
+				attributeState("default", label:'${currentValue}', unit:"dF")
+			}
+        }
+
+        valueTile("temperature", "device.temperature", width:2, height:2) {
             state "temperature", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
                     [value: 31, color: "#153591"],
@@ -70,7 +109,7 @@ metadata {
                 ]
         }
 
-        valueTile("heatingSetpoint", "device.heatingSetpoint", inactiveLabel:false) {
+        valueTile("heatingSetpoint", "device.heatingSetpoint", width:2, height:2, inactiveLabel:false) {
             state "default", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
                     [value: 31, color: "#153591"],
@@ -83,7 +122,7 @@ metadata {
                 ]
         }
 
-        valueTile("coolingSetpoint", "device.coolingSetpoint", inactiveLabel:false) {
+        valueTile("coolingSetpoint", "device.coolingSetpoint", width:2, height:2, inactiveLabel:false) {
             state "default", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
                     [value: 31, color: "#153591"],
@@ -96,36 +135,36 @@ metadata {
                 ]
         }
 
-        standardTile("heatLevelUp", "device.heatingSetpoint", inactiveLabel:false, decoration:"flat") {
+        standardTile("heatLevelUp", "device.heatingSetpoint", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
         }
 
-        standardTile("heatLevelDown", "device.heatingSetpoint", inactiveLabel:false, decoration:"flat") {
+        standardTile("heatLevelDown", "device.heatingSetpoint", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.subtract-icon", action:"heatLevelDown"
         }
 
-        standardTile("coolLevelUp", "device.coolingSetpoint", inactiveLabel:false, decoration:"flat") {
+        standardTile("coolLevelUp", "device.coolingSetpoint", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:'Cooling', icon:"st.custom.buttons.add-icon", action:"coolLevelUp"
         }
 
-        standardTile("coolLevelDown", "device.coolingSetpoint", inactiveLabel:false, decoration:"flat") {
+        standardTile("coolLevelDown", "device.coolingSetpoint", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:'Cooling', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
-        standardTile("operatingState", "device.thermostatOperatingState", inactiveLabel:false, decoration:"flat") {
+        standardTile("operatingState", "device.thermostatOperatingState", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:'[State]'
             state "idle", label:'', icon:"st.thermostat.heating-cooling-off"
             state "heating", label:'', icon:"st.thermostat.heating"
             state "cooling", label:'', icon:"st.thermostat.cooling"
         }
 
-        standardTile("fanState", "device.fanState", inactiveLabel:false, decoration:"flat") {
+        standardTile("fanState", "device.fanState", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:'[Fan State]'
             state "on", label:'', icon:"st.thermostat.fan-on"
             state "off", label:'', icon:"st.thermostat.fan-off"
         }
 
-        standardTile("mode", "device.thermostatMode", inactiveLabel:false) {
+        standardTile("mode", "device.thermostatMode", width:2, height:2, inactiveLabel:false) {
             state "default", label:'[Mode]'
             state "off", label:'', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat"
             state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool"
@@ -133,25 +172,26 @@ metadata {
             state "auto", label:'', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off"
         }
 
-        standardTile("fanMode", "device.thermostatFanMode", inactiveLabel:false) {
+        standardTile("fanMode", "device.thermostatFanMode", width:2, height:2, inactiveLabel:false) {
             state "default", label:'[Fan Mode]'
             state "auto", label:'', icon:"st.thermostat.fan-auto", backgroundColor:"#A4FCA6", action:"thermostat.fanOn"
             state "on", label:'', icon:"st.thermostat.fan-on", backgroundColor:"#FAFCA4", action:"thermostat.fanAuto"
         }
 
-        standardTile("hold", "device.hold", inactiveLabel:false) {
+        standardTile("hold", "device.hold", width:2, height:2, inactiveLabel:false) {
             state "default", label:'[Hold]'
             state "on", label:'Hold On', icon:"st.Weather.weather2", backgroundColor:"#FFDB94", action:"holdOff"
             state "off", label:'Hold Off', icon:"st.Weather.weather2", backgroundColor:"#FFFFFF", action:"holdOn"
         }
 
-        standardTile("refresh", "device.thermostatMode", inactiveLabel:false, decoration:"flat") {
+        standardTile("refresh", "device.thermostatMode", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
-        main(["temperature"])
+        main "thermostat"
 
-        details(["temperature", "operatingState", "fanState",
+        details(["thermostat",
+            "temperature", "operatingState", "fanState",
             "heatingSetpoint", "heatLevelDown", "heatLevelUp",
             "coolingSetpoint", "coolLevelDown", "coolLevelUp",
             "mode", "fanMode", "hold", "refresh"])
@@ -758,7 +798,7 @@ private def textVersion() {
 }
 
 private def textCopyright() {
-    return "Copyright (c) 2014 Statusbits.com"
+    return "Copyright © 2014 Statusbits.com"
 }
 
 private def LOG(message) {
