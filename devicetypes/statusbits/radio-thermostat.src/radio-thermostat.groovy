@@ -61,20 +61,20 @@ metadata {
 		    tileAttribute ("device.temperature", key:"PRIMARY_CONTROL") {
 			    attributeState "temperature", label:'${currentValue}°',
 				    backgroundColors:[
-					    [value: 31, color: "#153591"],
-					    [value: 44, color: "#1e9cbb"],
-					    [value: 59, color: "#90d2a7"],
-					    [value: 74, color: "#44b621"],
-					    [value: 84, color: "#f1d801"],
-					    [value: 95, color: "#d04e00"],
-					    [value: 96, color: "#bc2323"]
+					    [value:31, color:"#153591"],
+					    [value:44, color:"#1e9cbb"],
+					    [value:59, color:"#90d2a7"],
+					    [value:74, color:"#44b621"],
+					    [value:84, color:"#f1d801"],
+					    [value:95, color:"#d04e00"],
+					    [value:96, color:"#bc2323"]
 				    ]
 	        }
-			tileAttribute("device.temperature", key: "VALUE_CONTROL") {
+			tileAttribute("device.temperature", key:"VALUE_CONTROL") {
 				attributeState("VALUE_UP", action:"tempUp")
 				attributeState("VALUE_DOWN", action:"tempDown")
 			}
-			tileAttribute("device.humidity", key: "SECONDARY_CONTROL") {
+			tileAttribute("device.humidity", key:"SECONDARY_CONTROL") {
 				attributeState("default", label:'${currentValue}%', unit:"%")
 			}
 			tileAttribute("device.thermostatOperatingState", key:"OPERATING_STATE") {
@@ -91,7 +91,7 @@ metadata {
 			tileAttribute("device.heatingSetpoint", key:"HEATING_SETPOINT") {
 				attributeState("default", label:'${currentValue}', unit:"dF")
 			}
-			tileAttribute("device.coolingSetpoint", key: "COOLING_SETPOINT") {
+			tileAttribute("device.coolingSetpoint", key:"COOLING_SETPOINT") {
 				attributeState("default", label:'${currentValue}', unit:"dF")
 			}
         }
@@ -99,92 +99,92 @@ metadata {
         valueTile("temperature", "device.temperature", width:2, height:2) {
             state "temperature", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
-                    [value: 31, color: "#153591"],
-                    [value: 44, color: "#1e9cbb"],
-                    [value: 59, color: "#90d2a7"],
-                    [value: 74, color: "#44b621"],
-                    [value: 84, color: "#f1d801"],
-                    [value: 95, color: "#d04e00"],
-                    [value: 96, color: "#bc2323"]
+                    [value:31, color:"#153591"],
+                    [value:44, color:"#1e9cbb"],
+                    [value:59, color:"#90d2a7"],
+                    [value:74, color:"#44b621"],
+                    [value:84, color:"#f1d801"],
+                    [value:95, color:"#d04e00"],
+                    [value:96, color:"#bc2323"]
                 ]
         }
 
-        valueTile("heatingSetpoint", "device.heatingSetpoint", width:2, height:2, inactiveLabel:false) {
+        valueTile("heatingSetpoint", "device.heatingSetpoint", width:2, height:2) {
             state "default", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
-                    [value: 31, color: "#153591"],
-                    [value: 44, color: "#1e9cbb"],
-                    [value: 59, color: "#90d2a7"],
-                    [value: 74, color: "#44b621"],
-                    [value: 84, color: "#f1d801"],
-                    [value: 95, color: "#d04e00"],
-                    [value: 96, color: "#bc2323"]
+                    [value:31, color:"#153591"],
+                    [value:44, color:"#1e9cbb"],
+                    [value:59, color:"#90d2a7"],
+                    [value:74, color:"#44b621"],
+                    [value:84, color:"#f1d801"],
+                    [value:95, color:"#d04e00"],
+                    [value:96, color:"#bc2323"]
                 ]
         }
 
-        valueTile("coolingSetpoint", "device.coolingSetpoint", width:2, height:2, inactiveLabel:false) {
+        valueTile("coolingSetpoint", "device.coolingSetpoint", width:2, height:2) {
             state "default", label:'${currentValue}°', unit:"F",
                 backgroundColors:[
-                    [value: 31, color: "#153591"],
-                    [value: 44, color: "#1e9cbb"],
-                    [value: 59, color: "#90d2a7"],
-                    [value: 74, color: "#44b621"],
-                    [value: 84, color: "#f1d801"],
-                    [value: 95, color: "#d04e00"],
-                    [value: 96, color: "#bc2323"]
+                    [value:31, color:"#153591"],
+                    [value:44, color:"#1e9cbb"],
+                    [value:59, color:"#90d2a7"],
+                    [value:74, color:"#44b621"],
+                    [value:84, color:"#f1d801"],
+                    [value:95, color:"#d04e00"],
+                    [value:96, color:"#bc2323"]
                 ]
         }
 
-        standardTile("heatLevelUp", "device.heatingSetpoint", width:2, height:2, inactiveLabel:false, decoration:"flat") {
+        standardTile("heatLevelUp", "device.heatingSetpoint", width:2, height:2, decoration:"flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
         }
 
-        standardTile("heatLevelDown", "device.heatingSetpoint", width:2, height:2, inactiveLabel:false, decoration:"flat") {
+        standardTile("heatLevelDown", "device.heatingSetpoint", width:2, height:2,, decoration:"flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.subtract-icon", action:"heatLevelDown"
         }
 
-        standardTile("coolLevelUp", "device.coolingSetpoint", width:2, height:2, inactiveLabel:false, decoration:"flat") {
+        standardTile("coolLevelUp", "device.coolingSetpoint", width:2, height:2, decoration:"flat") {
             state "default", label:'Cooling', icon:"st.custom.buttons.add-icon", action:"coolLevelUp"
         }
 
-        standardTile("coolLevelDown", "device.coolingSetpoint", width:2, height:2, inactiveLabel:false, decoration:"flat") {
+        standardTile("coolLevelDown", "device.coolingSetpoint", width:2, height:2, decoration:"flat") {
             state "default", label:'Cooling', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
-        standardTile("operatingState", "device.thermostatOperatingState", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "default", label:'[State]'
+        standardTile("operatingState", "device.thermostatOperatingState", width:2, height:2, decoration:"flat") {
+            state "default", label:''
             state "idle", label:'', icon:"st.thermostat.heating-cooling-off"
             state "heating", label:'', icon:"st.thermostat.heating"
             state "cooling", label:'', icon:"st.thermostat.cooling"
         }
 
-        standardTile("fanState", "device.fanState", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "default", label:'[Fan State]'
+        standardTile("fanState", "device.fanState", width:2, height:2, decoration:"flat") {
+            state "default", label:''
             state "on", label:'', icon:"st.thermostat.fan-on"
             state "off", label:'', icon:"st.thermostat.fan-off"
         }
 
-        standardTile("mode", "device.thermostatMode", width:2, height:2, inactiveLabel:false) {
-            state "default", label:'[Mode]'
+        standardTile("mode", "device.thermostatMode", width:2, height:2) {
+            state "default", label:''
             state "off", label:'', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat"
             state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool"
             state "cool", label:'', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto"
             state "auto", label:'', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off"
         }
 
-        standardTile("fanMode", "device.thermostatFanMode", width:2, height:2, inactiveLabel:false) {
-            state "default", label:'[Fan Mode]'
+        standardTile("fanMode", "device.thermostatFanMode", width:2, height:2) {
+            state "default", label:''
             state "auto", label:'', icon:"st.thermostat.fan-auto", backgroundColor:"#A4FCA6", action:"thermostat.fanOn"
             state "on", label:'', icon:"st.thermostat.fan-on", backgroundColor:"#FAFCA4", action:"thermostat.fanAuto"
         }
 
-        standardTile("hold", "device.hold", width:2, height:2, inactiveLabel:false) {
-            state "default", label:'[Hold]'
+        standardTile("hold", "device.hold", width:2, height:2) {
+            state "default", label:''
             state "on", label:'Hold On', icon:"st.Weather.weather2", backgroundColor:"#FFDB94", action:"holdOff"
             state "off", label:'Hold Off', icon:"st.Weather.weather2", backgroundColor:"#FFFFFF", action:"holdOn"
         }
 
-        standardTile("refresh", "device.thermostatMode", width:2, height:2, inactiveLabel:false, decoration:"flat") {
+        standardTile("refresh", "device.thermostatMode", width:2, height:2, decoration:"flat") {
             state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
@@ -775,7 +775,7 @@ private def parseThermostatHold(val) {
     return values[val.toInteger()]
 }
 
-private def scaleTemperature(Float temp) {
+private def scaleTemperature(Double temp) {
     if (getTemperatureScale() == "C") {
         return temperatureFtoC(temp)
     }
@@ -783,13 +783,13 @@ private def scaleTemperature(Float temp) {
     return temp.round(1)
 }
 
-private def temperatureCtoF(Float tempC) {
-    Float t = (tempC * 1.8) + 32
+private def temperatureCtoF(Double tempC) {
+    Double t = (tempC * 1.8) + 32
     return t.round(1)
 }
 
-private def temperatureFtoC(Float tempF) {
-    Float t = (tempF - 32) / 1.8
+private def temperatureFtoC(Double tempF) {
+    Double t = (tempF - 32) / 1.8
     return t.round(1)
 }
 
