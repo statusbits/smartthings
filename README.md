@@ -17,8 +17,6 @@ development by making a donation via PayPal.*
 
 * [__Dim and Dimmer__](DimAndDimmer.md) - Create lighting scenes triggered by
 mode changes.
-* [__Numerous__](readme-numerous.md) - View your SmartThings numbers in
-[Numerous](http://numerousapp.com) app on iPhone, iPad or Android.
 * [__Pollster__](Pollster.md) - A SmartThings polling daemon.
 * [__Remind to Lock__](RemindToLock.md) - Notify me when a door is left
 unlocked.
