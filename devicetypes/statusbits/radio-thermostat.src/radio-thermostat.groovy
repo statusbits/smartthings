@@ -23,16 +23,18 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.1.0 (05/22/2016)
+ *  Version 1.1.0 (12/13/2016)
  */
 
 import groovy.json.JsonSlurper
 
 preferences {
     input("confIpAddr", "string", title:"Thermostat IP Address",
-        required:true, displayDuringSetup: true)
-    input("confTcpPort", "number", title:"Thermostat TCP Port",
         required:true, displayDuringSetup:true)
+    input("confTcpPort", "number", title:"Thermostat TCP Port",
+        defaultValue:80, required:true, displayDuringSetup:true)
+    input("pollingInterval", "number", title:"Polling interval (in minutes)",
+        defaultValue:5, required:true, displayDuringSetup:true)
 }
 
 metadata {
@@ -218,6 +220,13 @@ def updated() {
 
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
     state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
+
+    Random rand = new Random(now())
+    def minutes = settings.pollingInterval.toInteger()
+    def seconds = rand.nextInt(60)
+    def sched = "${seconds} 0/${minutes} * * * ?"
+    LOG("Scheduling polling task with ${sched}")
+    schedule(sched, refresh)
 
     STATE()
 }
