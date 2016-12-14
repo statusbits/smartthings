@@ -218,6 +218,8 @@ def updated() {
     log.info "Radio Thermostat. ${textVersion()}. ${textCopyright()}"
 	LOG("$device.displayName updated with settings: ${settings.inspect()}")
 
+    unschedule()
+
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
     state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
 
@@ -225,17 +227,21 @@ def updated() {
     def minutes = settings.pollingInterval.toInteger()
     def seconds = rand.nextInt(60)
     def sched = "${seconds} 0/${minutes} * * * ?"
-    LOG("Scheduling polling task with ${sched}")
-    schedule(sched, refresh)
+    LOG("Scheduling polling task with \"${sched}\"")
+    schedule(sched, pollingTask)
 
     STATE()
+}
+
+def pollingTask() {
+    LOG("pollingTask()")
+    sendHubCommand(apiGet("/tstat"))
 }
 
 def parse(String message) {
     LOG("parse(${message})")
 
     def msg = stringToMap(message)
-
     if (msg.headers) {
         // parse HTTP response headers
         def headers = new String(msg.headers.decodeBase64())
