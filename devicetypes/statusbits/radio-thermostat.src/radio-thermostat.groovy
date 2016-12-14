@@ -60,7 +60,7 @@ metadata {
 
     tiles(scale:2) {
         multiAttributeTile(name:"thermostat", type:"thermostat", width:6, height:4) {
-		    tileAttribute ("device.temperature", key:"PRIMARY_CONTROL") {
+		    tileAttribute("device.temperature", key:"PRIMARY_CONTROL") {
 			    attributeState("default", label:'${currentValue}°', unit:"dF")
 	        }
 			tileAttribute("device.temperature", key:"VALUE_CONTROL") {
@@ -131,19 +131,19 @@ metadata {
                 ]
         }
 
-        standardTile("heatLevelUp", "device.heatingSetpoint", width:2, height:2, decoration:"flat") {
+        standardTile("heatLevelUp", "device.heatingSetpoint", width:1, height:1, decoration:"flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
         }
 
-        standardTile("heatLevelDown", "device.heatingSetpoint", width:2, height:2,, decoration:"flat") {
+        standardTile("heatLevelDown", "device.heatingSetpoint", width:1, height:1, decoration:"flat") {
             state "default", label:'Heating', icon:"st.custom.buttons.subtract-icon", action:"heatLevelDown"
         }
 
-        standardTile("coolLevelUp", "device.coolingSetpoint", width:2, height:2, decoration:"flat") {
+        standardTile("coolLevelUp", "device.coolingSetpoint", width:1, height:1, decoration:"flat") {
             state "default", label:'Cooling', icon:"st.custom.buttons.add-icon", action:"coolLevelUp"
         }
 
-        standardTile("coolLevelDown", "device.coolingSetpoint", width:2, height:2, decoration:"flat") {
+        standardTile("coolLevelDown", "device.coolingSetpoint", width:1, height:1, decoration:"flat") {
             state "default", label:'Cooling', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
@@ -184,12 +184,20 @@ metadata {
             state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
-        main "thermostat"
+        standardTile("status", "device.thermostatMode", width:2, height:2) {
+            state "off", label:'Off', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat", nextState:"working"
+            state "heat", label:'Heat', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool", nextState:"working"
+            state "cool", label:'Cool', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto", nextState:"working"
+            state "auto", label:'Auto', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off", nextState:"working"
+            state "working", label:'Working...', icon:"st.secondary.refresh", backgroundColor:"#A0A0A0", action:"refresh.refresh"
+        }
+
+        //main("thermostat")
+        main("status")
 
         details(["thermostat",
             "temperature", "operatingState", "fanState",
-            "heatingSetpoint", "heatLevelDown", "heatLevelUp",
-            "coolingSetpoint", "coolLevelDown", "coolLevelUp",
+            "heatingSetpoint", "heatLevelUp", "coolingSetpoint", "coolLevelUp", "heatLevelDown", "coolLevelDown",
             "mode", "fanMode", "hold", "refresh"])
     }
 
