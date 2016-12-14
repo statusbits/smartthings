@@ -218,17 +218,10 @@ def updated() {
     log.info "Radio Thermostat. ${textVersion()}. ${textCopyright()}"
 	LOG("$device.displayName updated with settings: ${settings.inspect()}")
 
-    unschedule()
-
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
     state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
 
-    Random rand = new Random(now())
-    def minutes = settings.pollingInterval.toInteger()
-    def seconds = rand.nextInt(60)
-    def sched = "${seconds} 0/${minutes} * * * ?"
-    LOG("Scheduling polling task with \"${sched}\"")
-    schedule(sched, pollingTask)
+    startPollingTask()
 
     STATE()
 }
@@ -236,6 +229,7 @@ def updated() {
 def pollingTask() {
     LOG("pollingTask()")
     sendHubCommand(apiGet("/tstat"))
+    state.lastPoll = now()
 }
 
 def parse(String message) {
@@ -535,6 +529,14 @@ def poll() {
 def refresh() {
     LOG("refresh()")
     //STATE()
+
+    def interval = getPollingInterval() * 60
+    def elapsed =  (now() - state.lastPoll) / 1000
+    if (elapsed > (interval + 60)) {
+        log.warn "Restarting polling task..."
+        startPollingTask()
+    }
+
     return apiGet("/tstat")
 }
 
@@ -555,6 +557,29 @@ private updateDNI() {
     if (device.deviceNetworkId != state.dni) {
         device.deviceNetworkId = state.dni
     }
+}
+
+private getPollingInterval() {
+    def minutes = settings.pollingInterval.toInteger()
+    if (minutes < 1) {
+        minutes = 1
+    } else if (minutes > 60) {
+        minutes = 60
+    }
+
+    return minutes
+}
+
+private startPollingTask() {
+    unschedule()
+    state.lastPoll = now()
+
+    Random rand = new Random(now())
+    def seconds = rand.nextInt(60)
+    def sched = "${seconds} 0/${getPollingInterval()} * * * ?"
+
+    LOG("Scheduling polling task with \"${sched}\"")
+    schedule(sched, pollingTask)
 }
 
 private apiGet(String path) {
