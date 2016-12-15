@@ -148,28 +148,29 @@ metadata {
         }
 
         standardTile("operatingState", "device.thermostatOperatingState", width:2, height:2, decoration:"flat") {
-            state "default", label:''
+            state "default", label:'N/A'
             state "idle", label:'', icon:"st.thermostat.heating-cooling-off"
             state "heating", label:'', icon:"st.thermostat.heating"
             state "cooling", label:'', icon:"st.thermostat.cooling"
         }
 
         standardTile("fanState", "device.fanState", width:2, height:2, decoration:"flat") {
-            state "default", label:''
-            state "on", label:'', icon:"st.thermostat.fan-on"
+            state "default", label:'N/A'
             state "off", label:'', icon:"st.thermostat.fan-off"
+            state "on", label:'', icon:"st.thermostat.fan-on"
         }
 
         standardTile("mode", "device.thermostatMode", width:2, height:2) {
-            state "default", label:''
-            state "off", label:'', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat"
-            state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool"
-            state "cool", label:'', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto"
-            state "auto", label:'', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off"
+            state "default", label:'N/A'
+            state "off", label:'', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat", nextState:"working"
+            state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool", nextState:"working"
+            state "cool", label:'', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto", nextState:"working"
+            state "auto", label:'', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off", nextState:"working"
+            state "working", label:'', icon:"st.secondary.refresh", backgroundColor:"#A0A0A0", action:"refresh.refresh"
         }
 
         standardTile("fanMode", "device.thermostatFanMode", width:2, height:2) {
-            state "default", label:''
+            state "default", label:'N/A'
             state "auto", label:'', icon:"st.thermostat.fan-auto", backgroundColor:"#A4FCA6", action:"thermostat.fanOn"
             state "on", label:'', icon:"st.thermostat.fan-on", backgroundColor:"#FAFCA4", action:"thermostat.fanAuto"
         }
@@ -184,17 +185,20 @@ metadata {
             state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
-        standardTile("status", "device.thermostatMode", width:2, height:2) {
-            state "off", label:'Off', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat", nextState:"working"
-            state "heat", label:'Heat', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool", nextState:"working"
-            state "cool", label:'Cool', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto", nextState:"working"
-            state "auto", label:'Auto', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off", nextState:"working"
-            state "working", label:'Working...', icon:"st.secondary.refresh", backgroundColor:"#A0A0A0", action:"refresh.refresh"
+        valueTile("status", "device.temperature", width:2, height:2) {
+            state "temperature", label:'${currentValue}°', icon:"st.Weather.weather2",
+                backgroundColors:[
+                    [value:31, color:"#153591"],
+                    [value:44, color:"#1e9cbb"],
+                    [value:59, color:"#90d2a7"],
+                    [value:74, color:"#44b621"],
+                    [value:84, color:"#f1d801"],
+                    [value:95, color:"#d04e00"],
+                    [value:96, color:"#bc2323"]
+                ]
         }
 
-        //main("thermostat")
         main("status")
-
         details(["thermostat",
             "temperature", "operatingState", "fanState",
             "heatingSetpoint", "heatLevelUp", "coolingSetpoint", "coolLevelUp", "heatLevelDown", "coolLevelDown",
