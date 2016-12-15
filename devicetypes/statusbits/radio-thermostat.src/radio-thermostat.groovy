@@ -171,14 +171,16 @@ metadata {
 
         standardTile("fanMode", "device.thermostatFanMode", width:2, height:2) {
             state "default", label:'N/A'
-            state "auto", label:'', icon:"st.thermostat.fan-auto", backgroundColor:"#A4FCA6", action:"thermostat.fanOn"
-            state "on", label:'', icon:"st.thermostat.fan-on", backgroundColor:"#FAFCA4", action:"thermostat.fanAuto"
+            state "auto", label:'', icon:"st.thermostat.fan-auto", backgroundColor:"#A4FCA6", action:"thermostat.fanOn", nextState:"working"
+            state "on", label:'', icon:"st.thermostat.fan-on", backgroundColor:"#FAFCA4", action:"thermostat.fanAuto", nextState:"working"
+            state "working", label:'', icon:"st.secondary.refresh", backgroundColor:"#A0A0A0", action:"refresh.refresh"
         }
 
         standardTile("hold", "device.hold", width:2, height:2) {
-            state "default", label:''
-            state "on", label:'Hold On', icon:"st.Weather.weather2", backgroundColor:"#FFDB94", action:"holdOff"
-            state "off", label:'Hold Off', icon:"st.Weather.weather2", backgroundColor:"#FFFFFF", action:"holdOn"
+            state "default", label:'N/A'
+            state "on", label:'Hold On', icon:"st.Weather.weather2", backgroundColor:"#FFDB94", action:"holdOff", nextState:"working"
+            state "off", label:'Hold Off', icon:"st.Weather.weather2", backgroundColor:"#FFFFFF", action:"holdOn", nextState:"working"
+            state "working", label:'', icon:"st.secondary.refresh", backgroundColor:"#A0A0A0", action:"refresh.refresh"
         }
 
         standardTile("refresh", "device.thermostatMode", width:2, height:2, decoration:"flat") {
