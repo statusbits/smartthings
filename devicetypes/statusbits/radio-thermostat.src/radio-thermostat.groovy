@@ -50,6 +50,8 @@ metadata {
         attribute "hold", "string"      // Target temperature Hold status. Values: "on", "off"
 
         // Custom commands
+        command "temperatureUp"
+        command "temperatureDown"
         command "heatLevelUp"
         command "heatLevelDown"
         command "coolLevelUp"
@@ -166,7 +168,7 @@ metadata {
             state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool", nextState:"working"
             state "cool", label:'', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto", nextState:"working"
             state "auto", label:'', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off", nextState:"working"
-            state "working", label:'', icon:"st.secondary.refresh", backgroundColor:"#A0A0A0", action:"refresh.refresh"
+            state "working", label:'Busy...', icon:"", backgroundColor:"#C0C0C0", action:"refresh.refresh"
         }
 
         standardTile("fanMode", "device.thermostatFanMode", width:2, height:2) {
