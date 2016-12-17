@@ -64,8 +64,8 @@ metadata {
 			    attributeState("default", label:'${currentValue}°', unit:"dF")
 	        }
 			tileAttribute("device.temperature", key:"VALUE_CONTROL") {
-				attributeState("VALUE_UP", action:"tempUp")
-				attributeState("VALUE_DOWN", action:"tempDown")
+				attributeState("VALUE_UP", action:"temperatureUp")
+				attributeState("VALUE_DOWN", action:"temperatureDown")
 			}
 			//tileAttribute("device.humidity", key:"SECONDARY_CONTROL") {
 			//	attributeState("default", label:'${currentValue}%', unit:"%")
@@ -148,20 +148,20 @@ metadata {
         }
 
         standardTile("operatingState", "device.thermostatOperatingState", width:2, height:2, decoration:"flat") {
-            state "default", label:'N/A'
+            state "default", label:'N/A', defaultState:true
             state "idle", label:'', icon:"st.thermostat.heating-cooling-off"
             state "heating", label:'', icon:"st.thermostat.heating"
             state "cooling", label:'', icon:"st.thermostat.cooling"
         }
 
         standardTile("fanState", "device.fanState", width:2, height:2, decoration:"flat") {
-            state "default", label:'N/A'
+            state "default", label:'N/A', defaultState:true
             state "off", label:'', icon:"st.thermostat.fan-off"
             state "on", label:'', icon:"st.thermostat.fan-on"
         }
 
         standardTile("mode", "device.thermostatMode", width:2, height:2) {
-            state "default", label:'N/A'
+            state "default", label:'N/A', defaultState:true
             state "off", label:'', icon:"st.thermostat.heating-cooling-off", backgroundColor:"#FFFFFF", action:"thermostat.heat", nextState:"working"
             state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.cool", nextState:"working"
             state "cool", label:'', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.auto", nextState:"working"
@@ -170,14 +170,14 @@ metadata {
         }
 
         standardTile("fanMode", "device.thermostatFanMode", width:2, height:2) {
-            state "default", label:'N/A'
+            state "default", label:'N/A', defaultState:true
             state "auto", label:'', icon:"st.thermostat.fan-auto", backgroundColor:"#A4FCA6", action:"thermostat.fanOn", nextState:"working"
             state "on", label:'', icon:"st.thermostat.fan-on", backgroundColor:"#FAFCA4", action:"thermostat.fanAuto", nextState:"working"
             state "working", label:'', icon:"st.secondary.refresh", backgroundColor:"#A0A0A0", action:"refresh.refresh"
         }
 
         standardTile("hold", "device.hold", width:2, height:2) {
-            state "default", label:'N/A'
+            state "default", label:'N/A', defaultState:true
             state "on", label:'Hold On', icon:"st.Weather.weather2", backgroundColor:"#FFDB94", action:"holdOff", nextState:"working"
             state "off", label:'Hold Off', icon:"st.Weather.weather2", backgroundColor:"#FFFFFF", action:"holdOn", nextState:"working"
             state "working", label:'', icon:"st.secondary.refresh", backgroundColor:"#A0A0A0", action:"refresh.refresh"
@@ -302,7 +302,7 @@ def off() {
         return null
     }
 
-    sendEvent([name:"thermostatMode", value:"off"])
+    //sendEvent([name:"thermostatMode", value:"off"])
     return writeTstatValue('tmode', 0)
 }
 
@@ -314,7 +314,7 @@ def heat() {
         return null
     }
 
-    sendEvent([name:"thermostatMode", value:"heat"])
+    //sendEvent([name:"thermostatMode", value:"heat"])
     return writeTstatValue('tmode', 1)
 }
 
@@ -326,7 +326,7 @@ def cool() {
         return null
     }
 
-    sendEvent([name:"thermostatMode", value:"cool"])
+    //sendEvent([name:"thermostatMode", value:"cool"])
     return writeTstatValue('tmode', 2)
 }
 
@@ -338,7 +338,7 @@ def auto() {
         return null
     }
 
-    sendEvent([name:"thermostatMode", value:"auto"])
+    //sendEvent([name:"thermostatMode", value:"auto"])
     return writeTstatValue('tmode', 3)
 }
 
@@ -370,7 +370,7 @@ def fanAuto() {
         return null
     }
 
-    sendEvent([name:"thermostatFanMode", value:"auto"])
+    //sendEvent([name:"thermostatFanMode", value:"auto"])
     return writeTstatValue('fmode', 0)
 }
 
@@ -389,7 +389,7 @@ def fanOn() {
         return null
     }
 
-    sendEvent([name:"thermostatFanMode", value:"on"])
+    //sendEvent([name:"thermostatFanMode", value:"on"])
     return writeTstatValue('fmode', 2)
 }
 
@@ -429,6 +429,14 @@ def setCoolingSetpoint(tempCool) {
     }
 
     return writeTstatValue('it_cool', tempCool)
+}
+
+def temperatureUp() {
+    LOG("temperatureUp()")    
+}
+
+def temperatureDown() {
+    LOG("temperatureDown()")    
 }
 
 def heatLevelDown() {
@@ -555,7 +563,7 @@ def refresh() {
 }
 
 // Creates Device Network ID in 'AAAAAAAA:PPPP' format
-private String createDNI(ipaddr, port) { 
+private String createDNI(ipaddr, port) {
     LOG("createDNI(${ipaddr}, ${port})")
 
     def hexIp = ipaddr.tokenize('.').collect {
@@ -567,7 +575,7 @@ private String createDNI(ipaddr, port) {
     return "${hexIp}:${hexPort}"
 }
 
-private updateDNI() { 
+private updateDNI() {
     if (device.deviceNetworkId != state.dni) {
         device.deviceNetworkId = state.dni
     }
