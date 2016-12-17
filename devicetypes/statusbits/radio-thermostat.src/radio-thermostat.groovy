@@ -73,7 +73,7 @@ metadata {
 			//	attributeState("default", label:'${currentValue}%', unit:"%")
 			//}
 			tileAttribute("device.fanState", key:"SECONDARY_CONTROL") {
-				attributeState("default", label:'Fan: ${currentValue}')
+				attributeState("default", label:'Fan ${currentValue}')
 			}
 			tileAttribute("device.thermostatOperatingState", key:"OPERATING_STATE") {
 				attributeState("idle", backgroundColor:"#44b621")
@@ -95,8 +95,15 @@ metadata {
         }
 
         valueTile("temperature", "device.temperature", width:2, height:2) {
-            state "temperature", label:'${currentValue}°', unit:"F",
+            state "temperature", label:'${currentValue}°', unit:"dF",
                 backgroundColors:[
+                    [value:10, color:"#153591"],
+                    [value:15, color:"#1e9cbb"],
+                    [value:18, color:"#90d2a7"],
+                    [value:21, color:"#44b621"],
+                    [value:24, color:"#f1d801"],
+                    [value:27, color:"#d04e00"],
+                    [value:30, color:"#bc2323"],
                     [value:31, color:"#153591"],
                     [value:44, color:"#1e9cbb"],
                     [value:59, color:"#90d2a7"],
@@ -108,8 +115,15 @@ metadata {
         }
 
         valueTile("heatingSetpoint", "device.heatingSetpoint", width:2, height:2) {
-            state "default", label:'${currentValue}°', unit:"F",
+            state "default", label:'${currentValue}°', unit:"dF",
                 backgroundColors:[
+                    [value:10, color:"#153591"],
+                    [value:15, color:"#1e9cbb"],
+                    [value:18, color:"#90d2a7"],
+                    [value:21, color:"#44b621"],
+                    [value:24, color:"#f1d801"],
+                    [value:27, color:"#d04e00"],
+                    [value:30, color:"#bc2323"],
                     [value:31, color:"#153591"],
                     [value:44, color:"#1e9cbb"],
                     [value:59, color:"#90d2a7"],
@@ -121,8 +135,15 @@ metadata {
         }
 
         valueTile("coolingSetpoint", "device.coolingSetpoint", width:2, height:2) {
-            state "default", label:'${currentValue}°', unit:"F",
+            state "default", label:'${currentValue}°', unit:"dF",
                 backgroundColors:[
+                    [value:10, color:"#153591"],
+                    [value:15, color:"#1e9cbb"],
+                    [value:18, color:"#90d2a7"],
+                    [value:21, color:"#44b621"],
+                    [value:24, color:"#f1d801"],
+                    [value:27, color:"#d04e00"],
+                    [value:30, color:"#bc2323"],
                     [value:31, color:"#153591"],
                     [value:44, color:"#1e9cbb"],
                     [value:59, color:"#90d2a7"],
@@ -230,17 +251,27 @@ metadata {
     }
 }
 
+def installed() {
+    initialize()
+}
+
 def updated() {
+    unschedule()
+    initialize()
+}
+
+private def initialize() {
     log.info "Radio Thermostat. ${textVersion()}. ${textCopyright()}"
-	LOG("$device.displayName updated with settings: ${settings.inspect()}")
+	LOG("initialize with settings: ${settings}")
 
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
     state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
+    state.updated = 0
 
     startPollingTask()
-
     STATE()
 }
+
 
 def pollingTask() {
     LOG("pollingTask()")
@@ -271,7 +302,6 @@ def parse(String message) {
         def body = new String(msg.body.decodeBase64())
         def slurper = new JsonSlurper()
         def tstat = slurper.parseText(body)
-
         return parseTstatData(tstat)
     } else if (msg.containsKey("simulator")) {
         // simulator input
@@ -552,12 +582,13 @@ def poll() {
 // refresh.refresh
 def refresh() {
     LOG("refresh()")
-    //STATE()
+    STATE()
 
     def interval = getPollingInterval() * 60
     def elapsed =  (now() - state.lastPoll) / 1000
-    if (elapsed > (interval + 60)) {
+    if (elapsed > (interval + 300)) {
         log.warn "Restarting polling task..."
+        unschedule()
         startPollingTask()
     }
 
@@ -595,7 +626,6 @@ private getPollingInterval() {
 }
 
 private startPollingTask() {
-    unschedule()
     state.lastPoll = now()
 
     Random rand = new Random(now())
@@ -779,6 +809,8 @@ private def parseTstatData(Map tstat) {
             events << createEvent(ev)
         }
     }
+
+    state.updated = now()
 
     LOG("events: ${events}")
     return events
