@@ -33,7 +33,7 @@ preferences {
         required:true, displayDuringSetup:true)
     input("confTcpPort", "number", title:"Thermostat TCP Port",
         defaultValue:80, required:true, displayDuringSetup:true)
-    input("pollingInterval", "number", title:"Polling interval (in minutes)",
+    input("pollingInterval", "number", title:"Polling interval in minutes (1 - 59)",
         defaultValue:5, required:true, displayDuringSetup:true)
 }
 
@@ -52,10 +52,6 @@ metadata {
         // Custom commands
         command "temperatureUp"
         command "temperatureDown"
-        command "heatLevelUp"
-        command "heatLevelDown"
-        command "coolLevelUp"
-        command "coolLevelDown"
         command "holdOn"
         command "holdOff"
     }
@@ -63,7 +59,24 @@ metadata {
     tiles(scale:2) {
         multiAttributeTile(name:"thermostat", type:"thermostat", width:6, height:4) {
 		    tileAttribute("device.temperature", key:"PRIMARY_CONTROL") {
-			    attributeState("default", label:'${currentValue}°', unit:"dF")
+			    attributeState("default", label:'${currentValue}°', unit:"dF", defaultState:true,
+                    backgroundColors:[
+                        [value:10, color:"#153591"],
+                        [value:15, color:"#1e9cbb"],
+                        [value:18, color:"#90d2a7"],
+                        [value:21, color:"#44b621"],
+                        [value:24, color:"#f1d801"],
+                        [value:27, color:"#d04e00"],
+                        [value:30, color:"#bc2323"],
+                        [value:31, color:"#153591"],
+                        [value:44, color:"#1e9cbb"],
+                        [value:59, color:"#90d2a7"],
+                        [value:74, color:"#44b621"],
+                        [value:84, color:"#f1d801"],
+                        [value:95, color:"#d04e00"],
+                        [value:96, color:"#bc2323"]
+                    ]
+                )
 	        }
 			tileAttribute("device.temperature", key:"VALUE_CONTROL") {
 				attributeState("VALUE_UP", action:"temperatureUp")
@@ -73,24 +86,24 @@ metadata {
 			//	attributeState("default", label:'${currentValue}%', unit:"%")
 			//}
 			tileAttribute("device.fanState", key:"SECONDARY_CONTROL") {
-				attributeState("default", label:'Fan ${currentValue}')
+				attributeState("fanState", label:'Fan ${currentValue}', defaultState:true)
 			}
 			tileAttribute("device.thermostatOperatingState", key:"OPERATING_STATE") {
-				attributeState("idle", backgroundColor:"#44b621")
+				attributeState("idle", backgroundColor:"#44b621", defaultState:true)
 				attributeState("heating", backgroundColor:"#ea5462")
 				attributeState("cooling", backgroundColor:"#269bd2")
 			}
 			tileAttribute("device.thermostatMode", key:"THERMOSTAT_MODE") {
-				attributeState("off", label:'${name}')
+				attributeState("off", label:'${name}', defaultState:true)
 				attributeState("heat", label:'${name}')
 				attributeState("cool", label:'${name}')
 				attributeState("auto", label:'${name}')
 			}
 			tileAttribute("device.heatingSetpoint", key:"HEATING_SETPOINT") {
-				attributeState("default", label:'${currentValue}', unit:"dF")
+				attributeState("heatingSetpoint", label:'${currentValue}', unit:"dF", defaultState:true)
 			}
 			tileAttribute("device.coolingSetpoint", key:"COOLING_SETPOINT") {
-				attributeState("default", label:'${currentValue}', unit:"dF")
+				attributeState("heatingSetpoint", label:'${currentValue}', unit:"dF", defaultState:true)
 			}
         }
 
@@ -112,62 +125,6 @@ metadata {
                     [value:95, color:"#d04e00"],
                     [value:96, color:"#bc2323"]
                 ]
-        }
-
-        valueTile("heatingSetpoint", "device.heatingSetpoint", width:2, height:2) {
-            state "default", label:'${currentValue}°', unit:"dF",
-                backgroundColors:[
-                    [value:10, color:"#153591"],
-                    [value:15, color:"#1e9cbb"],
-                    [value:18, color:"#90d2a7"],
-                    [value:21, color:"#44b621"],
-                    [value:24, color:"#f1d801"],
-                    [value:27, color:"#d04e00"],
-                    [value:30, color:"#bc2323"],
-                    [value:31, color:"#153591"],
-                    [value:44, color:"#1e9cbb"],
-                    [value:59, color:"#90d2a7"],
-                    [value:74, color:"#44b621"],
-                    [value:84, color:"#f1d801"],
-                    [value:95, color:"#d04e00"],
-                    [value:96, color:"#bc2323"]
-                ]
-        }
-
-        valueTile("coolingSetpoint", "device.coolingSetpoint", width:2, height:2) {
-            state "default", label:'${currentValue}°', unit:"dF",
-                backgroundColors:[
-                    [value:10, color:"#153591"],
-                    [value:15, color:"#1e9cbb"],
-                    [value:18, color:"#90d2a7"],
-                    [value:21, color:"#44b621"],
-                    [value:24, color:"#f1d801"],
-                    [value:27, color:"#d04e00"],
-                    [value:30, color:"#bc2323"],
-                    [value:31, color:"#153591"],
-                    [value:44, color:"#1e9cbb"],
-                    [value:59, color:"#90d2a7"],
-                    [value:74, color:"#44b621"],
-                    [value:84, color:"#f1d801"],
-                    [value:95, color:"#d04e00"],
-                    [value:96, color:"#bc2323"]
-                ]
-        }
-
-        standardTile("heatLevelUp", "device.heatingSetpoint", width:1, height:1, decoration:"flat") {
-            state "default", label:'Heating', icon:"st.custom.buttons.add-icon", action:"heatLevelUp"
-        }
-
-        standardTile("heatLevelDown", "device.heatingSetpoint", width:1, height:1, decoration:"flat") {
-            state "default", label:'Heating', icon:"st.custom.buttons.subtract-icon", action:"heatLevelDown"
-        }
-
-        standardTile("coolLevelUp", "device.coolingSetpoint", width:1, height:1, decoration:"flat") {
-            state "default", label:'Cooling', icon:"st.custom.buttons.add-icon", action:"coolLevelUp"
-        }
-
-        standardTile("coolLevelDown", "device.coolingSetpoint", width:1, height:1, decoration:"flat") {
-            state "default", label:'Cooling', icon:"st.custom.buttons.subtract-icon", action:"coolLevelDown"
         }
 
         standardTile("operatingState", "device.thermostatOperatingState", width:2, height:2, decoration:"flat") {
@@ -224,9 +181,9 @@ metadata {
         }
 
         main("status")
+        //main("thermostat")
         details(["thermostat",
             "temperature", "operatingState", "fanState",
-            "heatingSetpoint", "heatLevelUp", "coolingSetpoint", "coolLevelUp", "heatLevelDown", "coolLevelDown",
             "mode", "fanMode", "hold", "refresh"])
     }
 
@@ -262,7 +219,7 @@ def updated() {
 
 private def initialize() {
     log.info "Radio Thermostat. ${textVersion()}. ${textCopyright()}"
-	LOG("initialize with settings: ${settings}")
+	DEBUG("initialize with settings: ${settings}")
 
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
     state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
@@ -272,22 +229,21 @@ private def initialize() {
     STATE()
 }
 
-
 def pollingTask() {
-    LOG("pollingTask()")
+    DEBUG("pollingTask()")
     sendHubCommand(apiGet("/tstat"))
     state.lastPoll = now()
 }
 
 def parse(String message) {
-    LOG("parse(${message})")
+    DEBUG("parse(${message})")
 
     def msg = stringToMap(message)
     if (msg.headers) {
         // parse HTTP response headers
         def headers = new String(msg.headers.decodeBase64())
         def parsedHeaders = parseHttpHeaders(headers)
-        LOG("parsedHeaders: ${parsedHeaders}")
+        DEBUG("parsedHeaders: ${parsedHeaders}")
         if (parsedHeaders.status != 200) {
             log.error "Server error: ${parsedHeaders.reason}"
             return null
@@ -313,7 +269,7 @@ def parse(String message) {
 
 // thermostat.setThermostatMode
 def setThermostatMode(mode) {
-    LOG("setThermostatMode(${mode})")
+    DEBUG("setThermostatMode(${mode})")
 
     switch (mode) {
     case "off":             return off()
@@ -328,7 +284,7 @@ def setThermostatMode(mode) {
 
 // thermostat.off
 def off() {
-    LOG("off()")
+    DEBUG("off()")
 
     if (device.currentValue("thermostatMode") == "off") {
         return null
@@ -340,7 +296,7 @@ def off() {
 
 // thermostat.heat
 def heat() {
-    LOG("heat()")
+    DEBUG("heat()")
 
     if (device.currentValue("thermostatMode") == "heat") {
         return null
@@ -352,7 +308,7 @@ def heat() {
 
 // thermostat.cool
 def cool() {
-    LOG("cool()")
+    DEBUG("cool()")
 
     if (device.currentValue("thermostatMode") == "cool") {
         return null
@@ -364,7 +320,7 @@ def cool() {
 
 // thermostat.auto
 def auto() {
-    LOG("auto()")
+    DEBUG("auto()")
 
     if (device.currentValue("thermostatMode") == "auto") {
         return null
@@ -376,14 +332,14 @@ def auto() {
 
 // thermostat.emergencyHeat
 def emergencyHeat() {
-    LOG("emergencyHeat()")
+    DEBUG("emergencyHeat()")
     log.warn "'emergency heat' mode is not supported"
     return null
 }
 
 // thermostat.setThermostatFanMode
 def setThermostatFanMode(fanMode) {
-    LOG("setThermostatFanMode(${fanMode})")
+    DEBUG("setThermostatFanMode(${fanMode})")
 
     switch (fanMode) {
     case "auto":        return fanAuto()
@@ -396,7 +352,7 @@ def setThermostatFanMode(fanMode) {
 
 // thermostat.fanAuto
 def fanAuto() {
-    LOG("fanAuto()")
+    DEBUG("fanAuto()")
 
     if (device.currentValue("thermostatFanMode") == "auto") {
         return null
@@ -408,14 +364,14 @@ def fanAuto() {
 
 // thermostat.fanCirculate
 def fanCirculate() {
-    LOG("fanCirculate()")
+    DEBUG("fanCirculate()")
     log.warn "Fan 'Circulate' mode is not supported"
     return null
 }
 
 // thermostat.fanOn
 def fanOn() {
-    LOG("fanOn()")
+    DEBUG("fanOn()")
 
     if (device.currentValue("thermostatFanMode") == "on") {
         return null
@@ -427,132 +383,116 @@ def fanOn() {
 
 // thermostat.setHeatingSetpoint
 def setHeatingSetpoint(tempHeat) {
-    LOG("setHeatingSetpoint(${tempHeat})")
+    DEBUG("setHeatingSetpoint(${tempHeat})")
+
+    double minT = 36.0
+    double maxT = 94.0
+    def scale = getTemperatureScale()
+    double t = (scale == "C") ? temperatureCtoF(tempHeat) : tempHeat
+
+    t = t.round()
+    if (t < minT) {
+        log.warn "Cannot set heating target below ${minT} °F."
+        return null
+    } else if (t > maxT) {
+        log.warn "Cannot set heating target above ${maxT} °F."
+        return null
+    }
 
     def ev = [
         name:   "heatingSetpoint",
-        value:  tempHeat,
-        unit:   getTemperatureScale(),
+        value:  (scale == "C") ? temperatureFtoC(t) : t,
+        unit:   scale,
     ]
 
     sendEvent(ev)
 
-    if (getTemperatureScale() == "C") {
-        tempHeat = temperatureCtoF(tempHeat)
-    }
-
-    return writeTstatValue('it_heat', tempHeat)
+    return writeTstatValue('it_heat', t)
 }
 
 // thermostat.setCoolingSetpoint
 def setCoolingSetpoint(tempCool) {
-    LOG("setCoolingSetpoint(${tempCool})")
+    DEBUG("setCoolingSetpoint(${tempCool})")
+
+    double minT = 36.0
+    double maxT = 94.0
+    def scale = getTemperatureScale()
+    double t = (scale == "C") ? temperatureCtoF(tempHeat) : tempHeat
+
+    t = t.round()
+    if (t < minT) {
+        log.warn "Cannot set cooling target below ${minT} °F."
+        return null
+    } else if (t > maxT) {
+        log.warn "Cannot set cooling target above ${maxT} °F."
+        return null
+    }
 
     def ev = [
         name:   "coolingSetpoint",
-        value:  tempCool,
-        unit:   getTemperatureScale(),
+        value:  (scale == "C") ? temperatureFtoC(t) : t,
+        unit:   scale,
     ]
 
     sendEvent(ev)
 
-    if (getTemperatureScale() == "C") {
-        tempCool = temperatureCtoF(tempCool)
-    }
-
-    return writeTstatValue('it_cool', tempCool)
+    return writeTstatValue('it_cool', t)
 }
 
 def temperatureUp() {
-    LOG("temperatureUp()")    
+    DEBUG("temperatureUp()")    
+
+    def step = (getTemperatureScale() == "C") ? 0.5 : 1
+    def mode = device.currentValue("thermostatMode")
+    if (mode == "heat") {
+        def t = device.currentValue("heatingSetpoint")?.toFloat()
+        if (!t) {
+            log.error "Cannot get current heating setpoint."
+            return null
+        }
+        return setHeatingSetpoint(t + step)
+    } else if (mode == "cool") {
+        def t = device.currentValue("coolingSetpoint")?.toFloat()
+        if (!t) {
+            log.error "Cannot get current cooling setpoint."
+            return null
+        } 
+        return setCoolingSetpoint(t + step)
+    } else {
+        log.warn "Cannot change temperature while in '${mode}' mode."
+        return null
+    }
 }
 
 def temperatureDown() {
-    LOG("temperatureDown()")    
-}
+    DEBUG("temperatureDown()")    
 
-def heatLevelDown() {
-    LOG("heatLevelDown()")
-
-    def currentT = device.currentValue("heatingSetpoint")?.toFloat()
-    if (!currentT) {
-        return
-    }
-
-    def limit = 50
-    def step = 1
-    if (getTemperatureScale() == "C") {
-        limit = 10
-        step = 0.5
-    }
-
-    if (currentT > limit) {
-        setHeatingSetpoint(currentT - step)
-    }
-}
-
-def heatLevelUp() {
-    LOG("heatLevelUp()")
-
-    def currentT = device.currentValue("heatingSetpoint")?.toFloat()
-    if (!currentT) {
-        return
-    }
-
-    def limit = 95
-    def step = 1
-    if (getTemperatureScale() == "C") {
-        limit = 35
-        step = 0.5
-    }
-
-    if (currentT < limit) {
-        setHeatingSetpoint(currentT + step)
-    }
-}
-
-def coolLevelDown() {
-    LOG("coolLevelDown()")
-
-    def currentT = device.currentValue("coolingSetpoint")?.toFloat()
-    if (!currentT) {
-        return
-    }
-
-    def limit = 50
-    def step = 1
-    if (getTemperatureScale() == "C") {
-        limit = 10
-        step = 0.5
-    }
-
-    if (currentT > limit) {
-        setCoolingSetpoint(currentT - step)
-    }
-}
-
-def coolLevelUp() {
-    LOG("coolLevelUp()")
-
-    def currentT = device.currentValue("coolingSetpoint")?.toFloat()
-    if (!currentT) {
-        return
-    }
-
-    def limit = 95
-    def step = 1
-    if (getTemperatureScale() == "C") {
-        limit = 35
-        step = 0.5
-    }
-
-    if (currentT < limit) {
-        setCoolingSetpoint(currentT + step)
+    def step = (getTemperatureScale() == "C") ? 0.5 : 1
+    def mode = device.currentValue("thermostatMode")
+    if (mode == "heat") {
+        def t = device.currentValue("heatingSetpoint")?.toFloat()
+        if (!t) {
+            log.error "Cannot get current heating setpoint."
+            return null
+        }
+ 
+        return setHeatingSetpoint(t - step)
+    } else if (mode == "cool") {
+        def t = device.currentValue("coolingSetpoint")?.toFloat()
+        if (!t) {
+            log.error "Cannot get current cooling setpoint."
+            return null
+        }
+ 
+        return setCoolingSetpoint(t - step)
+    } else {
+        log.warn "Cannot change temperature while in '${mode}' mode."
+        return null
     }
 }
 
 def holdOn() {
-    LOG("holdOn()")
+    DEBUG("holdOn()")
 
     if (device.currentValue("hold") == "on") {
         return null
@@ -563,7 +503,7 @@ def holdOn() {
 }
 
 def holdOff() {
-    LOG("holdOff()")
+    DEBUG("holdOff()")
 
     if (device.currentValue("hold") == "off") {
         return null
@@ -575,13 +515,13 @@ def holdOff() {
 
 // polling.poll 
 def poll() {
-    LOG("poll()")
+    DEBUG("poll()")
     return refresh()
 }
 
 // refresh.refresh
 def refresh() {
-    LOG("refresh()")
+    DEBUG("refresh()")
     STATE()
 
     def interval = getPollingInterval() * 60
@@ -597,7 +537,7 @@ def refresh() {
 
 // Creates Device Network ID in 'AAAAAAAA:PPPP' format
 private String createDNI(ipaddr, port) {
-    LOG("createDNI(${ipaddr}, ${port})")
+    DEBUG("createDNI(${ipaddr}, ${port})")
 
     def hexIp = ipaddr.tokenize('.').collect {
         String.format('%02X', it.toInteger())
@@ -618,26 +558,26 @@ private getPollingInterval() {
     def minutes = settings.pollingInterval.toInteger()
     if (minutes < 1) {
         minutes = 1
-    } else if (minutes > 60) {
-        minutes = 60
+    } else if (minutes > 59) {
+        minutes = 59
     }
 
     return minutes
 }
 
 private startPollingTask() {
-    state.lastPoll = now()
+    pollingTask()
 
     Random rand = new Random(now())
     def seconds = rand.nextInt(60)
     def sched = "${seconds} 0/${getPollingInterval()} * * * ?"
 
-    LOG("Scheduling polling task with \"${sched}\"")
+    DEBUG("Scheduling polling task with \"${sched}\"")
     schedule(sched, pollingTask)
 }
 
 private apiGet(String path) {
-    LOG("apiGet(${path})")
+    DEBUG("apiGet(${path})")
 
     def headers = [
         HOST:       state.hostAddress,
@@ -656,7 +596,7 @@ private apiGet(String path) {
 }
 
 private apiPost(String path, data) {
-    LOG("apiPost(${path}, ${data})")
+    DEBUG("apiPost(${path}, ${data})")
 
     def headers = [
         HOST:       state.hostAddress,
@@ -676,7 +616,7 @@ private apiPost(String path, data) {
 }
 
 private def writeTstatValue(name, value) {
-    LOG("writeTstatValue(${name}, ${value})")
+    DEBUG("writeTstatValue(${name}, ${value})")
 
     def json = "{\"${name}\": ${value}}"
     def hubActions = [
@@ -706,7 +646,7 @@ private parseHttpHeaders(String headers) {
 }
 
 private def parseTstatData(Map tstat) {
-    LOG("parseTstatData(${tstat})")
+    DEBUG("parseTstatData(${tstat})")
 
     def events = []
     if (tstat.containsKey("error_msg")) {
@@ -751,68 +691,53 @@ private def parseTstatData(Map tstat) {
     }
 
     if (tstat.containsKey("tstate")) {
-        def value = parseThermostatState(tstat.tstate)
-        if (device.currentState("thermostatOperatingState")?.value != value) {
-            def ev = [
-                name:   "thermostatOperatingState",
-                value:  value
-            ]
+        def ev = [
+            name:   "thermostatOperatingState",
+            value:  parseThermostatState(tstat.tstate)
+        ]
 
-            events << createEvent(ev)
-        }
+        events << createEvent(ev)
     }
 
     if (tstat.containsKey("fstate")) {
-        def value = parseFanState(tstat.fstate)
-        if (device.currentState("fanState")?.value != value) {
-            def ev = [
-                name:   "fanState",
-                value:  value
-            ]
+        def ev = [
+            name:   "fanState",
+            value:  parseFanState(tstat.fstate)
+        ]
 
-            events << createEvent(ev)
-        }
+        events << createEvent(ev)
     }
 
     if (tstat.containsKey("tmode")) {
-        def value = parseThermostatMode(tstat.tmode)
-        if (device.currentState("thermostatMode")?.value != value) {
-            def ev = [
-                name:   "thermostatMode",
-                value:  value
-            ]
+        def ev = [
+            name:   "thermostatMode",
+            value:  parseThermostatMode(tstat.tmode)
+        ]
 
-            events << createEvent(ev)
-        }
+        events << createEvent(ev)
     }
 
     if (tstat.containsKey("fmode")) {
-        def value = parseFanMode(tstat.fmode)
-        if (device.currentState("thermostatFanMode")?.value != value) {
-            def ev = [
-                name:   "thermostatFanMode",
-                value:  value
-            ]
+        def ev = [
+            name:   "thermostatFanMode",
+            value:  parseFanMode(tstat.fmode)
+        ]
 
-            events << createEvent(ev)
-        }
+        events << createEvent(ev)
     }
 
     if (tstat.containsKey("hold")) {
-        def value = parseThermostatHold(tstat.hold)
-        if (device.currentState("hold")?.value != value) {
-            def ev = [
-                name:   "hold",
-                value:  value
-            ]
+        def ev = [
+            name:   "hold",
+            value:  parseThermostatHold(tstat.hold)
+        ]
 
-            events << createEvent(ev)
-        }
+        events << createEvent(ev)
     }
 
     state.updated = now()
 
-    LOG("events: ${events}")
+    DEBUG("events: ${events}")
     return events
 }
 
@@ -891,8 +816,8 @@ private def textCopyright() {
     return "Copyright © 2014 Statusbits.com"
 }
 
-private def LOG(message) {
-    log.trace message
+private def DEBUG(message) {
+    log.debug message
 }
 
 private def STATE() {
