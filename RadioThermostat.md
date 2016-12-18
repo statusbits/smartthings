@@ -17,8 +17,9 @@ SmartThings iPhone mobile app.
 
 ---
 
-*If you like this project, please support its further development by making a donation.*
 [![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
+
+*If you like this project, please support its further development by making a donation.*
 
 ---
 
@@ -106,7 +107,7 @@ performs polling automatcally and does not require Pollster. :=)
 * Implemented automatic polling. Pollster is no longer reuired.
 * Check for upper and lower temperature limits when setting heating and
 cooling setpoints.
-* 
+
 
 **Version 1.0.3. Released 08/25/2015**
 * Fixed an issue with DNI not being updated.
