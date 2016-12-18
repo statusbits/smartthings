@@ -646,7 +646,7 @@ private parseHttpHeaders(String headers) {
 }
 
 private def parseTstatData(Map tstat) {
-    log.trace "parsing tstat data: ${tstat}"
+    log.trace "tstat data: ${tstat}"
 
     def events = []
     if (tstat.containsKey("error_msg")) {
