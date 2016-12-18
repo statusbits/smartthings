@@ -15,15 +15,23 @@ SmartThings iPhone mobile app.
 
 ![RadioThermostat Screenshot](http://statusbits.github.io/images/RadioThermostat.jpg)
 
+---
+
+[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
+
+*If you enjoy using this software, please show your appreciation by making a small
+donation. Thank you for your support!*
+
+---
 
 ### Requirements
 
-1. Your Wi-Fi thermostat must be connected to the same local network as your
-SmartThings hub.
+1. Your Wi-Fi thermostat must be connected to the same local network (LAN) as
+your SmartThings hub.
 2. It is important that the thermostat's IP address remain unchanged even if
-your router is rebooted. One way to accomplish it is by using "reserved" IP
-address. Please consult your web router manual on how to reserve an IP
-address.
+your router is rebooted. This can be accomplished by using your router's
+"reserved IP address" feature. Please consult your web router manual on how to
+reserve an IP address.
 3. Obviously, you need a functioning Internet connection for your hub to
 communicate with the SmartThings cloud.
 
@@ -89,17 +97,18 @@ should now appear on the "Things" page.
 
 ### Known Issues
 
-1. The **RadioThermostat** device relies on polling to update its status
-periodically. There's a known issue with the SmartThings built-in polling
-engine -- the engine occasionally quits which results in your device status
-getting out of sync with the thermostat state. To solve this problem, I
-created [Pollster](https://github.com/statusbits/smartthings/tree/master/Pollster.md)
-Smart App. Pollster can poll your thermostat as fast as every minute,
-comparing to the 10-minutes polling interval of the SmartThings built-in
-polling engine.
+None. Please note that as of version 2.0.0, the RadioThermostat device handler
+performs polling automatcally and does not require Pollster. :=) 
 
 
 ### Revision History
+
+**Version 2.0.0. Released 12/17/2016**
+* Completely redesigned UI using new multi-attribute tile.
+* Implemented automatic polling. Pollster is no longer required.
+* Check for upper and lower temperature limits when setting heating and
+cooling setpoints.
+
 
 **Version 1.0.3. Released 08/25/2015**
 * Fixed an issue with DNI not being updated.
