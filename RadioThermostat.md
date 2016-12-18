@@ -105,7 +105,7 @@ performs polling automatcally and does not require Pollster. :=)
 
 **Version 2.0.0. Released 12/17/2016**
 * Completely redesigned UI using new multi-attribute tile.
-* Implemented automatic polling. Pollster is no longer reuired.
+* Implemented automatic polling. Pollster is no longer required.
 * Check for upper and lower temperature limits when setting heating and
 cooling setpoints.
 
