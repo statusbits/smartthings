@@ -19,7 +19,8 @@ SmartThings iPhone mobile app.
 
 [![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
 
-*If you like this project, please support its further development by making a donation.*
+*If you enjoy using this software, please show your appreciation by making a small
+donation. Thank you for your support!*
 
 ---
 
