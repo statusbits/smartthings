@@ -7,7 +7,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Copyright (c) 2014 Statusbits.com
+ *  Copyright © 2014 Statusbits.com
  *
  *  This program is free software: you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the Free
@@ -24,7 +24,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 1.2.2 (08/25/2015)
+ *  Version 2.0.0 (12/18/2016)
  */
 
 import groovy.json.JsonSlurper
@@ -599,11 +599,11 @@ private def setDefaults() {
 }
 
 private def textVersion() {
-    def text = "Version 1.2.2 (08/25/2015)"
+    def text = "Version 2.0.0 (12/18/2016)"
 }
 
 private def textCopyright() {
-    def text = "Copyright (c) 2014 Statusbits.com"
+    def text = "Copyright © 2014 Statusbits.com"
 }
 
 private def LOG(message) {
