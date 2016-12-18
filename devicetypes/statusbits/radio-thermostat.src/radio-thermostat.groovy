@@ -127,17 +127,19 @@ metadata {
                 ]
         }
 
-        standardTile("operatingState", "device.thermostatOperatingState", width:2, height:2, decoration:"flat") {
-            state "default", label:'N/A', defaultState:true
-            state "idle", label:'', icon:"st.thermostat.heating-cooling-off"
-            state "heating", label:'', icon:"st.thermostat.heating"
-            state "cooling", label:'', icon:"st.thermostat.cooling"
+        standardTile("modeHeat", "device.thermostatMode", width:2, height:2) {
+            state "default", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFFFFF", action:"thermostat.heat", defaultState:true
+            state "heat", label:'', icon:"st.thermostat.heat", backgroundColor:"#FFCC99", action:"thermostat.off"
         }
 
-        standardTile("fanState", "device.fanState", width:2, height:2, decoration:"flat") {
-            state "default", label:'N/A', defaultState:true
-            state "off", label:'', icon:"st.thermostat.fan-off"
-            state "on", label:'', icon:"st.thermostat.fan-on"
+        standardTile("modeCool", "device.thermostatMode", width:2, height:2) {
+            state "default", label:'', icon:"st.thermostat.cool", backgroundColor:"#FFFFFF", action:"thermostat.cool", defaultState:true
+            state "cool", label:'', icon:"st.thermostat.cool", backgroundColor:"#99CCFF", action:"thermostat.off"
+        }
+
+        standardTile("modeAuto", "device.thermostatMode", width:2, height:2) {
+            state "default", label:'', icon:"st.thermostat.auto", backgroundColor:"#FFFFFF", action:"thermostat.auto", defaultState:true
+            state "auto", label:'', icon:"st.thermostat.auto", backgroundColor:"#99FF99", action:"thermostat.off"
         }
 
         standardTile("mode", "device.thermostatMode", width:2, height:2) {
@@ -167,23 +169,9 @@ metadata {
             state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
-        valueTile("status", "device.temperature", width:2, height:2) {
-            state "temperature", label:'${currentValue}°', icon:"st.Weather.weather2",
-                backgroundColors:[
-                    [value:31, color:"#153591"],
-                    [value:44, color:"#1e9cbb"],
-                    [value:59, color:"#90d2a7"],
-                    [value:74, color:"#44b621"],
-                    [value:84, color:"#f1d801"],
-                    [value:95, color:"#d04e00"],
-                    [value:96, color:"#bc2323"]
-                ]
-        }
-
-        main("status")
-        //main("thermostat")
+        main("temperature")
         details(["thermostat",
-            "temperature", "operatingState", "fanState",
+            "modeHeat", "modeCool", "modeAuto",
             "mode", "fanMode", "hold", "refresh"])
     }
 
@@ -382,13 +370,13 @@ def fanOn() {
 }
 
 // thermostat.setHeatingSetpoint
-def setHeatingSetpoint(tempHeat) {
-    DEBUG("setHeatingSetpoint(${tempHeat})")
+def setHeatingSetpoint(temp) {
+    DEBUG("setHeatingSetpoint(${temp})")
 
     double minT = 36.0
     double maxT = 94.0
     def scale = getTemperatureScale()
-    double t = (scale == "C") ? temperatureCtoF(tempHeat) : tempHeat
+    double t = (scale == "C") ? temperatureCtoF(temp) : temp
 
     t = t.round()
     if (t < minT) {
@@ -411,13 +399,13 @@ def setHeatingSetpoint(tempHeat) {
 }
 
 // thermostat.setCoolingSetpoint
-def setCoolingSetpoint(tempCool) {
-    DEBUG("setCoolingSetpoint(${tempCool})")
+def setCoolingSetpoint(temp) {
+    DEBUG("setCoolingSetpoint(${temp})")
 
     double minT = 36.0
     double maxT = 94.0
     def scale = getTemperatureScale()
-    double t = (scale == "C") ? temperatureCtoF(tempHeat) : tempHeat
+    double t = (scale == "C") ? temperatureCtoF(temp) : temp
 
     t = t.round()
     if (t < minT) {
