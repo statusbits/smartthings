@@ -60,62 +60,91 @@ metadata {
         command "__testTTS"
     }
 
-    tiles {
-        standardTile("main", "device.status", canChangeIcon:true) {
+    tiles(scale:2) {
+		multiAttributeTile(name:"mediaplayer", type:"mediaPlayer", width:6, height:4) {
+			tileAttribute("device.status", key:"PRIMARY_CONTROL") {
+				attributeState("paused", label:"Paused",)
+				attributeState("playing", label:"Playing")
+				attributeState("stopped", label:"Stopped")
+			}
+			tileAttribute("device.status", key:"MEDIA_STATUS") {
+				attributeState("paused", label:"Paused", action:"music Player.play", nextState:"playing")
+				attributeState("playing", label:"Playing", action:"music Player.pause", nextState:"paused")
+				attributeState("stopped", label:"Stopped", action:"music Player.play", nextState:"playing")
+			}
+			tileAttribute("device.status", key:"PREVIOUS_TRACK") {
+				attributeState("status", action:"music Player.previousTrack", defaultState:true)
+			}
+			tileAttribute("device.status", key:"NEXT_TRACK") {
+				attributeState("status", action:"music Player.nextTrack", defaultState:true)
+			}
+			tileAttribute ("device.level", key:"SLIDER_CONTROL") {
+				attributeState("level", action:"music Player.setLevel")
+			}
+			tileAttribute ("device.mute", key:"MEDIA_MUTED") {
+				attributeState("unmuted", action:"music Player.mute", nextState:"muted")
+				attributeState("muted", action:"music Player.unmute", nextState:"unmuted")
+			}
+			tileAttribute("device.trackDescription", key: "MARQUEE") {
+				attributeState("trackDescription", label:"${currentValue}", defaultState:true)
+			}
+		}
+
+        standardTile("main", "device.status", width:2, height:2, canChangeIcon:true) {
             state "disconnected", label:'Connect', icon:"st.Electronics.electronics16", backgroundColor:"#FFCC00", action:"refresh.refresh"
             state "stopped", label:'Stopped', icon:"st.Electronics.electronics16", nextState:"playing", backgroundColor:"#ffffff", action:"Music Player.play"
             state "paused", label:'Paused', icon:"st.Electronics.electronics16", nextState:"playing", backgroundColor:"#ffffff", action:"Music Player.play"
             state "playing", label:'Playing', icon:"st.Electronics.electronics16", nextState:"paused", backgroundColor:"#79b821", action:"Music Player.pause"
         }
 
-        standardTile("play", "device.status", inactiveLabel:false, decoration:"flat") {
+        standardTile("play", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "stopped", label:'', icon:"st.sonos.play-btn", nextState:"playing", action:"Music Player.play"
             state "paused", label:'', icon:"st.sonos.play-btn", nextState:"playing", action:"Music Player.play"
             state "playing", label:'', icon:"st.sonos.pause-btn", nextState:"paused", action:"Music Player.pause"
         }
 
-        standardTile("stop", "device.status", inactiveLabel:false, decoration:"flat") {
+        standardTile("stop", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "stopped", label:'', icon:"st.sonos.play-btn", nextState:"playing", action:"Music Player.play"
             state "paused", label:'', icon:"st.sonos.stop-btn", nextState:"stopped", action:"Music Player.stop"
             state "playing", label:'', icon:"st.sonos.stop-btn", nextState:"stopped", action:"Music Player.stop"
         }
 
-        standardTile("nextTrack", "device.status", inactiveLabel:false, decoration:"flat") {
+        standardTile("nextTrack", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:'', icon:"st.sonos.next-btn", action:"Music Player.nextTrack"
         }
 
-        standardTile("previousTrack", "device.status", inactiveLabel:false, decoration:"flat") {
+        standardTile("previousTrack", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:'', icon:"st.sonos.previous-btn", action:"music Player.previousTrack"
         }
 
-        standardTile("mute", "device.mute", inactiveLabel:false, decoration:"flat") {
+        standardTile("mute", "device.mute", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "unmuted", label:"Mute", icon:"st.custom.sonos.unmuted", action:"Music Player.mute"
             state "muted", label:"Unmute", icon:"st.custom.sonos.muted", action:"Music Player.unmute"
         }
 
-        controlTile("volume", "device.level", "slider", height:1, width:3, inactiveLabel:false) {
+        controlTile("volume", "device.level", "slider", height:2, width:6, inactiveLabel:false) {
             state "level", action:"Music Player.setLevel"
         }
 
-        valueTile("nowPlaying", "device.trackDescription", height:1, width:3, inactiveLabel:true, decoration:"flat") {
+        valueTile("nowPlaying", "device.trackDescription", height:2, width:6, inactiveLabel:true, decoration:"flat") {
             state "default", label:'${currentValue}'
         }
 
-        standardTile("refresh", "device.status", inactiveLabel:false, decoration:"flat") {
+        standardTile("refresh", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
         }
 
-        standardTile("testAudio", "device.status", inactiveLabel:false, decoration:"flat") {
+        standardTile("testAudio", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:"Audio Test", action:"__testAudio"
         }
 
-        standardTile("testTTS", "device.status", inactiveLabel:false, decoration:"flat") {
+        standardTile("testTTS", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", label:"Test", icon:"http://statusbits.github.io/icons/vlcthing.png", action:"__testTTS"
         }
 
         main(["main"])
-
         details([
+            "mediaplayer",
             "nowPlaying",
             "previousTrack", "play", "nextTrack",
             "mute", "stop", "refresh",
@@ -607,7 +636,7 @@ private def textCopyright() {
 }
 
 private def LOG(message) {
-    //log.trace message
+    log.trace message
 }
 
 private def STATE() {
