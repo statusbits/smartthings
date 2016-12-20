@@ -31,10 +31,17 @@ import groovy.json.JsonSlurper
 preferences {
     input("confIpAddr", "string", title:"Thermostat IP Address",
         required:true, displayDuringSetup:true)
-    input("confTcpPort", "number", title:"Thermostat TCP Port",
-        defaultValue:80, required:true, displayDuringSetup:true)
+
+    // FIXME: Android client does not accept "defaultValue" attribute!
+    //input("confTcpPort", "number", title:"Thermostat TCP Port",
+    //    defaultValue:80, required:true, displayDuringSetup:true)
+    //input("pollingInterval", "number", title:"Polling interval in minutes (1 - 59)",
+    //    defaultValue:5, required:true, displayDuringSetup:true)
+    input("confTcpPort", "number", title:"Thermostat TCP Port (default: 80)",
+        required:true, displayDuringSetup:true)
+
     input("pollingInterval", "number", title:"Polling interval in minutes (1 - 59)",
-        defaultValue:5, required:true, displayDuringSetup:true)
+        required:true, displayDuringSetup:true)
 }
 
 metadata {
