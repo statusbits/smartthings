@@ -184,7 +184,7 @@ metadata {
 }
 
 def installed() {
-    log.debug "installed()"
+    //log.debug "installed()"
 
     printTitle()
 
@@ -201,7 +201,7 @@ def installed() {
 }
 
 def updated() {
-	log.debug "updated with settings: ${settings}"
+	//log.debug "updated with settings: ${settings}"
 
     printTitle()
     unschedule()
@@ -229,11 +229,13 @@ def updated() {
     state.responseTime = 0
 
     startPollingTask()
-    STATE()
+    //STATE()
 }
 
 def pollingTask() {
     //log.debug "pollingTask()"
+
+    state.lastPoll = now()
 
     // Check connection status
     def requestTime = state.requestTime ?: 0
@@ -248,8 +250,10 @@ def pollingTask() {
         ])
     }
 
-    sendHubCommand(apiGet("/tstat"))
-    state.lastPoll = now()
+    def updated = state.updated ?: 0
+    if ((now() - updated) > 10000) {
+        sendHubCommand(apiGet("/tstat"))
+    }
 }
 
 def parse(String message) {
@@ -564,8 +568,8 @@ def poll() {
 
 // refresh.refresh
 def refresh() {
-    log.debug "refresh()"
-    STATE()
+    //log.debug "refresh()"
+    //STATE()
 
     if (!state.dni) {
 	    log.warn "DNI is not set! Please enter device IP address and port in settings."
@@ -605,7 +609,7 @@ private getPollingInterval() {
 }
 
 private startPollingTask() {
-    log.debug "startPollingTask()"
+    //log.debug "startPollingTask()"
 
     pollingTask()
 
@@ -670,7 +674,7 @@ private def writeTstatValue(name, value) {
     def json = "{\"${name}\": ${value}}"
     def hubActions = [
         apiPost("/tstat", json),
-        delayHubAction(2000),
+        delayHubAction(1500),
         apiGet("/tstat")
     ]
 
@@ -776,8 +780,9 @@ private def parseTstatData(Map tstat) {
         displayed:      false
     ])
 
-    log.debug "events: ${events}"
+    state.updated = now()
 
+    //log.debug "events: ${events}"
     return events
 }
 
