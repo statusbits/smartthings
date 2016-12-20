@@ -63,14 +63,14 @@ metadata {
     tiles(scale:2) {
 		multiAttributeTile(name:"mediaplayer", type:"mediaPlayer", width:6, height:4) {
 			tileAttribute("device.status", key:"PRIMARY_CONTROL") {
-				attributeState("paused", label:"Paused",)
+				attributeState("stopped", label:"Stopped", defaultState:true)
 				attributeState("playing", label:"Playing")
-				attributeState("stopped", label:"Stopped")
+				attributeState("paused", label:"Paused",)
 			}
 			tileAttribute("device.status", key:"MEDIA_STATUS") {
-				attributeState("paused", label:"Paused", action:"music Player.play", nextState:"playing")
-				attributeState("playing", label:"Playing", action:"music Player.pause", nextState:"paused")
 				attributeState("stopped", label:"Stopped", action:"music Player.play", nextState:"playing")
+				attributeState("playing", label:"Playing", action:"music Player.pause", nextState:"paused")
+				attributeState("paused", label:"Paused", action:"music Player.play", nextState:"playing")
 			}
 			tileAttribute("device.status", key:"PREVIOUS_TRACK") {
 				attributeState("status", action:"music Player.previousTrack", defaultState:true)
@@ -82,7 +82,7 @@ metadata {
 				attributeState("level", action:"music Player.setLevel")
 			}
 			tileAttribute ("device.mute", key:"MEDIA_MUTED") {
-				attributeState("unmuted", action:"music Player.mute", nextState:"muted")
+				attributeState("unmuted", action:"music Player.mute", nextState:"muted", defaultState:true)
 				attributeState("muted", action:"music Player.unmute", nextState:"unmuted")
 			}
 			tileAttribute("device.trackDescription", key: "MARQUEE") {
@@ -235,21 +235,21 @@ def play() {
         command = 'command=pl_play'
     }
 
-    return vlcCommand(command, 500)
+    return apiCommand(command, 500)
 }
 
 // MusicPlayer.stop
 def stop() {
     log.debug "stop()"
 
-    return vlcCommand("command=pl_stop", 500)
+    return apiCommand("command=pl_stop", 500)
 }
 
 // MusicPlayer.pause
 def pause() {
     log.debug "pause()"
 
-    return vlcCommand("command=pl_forcepause")
+    return apiCommand("command=pl_forcepause")
 }
 
 // MusicPlayer.playTrack
@@ -257,7 +257,7 @@ def playTrack(uri) {
     log.debug "playTrack(${uri})"
 
     def command = "command=in_play&input=" + URLEncoder.encode(uri, "UTF-8")
-    return vlcCommand(command, 500)
+    return apiCommand(command, 500)
 }
 
 // MusicPlayer.playText
@@ -290,14 +290,14 @@ def restoreTrack(name) {
 def nextTrack() {
     log.debug "nextTrack()"
 
-    return vlcCommand("command=pl_next", 500)
+    return apiCommand("command=pl_next", 500)
 }
 
 // MusicPlayer.previousTrack
 def previousTrack() {
     log.debug "previousTrack()"
 
-    return vlcCommand("command=pl_previous", 500)
+    return apiCommand("command=pl_previous", 500)
 }
 
 // MusicPlayer.setLevel
@@ -310,7 +310,7 @@ def setLevel(number) {
 
     sendEvent(name:"level", value:number)
     def volume = ((number * 512) / 100) as int
-    return vlcCommand("command=volume&val=${volume}")
+    return apiCommand("command=volume&val=${volume}")
 }
 
 // MusicPlayer.mute
@@ -325,7 +325,7 @@ def mute() {
     sendEvent(name:'mute', value:'muted')
     sendEvent(name:'level', value:0)
 
-    return vlcCommand("command=volume&val=0")
+    return apiCommand("command=volume&val=0")
 }
 
 // MusicPlayer.unmute
@@ -358,19 +358,19 @@ def refresh() {
     log.debug "refresh()"
     STATE()
 
-    return vlcGetStatus()
+    return apiGetStatus()
 }
 
 def enqueue(uri) {
     log.debug "enqueue(${uri})"
     def command = "command=in_enqueue&input=" + URLEncoder.encode(uri, "UTF-8")
-    return vlcCommand(command)
+    return apiCommand(command)
 }
 
 def seek(trackNumber) {
     log.debug "seek(${trackNumber})"
     def command = "command=pl_play&id=${trackNumber}"
-    return vlcCommand(command, 500)
+    return apiCommand(command, 500)
 }
 
 def playTrackAndResume(uri, duration, volume = null) {
@@ -388,7 +388,7 @@ def playTrackAndRestore(uri, duration, volume = null) {
     def currentMute = device.currentValue('mute')
     def actions = []
     if (currentStatus == 'playing') {
-        actions << vlcCommand("command=pl_stop")
+        actions << apiCommand("command=pl_stop")
         actions << delayHubAction(500)
     }
 
@@ -405,7 +405,7 @@ def playTrackAndRestore(uri, duration, volume = null) {
 
     actions << playTrack(uri)
     actions << delayHubAction(delay)
-    actions << vlcCommand("command=pl_stop")
+    actions << apiCommand("command=pl_stop")
     actions << delayHubAction(500)
 
     if (currentMute == 'muted') {
@@ -414,7 +414,7 @@ def playTrackAndRestore(uri, duration, volume = null) {
         actions << setLevel(currentVolume)
     }
 
-    actions << vlcGetStatus()
+    actions << apiGetStatus()
     actions = actions.flatten()
     //log.debug "actions: ${actions}"
 
@@ -448,27 +448,8 @@ def __testTTS() {
     return playTextAndResume(text)
 }
 
-// Creates Device Network ID in 'AAAAAAAA:PPPP' format
-private String createDNI(ipaddr, port) { 
-    log.debug "createDNI(${ipaddr}, ${port})"
-
-    def hexIp = ipaddr.tokenize('.').collect {
-        String.format('%02X', it.toInteger())
-    }.join()
-
-    def hexPort = String.format('%04X', port.toInteger())
-
-    return "${hexIp}:${hexPort}"
-}
-
-private updateDNI() { 
-    if (device.deviceNetworkId != state.dni) {
-        device.deviceNetworkId = state.dni
-    }
-}
-
-private vlcGet(String path) {
-    log.debug "vlcGet(${path})"
+private apiGet(String path) {
+    log.debug "apiGet(${path})"
 
     def headers = [
         HOST:       state.hostAddress,
@@ -492,32 +473,31 @@ private vlcGet(String path) {
 }
 
 private def delayHubAction(ms) {
-    log.debug "delayHubAction(${ms})"
     return new physicalgraph.device.HubAction("delay ${ms}")
 }
 
-private vlcGetStatus() {
-    return vlcGet("/requests/status.json")
+private apiGetStatus() {
+    return apiGet("/requests/status.json")
 }
 
-private vlcCommand(command, refresh = 0) {
-    log.debug "vlcCommand(${command})"
+private apiCommand(command, refresh = 0) {
+    log.debug "apiCommand(${command})"
 
     def actions = [
-        vlcGet("/requests/status.json?${command}")
+        apiGet("/requests/status.json?${command}")
     ]
 
     if (refresh) {
         actions << delayHubAction(refresh)
-        actions << vlcGetStatus()
+        actions << apiGetStatus()
     }
 
     return actions
 }
 
-private def vlcGetPlaylists() {
+private def apiGetPlaylists() {
     log.debug "getPlaylists()"
-    return vlcGet("/requests/playlist.json")
+    return apiGet("/requests/playlist.json")
 }
 
 private parseHttpHeaders(String headers) {
@@ -607,7 +587,7 @@ private def setDefaults() {
     def events = []
 
     if (device.currentValue('status') == null) {
-        events << createEvent([name:'status', value:'disconnected', displayed:false])
+        events << createEvent([name:'status', value:'stopped', displayed:false])
     }
 
     if (device.currentValue('level') == null) {
@@ -624,6 +604,24 @@ private def setDefaults() {
 
     events.each {
         sendEvent(it)
+    }
+}
+
+private String createDNI(ipaddr, port) { 
+    log.debug "createDNI(${ipaddr}, ${port})"
+
+    def hexIp = ipaddr.tokenize('.').collect {
+        String.format('%02X', it.toInteger())
+    }.join()
+
+    def hexPort = String.format('%04X', port.toInteger())
+
+    return "${hexIp}:${hexPort}"
+}
+
+private updateDNI() { 
+    if (device.deviceNetworkId != state.dni) {
+        device.deviceNetworkId = state.dni
     }
 }
 
