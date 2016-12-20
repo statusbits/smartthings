@@ -128,8 +128,10 @@ metadata {
         }
 
         standardTile("refresh", "device.connection", width:2, height:2, decoration:"flat") {
-            state "default", icon:"st.secondary.refresh", backgroundColor:"#FF3360", action:"refresh.refresh", defaultState:true
-            state "connected", icon:"st.secondary.refresh", backgroundColor:"#009900", action:"refresh.refresh"
+        //standardTile("refresh", "device.connection", width:2, height:2) {
+            state "default", icon:"st.secondary.refresh", backgroundColor:"#FFFFFF", action:"refresh.refresh", defaultState:true
+            state "connected", icon:"st.secondary.refresh", backgroundColor:"#44b621", action:"refresh.refresh"
+            state "disconnected", icon:"st.secondary.refresh", backgroundColor:"#ea5462", action:"refresh.refresh"
         }
 
         valueTile("temperature", "device.temperature", width:2, height:2) {
@@ -183,6 +185,7 @@ metadata {
 
 def installed() {
     log.debug "installed()"
+
     printTitle()
 
     // Initialize attributes to default values (Issue #18)
@@ -222,7 +225,8 @@ def updated() {
     device.deviceNetworkId = dni
     state.dni = dni
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
-    state.updated = 0
+    state.requestTime = 0
+    state.responseTime = 0
 
     startPollingTask()
     STATE()
@@ -230,6 +234,19 @@ def updated() {
 
 def pollingTask() {
     //log.debug "pollingTask()"
+
+    // Check connection status
+    def requestTime = state.requestTime ?: 0
+    def responseTime = state.responseTime ?: 0
+    if (requestTime && (requestTime - responseTime) > 5000) {
+        log.warn "No connection!"
+        sendEvent([
+            name:           'connection',
+            value:          'disconnected',
+            isStateChange:  true,
+            displayed:      true
+        ])
+    }
 
     sendHubCommand(apiGet("/tstat"))
     state.lastPoll = now()
@@ -552,6 +569,13 @@ def refresh() {
 
     if (!state.dni) {
 	    log.warn "DNI is not set! Please enter device IP address and port in settings."
+        sendEvent([
+            name:           'connection',
+            value:          'disconnected',
+            isStateChange:  true,
+            displayed:      false
+        ])
+
         return null
     }
 
@@ -600,6 +624,8 @@ private apiGet(String path) {
         return null
     }
 
+    state.requestTime = now()
+
     def headers = [
         HOST:       state.hostAddress,
         Accept:     "*/*"
@@ -620,6 +646,8 @@ private apiPost(String path, data) {
     if (!updateDNI()) {
         return null
     }
+
+    state.requestTime = now()
 
     def headers = [
         HOST:       state.hostAddress,
@@ -669,6 +697,8 @@ private parseHttpHeaders(String headers) {
 private def parseTstatData(Map tstat) {
     log.trace "tstat data: ${tstat}"
 
+    state.responseTime = now()
+
     def events = []
     if (tstat.containsKey("error_msg")) {
         log.error "Thermostat error: ${tstat.error_msg}"
@@ -680,87 +710,74 @@ private def parseTstatData(Map tstat) {
         return null
     }
 
-    events << [name:'connection', value:'connected']
-
     if (tstat.containsKey("temp")) {
-        //Float temp = tstat.temp.toFloat()
-        def ev = [
+        events << createEvent([
             name:   "temperature",
             value:  scaleTemperature(tstat.temp.toFloat()),
             unit:   getTemperatureScale(),
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("t_cool")) {
-        def ev = [
+        events << createEvent([
             name:   "coolingSetpoint",
             value:  scaleTemperature(tstat.t_cool.toFloat()),
             unit:   getTemperatureScale(),
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("t_heat")) {
-        def ev = [
+        events << createEvent([
             name:   "heatingSetpoint",
             value:  scaleTemperature(tstat.t_heat.toFloat()),
             unit:   getTemperatureScale(),
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("tstate")) {
-        def ev = [
+        events << createEvent([
             name:   "thermostatOperatingState",
             value:  parseThermostatState(tstat.tstate)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("fstate")) {
-        def ev = [
+        events << createEvent([
             name:   "fanState",
             value:  parseFanState(tstat.fstate)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("tmode")) {
-        def ev = [
+        events << createEvent([
             name:   "thermostatMode",
             value:  parseThermostatMode(tstat.tmode)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("fmode")) {
-        def ev = [
+        events << createEvent([
             name:   "thermostatFanMode",
             value:  parseFanMode(tstat.fmode)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("hold")) {
-        def ev = [
+        events << createEvent([
             name:   "hold",
             value:  parseThermostatHold(tstat.hold)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
-    state.updated = now()
+    events << createEvent([
+        name:           'connection',
+        value:          'connected',
+        isStateChange:  true,
+        displayed:      false
+    ])
 
     log.debug "events: ${events}"
+
     return events
 }
 
