@@ -103,12 +103,18 @@ performs polling automatcally and does not require Pollster. :=)
 
 ### Revision History
 
+**Version 2.0.1. Released 12/20/2016**
+* Fixed iOS mobile app crash when opening newly installed device (Issue #18).
+* Fixed error saving settings in Android mobile app.
+* Removed secondary control ("Hold" status) from the multi-atibute tile.
+* Refresh button now shows connection status: Green - connected, Red -
+disconnected.
+
 **Version 2.0.0. Released 12/17/2016**
 * Completely redesigned UI using new multi-attribute tile.
 * Implemented automatic polling. Pollster is no longer required.
 * Check for upper and lower temperature limits when setting heating and
 cooling setpoints.
-
 
 **Version 1.0.3. Released 08/25/2015**
 * Fixed an issue with DNI not being updated.
