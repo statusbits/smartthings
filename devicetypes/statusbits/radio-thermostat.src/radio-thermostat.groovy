@@ -23,7 +23,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 2.0.0 (12/17/2016)
+ *  Version 2.0.1 (12/20/2016)
  */
 
 import groovy.json.JsonSlurper
@@ -31,10 +31,17 @@ import groovy.json.JsonSlurper
 preferences {
     input("confIpAddr", "string", title:"Thermostat IP Address",
         required:true, displayDuringSetup:true)
-    input("confTcpPort", "number", title:"Thermostat TCP Port",
-        defaultValue:80, required:true, displayDuringSetup:true)
+
+    // FIXME: Android client does not accept "defaultValue" attribute!
+    //input("confTcpPort", "number", title:"Thermostat TCP Port",
+    //    defaultValue:80, required:true, displayDuringSetup:true)
+    //input("pollingInterval", "number", title:"Polling interval in minutes (1 - 59)",
+    //    defaultValue:5, required:true, displayDuringSetup:true)
+    input("confTcpPort", "number", title:"Thermostat TCP Port (default: 80)",
+        required:true, displayDuringSetup:true)
+
     input("pollingInterval", "number", title:"Polling interval in minutes (1 - 59)",
-        defaultValue:5, required:true, displayDuringSetup:true)
+        required:true, displayDuringSetup:true)
 }
 
 metadata {
@@ -46,8 +53,9 @@ metadata {
         capability "Polling"
 
         // Custom attributes
-        attribute "fanState", "string"  // Fan operating state. Values: "on", "off"
-        attribute "hold", "string"      // Target temperature Hold status. Values: "on", "off"
+        attribute "fanState", "string"      // Fan operating state. Values: "on", "off"
+        attribute "hold", "string"          // Target temperature Hold status. Values: "on", "off"
+        attribute "connection", "string"    // Connection status string
 
         // Custom commands
         command "temperatureUp"
@@ -82,9 +90,6 @@ metadata {
 				attributeState("VALUE_UP", action:"temperatureUp")
 				attributeState("VALUE_DOWN", action:"temperatureDown")
 			}
-			tileAttribute("device.hold", key:"SECONDARY_CONTROL") {
-				attributeState("hold", label:'Hold: ${currentValue}', defaultState:true)
-			}
 			tileAttribute("device.thermostatOperatingState", key:"OPERATING_STATE") {
 				attributeState("idle", backgroundColor:"#44b621", defaultState:true)
 				attributeState("heating", backgroundColor:"#ea5462")
@@ -102,26 +107,6 @@ metadata {
 			tileAttribute("device.coolingSetpoint", key:"COOLING_SETPOINT") {
 				attributeState("heatingSetpoint", label:'${currentValue}', unit:"dF", defaultState:true)
 			}
-        }
-
-        valueTile("temperature", "device.temperature", width:2, height:2) {
-            state "temperature", label:'${currentValue}°', unit:"dF",
-                backgroundColors:[
-                    [value:10, color:"#153591"],
-                    [value:15, color:"#1e9cbb"],
-                    [value:18, color:"#90d2a7"],
-                    [value:21, color:"#44b621"],
-                    [value:24, color:"#f1d801"],
-                    [value:27, color:"#d04e00"],
-                    [value:30, color:"#bc2323"],
-                    [value:31, color:"#153591"],
-                    [value:44, color:"#1e9cbb"],
-                    [value:59, color:"#90d2a7"],
-                    [value:74, color:"#44b621"],
-                    [value:84, color:"#f1d801"],
-                    [value:95, color:"#d04e00"],
-                    [value:96, color:"#bc2323"]
-                ]
         }
 
         standardTile("modeHeat", "device.thermostatMode", width:2, height:2) {
@@ -149,8 +134,31 @@ metadata {
             state "on", label:'Hold', icon:"st.Weather.weather2", backgroundColor:"#A4FCA6", action:"holdOff"
         }
 
-        standardTile("refresh", "device.thermostatMode", width:2, height:2, decoration:"flat") {
-            state "default", icon:"st.secondary.refresh", action:"refresh.refresh", defaultState:true
+        standardTile("refresh", "device.connection", width:2, height:2, decoration:"flat") {
+        //standardTile("refresh", "device.connection", width:2, height:2) {
+            state "default", icon:"st.secondary.refresh", backgroundColor:"#FFFFFF", action:"refresh.refresh", defaultState:true
+            state "connected", icon:"st.secondary.refresh", backgroundColor:"#44b621", action:"refresh.refresh"
+            state "disconnected", icon:"st.secondary.refresh", backgroundColor:"#ea5462", action:"refresh.refresh"
+        }
+
+        valueTile("temperature", "device.temperature", width:2, height:2) {
+            state "temperature", label:'${currentValue}°', unit:"dF",
+                backgroundColors:[
+                    [value:10, color:"#153591"],
+                    [value:15, color:"#1e9cbb"],
+                    [value:18, color:"#90d2a7"],
+                    [value:21, color:"#44b621"],
+                    [value:24, color:"#f1d801"],
+                    [value:27, color:"#d04e00"],
+                    [value:30, color:"#bc2323"],
+                    [value:31, color:"#153591"],
+                    [value:44, color:"#1e9cbb"],
+                    [value:59, color:"#90d2a7"],
+                    [value:74, color:"#44b621"],
+                    [value:84, color:"#f1d801"],
+                    [value:95, color:"#d04e00"],
+                    [value:96, color:"#bc2323"]
+                ]
         }
 
         main("temperature")
@@ -183,21 +191,49 @@ metadata {
 }
 
 def installed() {
-    initialize()
+    //log.debug "installed()"
+
+    printTitle()
+
+    // Initialize attributes to default values (Issue #18)
+    sendEvent([name:'temperature', value:'70', displayed:false])
+    sendEvent([name:'heatingSetpoint', value:'70', displayed:false])
+    sendEvent([name:'coolingSetpoint', value:'72', displayed:false])
+    sendEvent([name:'thermostatMode', value:'off', displayed:false])
+    sendEvent([name:'thermostatFanMode', value:'auto', displayed:false])
+    sendEvent([name:'thermostatOperatingState', value:'idle', displayed:false])
+    sendEvent([name:'fanState', value:'off', displayed:false])
+    sendEvent([name:'hold', value:'off', displayed:false])
+    sendEvent([name:'connection', value:'disconnected', displayed:false])
 }
 
 def updated() {
+	//log.debug "updated with settings: ${settings}"
+
+    printTitle()
     unschedule()
-    initialize()
-}
 
-private def initialize() {
-    log.info "Radio Thermostat. ${textVersion()}. ${textCopyright()}"
-	//log.debug "initialize with settings: ${settings}"
+    if (device.currentValue('connection') == null) {
+        sendEvent([name:'connection', value:'disconnected', displayed:false])
+    }
 
+    if (!settings.confIpAddr) {
+	    log.warn "IP address is not set!"
+        return
+    }
+
+    def port = settings.confTcpPort
+    if (!port) {
+	    log.warn "Using default TCP port 80!"
+        port = 80
+    }
+
+    def dni = createDNI(settings.confIpAddr, port)
+    device.deviceNetworkId = dni
+    state.dni = dni
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
-    state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
-    state.updated = 0
+    state.requestTime = 0
+    state.responseTime = 0
 
     startPollingTask()
     //STATE()
@@ -206,8 +242,25 @@ private def initialize() {
 def pollingTask() {
     //log.debug "pollingTask()"
 
-    sendHubCommand(apiGet("/tstat"))
     state.lastPoll = now()
+
+    // Check connection status
+    def requestTime = state.requestTime ?: 0
+    def responseTime = state.responseTime ?: 0
+    if (requestTime && (requestTime - responseTime) > 5000) {
+        log.warn "No connection!"
+        sendEvent([
+            name:           'connection',
+            value:          'disconnected',
+            isStateChange:  true,
+            displayed:      true
+        ])
+    }
+
+    def updated = state.updated ?: 0
+    if ((now() - updated) > 10000) {
+        sendHubCommand(apiGet("/tstat"))
+    }
 }
 
 def parse(String message) {
@@ -255,6 +308,7 @@ def setThermostatMode(mode) {
     }
 
     log.error "Invalid thermostat mode: \'${mode}\'"
+    return null
 }
 
 // thermostat.off
@@ -331,6 +385,7 @@ def setThermostatFanMode(fanMode) {
     }
 
     log.error "Invalid fan mode: \'${fanMode}\'"
+    return null
 }
 
 // thermostat.fanAuto
@@ -492,7 +547,6 @@ def holdOn() {
         return null
     }
 
-
     log.info "Setting temperature hold to 'on'"
     sendEvent([name:"hold", value:"on"])
 
@@ -524,6 +578,18 @@ def refresh() {
     //log.debug "refresh()"
     //STATE()
 
+    if (!state.dni) {
+	    log.warn "DNI is not set! Please enter device IP address and port in settings."
+        sendEvent([
+            name:           'connection',
+            value:          'disconnected',
+            isStateChange:  true,
+            displayed:      false
+        ])
+
+        return null
+    }
+
     def interval = getPollingInterval() * 60
     def elapsed =  (now() - state.lastPoll) / 1000
     if (elapsed > (interval + 300)) {
@@ -535,28 +601,12 @@ def refresh() {
     return apiGet("/tstat")
 }
 
-// Creates Device Network ID in 'AAAAAAAA:PPPP' format
-private String createDNI(ipaddr, port) {
-    //log.debug "createDNI(${ipaddr}, ${port})"
-
-    def hexIp = ipaddr.tokenize('.').collect {
-        String.format('%02X', it.toInteger())
-    }.join()
-
-    def hexPort = String.format('%04X', port.toInteger())
-
-    return "${hexIp}:${hexPort}"
-}
-
-private updateDNI() {
-    if (device.deviceNetworkId != state.dni) {
-        device.deviceNetworkId = state.dni
-    }
-}
-
 private getPollingInterval() {
-    def minutes = settings.pollingInterval.toInteger()
-    if (minutes < 1) {
+    def minutes = settings.pollingInterval?.toInteger()
+    if (!minutes) {
+	    log.warn "Using default polling interval: 5!"
+        minutes = 5
+    } else if (minutes < 1) {
         minutes = 1
     } else if (minutes > 59) {
         minutes = 59
@@ -566,6 +616,8 @@ private getPollingInterval() {
 }
 
 private startPollingTask() {
+    //log.debug "startPollingTask()"
+
     pollingTask()
 
     Random rand = new Random(now())
@@ -579,6 +631,12 @@ private startPollingTask() {
 private apiGet(String path) {
     //log.debug "apiGet(${path})"
 
+    if (!updateDNI()) {
+        return null
+    }
+
+    state.requestTime = now()
+
     def headers = [
         HOST:       state.hostAddress,
         Accept:     "*/*"
@@ -590,13 +648,17 @@ private apiGet(String path) {
         headers:    headers
     ]
 
-    updateDNI()
-
     return new physicalgraph.device.HubAction(httpRequest)
 }
 
 private apiPost(String path, data) {
     //log.debug "apiPost(${path}, ${data})"
+
+    if (!updateDNI()) {
+        return null
+    }
+
+    state.requestTime = now()
 
     def headers = [
         HOST:       state.hostAddress,
@@ -610,8 +672,6 @@ private apiPost(String path, data) {
         body:       data
     ]
 
-    updateDNI()
-
     return new physicalgraph.device.HubAction(httpRequest)
 }
 
@@ -621,7 +681,7 @@ private def writeTstatValue(name, value) {
     def json = "{\"${name}\": ${value}}"
     def hubActions = [
         apiPost("/tstat", json),
-        delayHubAction(2000),
+        delayHubAction(1500),
         apiGet("/tstat")
     ]
 
@@ -648,6 +708,8 @@ private parseHttpHeaders(String headers) {
 private def parseTstatData(Map tstat) {
     log.trace "tstat data: ${tstat}"
 
+    state.responseTime = now()
+
     def events = []
     if (tstat.containsKey("error_msg")) {
         log.error "Thermostat error: ${tstat.error_msg}"
@@ -660,80 +722,70 @@ private def parseTstatData(Map tstat) {
     }
 
     if (tstat.containsKey("temp")) {
-        //Float temp = tstat.temp.toFloat()
-        def ev = [
+        events << createEvent([
             name:   "temperature",
             value:  scaleTemperature(tstat.temp.toFloat()),
             unit:   getTemperatureScale(),
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("t_cool")) {
-        def ev = [
+        events << createEvent([
             name:   "coolingSetpoint",
             value:  scaleTemperature(tstat.t_cool.toFloat()),
             unit:   getTemperatureScale(),
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("t_heat")) {
-        def ev = [
+        events << createEvent([
             name:   "heatingSetpoint",
             value:  scaleTemperature(tstat.t_heat.toFloat()),
             unit:   getTemperatureScale(),
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("tstate")) {
-        def ev = [
+        events << createEvent([
             name:   "thermostatOperatingState",
             value:  parseThermostatState(tstat.tstate)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("fstate")) {
-        def ev = [
+        events << createEvent([
             name:   "fanState",
             value:  parseFanState(tstat.fstate)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("tmode")) {
-        def ev = [
+        events << createEvent([
             name:   "thermostatMode",
             value:  parseThermostatMode(tstat.tmode)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("fmode")) {
-        def ev = [
+        events << createEvent([
             name:   "thermostatFanMode",
             value:  parseFanMode(tstat.fmode)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
 
     if (tstat.containsKey("hold")) {
-        def ev = [
+        events << createEvent([
             name:   "hold",
             value:  parseThermostatHold(tstat.hold)
-        ]
-
-        events << createEvent(ev)
+        ])
     }
+
+    events << createEvent([
+        name:           'connection',
+        value:          'connected',
+        isStateChange:  true,
+        displayed:      false
+    ])
 
     state.updated = now()
 
@@ -808,8 +860,38 @@ private def temperatureFtoC(Double tempF) {
     return t.round(1)
 }
 
+private String createDNI(ipaddr, port) {
+    //log.debug "createDNI(${ipaddr}, ${port})"
+
+    def hexIp = ipaddr.tokenize('.').collect {
+        String.format('%02X', it.toInteger())
+    }.join()
+
+    def hexPort = String.format('%04X', port.toInteger())
+ 
+    return "${hexIp}:${hexPort}"
+}
+
+private updateDNI() {
+    if (!state.dni) {
+	    log.warn "DNI is not set! Please enter device IP address and port in settings."
+        return false
+    }
+ 
+    if (state.dni != device.deviceNetworkId) {
+	    log.warn "Invalid DNI: ${device.deviceNetworkId}!"
+        device.deviceNetworkId = state.dni
+    }
+
+    return true
+}
+
+private def printTitle() {
+    log.info "Radio Thermostat. ${textVersion()}. ${textCopyright()}"
+}
+
 private def textVersion() {
-    return "Version 2.0.0 (12/17/2016)"
+    return "Version 2.0.1 (12/20/2016)"
 }
 
 private def textCopyright() {
@@ -822,9 +904,10 @@ private def STATE() {
     log.trace "temperature: ${device.currentValue("temperature")}"
     log.trace "heatingSetpoint: ${device.currentValue("heatingSetpoint")}"
     log.trace "coolingSetpoint: ${device.currentValue("coolingSetpoint")}"
+    log.trace "thermostatOperatingState: ${device.currentValue("thermostatOperatingState")}"
     log.trace "thermostatMode: ${device.currentValue("thermostatMode")}"
     log.trace "thermostatFanMode: ${device.currentValue("thermostatFanMode")}"
-    log.trace "thermostatOperatingState: ${device.currentValue("thermostatOperatingState")}"
     log.trace "fanState: ${device.currentValue("fanState")}"
     log.trace "hold: ${device.currentValue("hold")}"
+    log.trace "connection: ${device.currentValue("connection")}"
 }
