@@ -36,8 +36,6 @@ preferences {
         required:true, displayDuringSetup:true)
     input("confPassword", "password", title:"VLC Password",
         required:false, displayDuringSetup:true)
-    input("pollingInterval", "number", title:"Polling interval in minutes (1 - 59)",
-        required:true, displayDuringSetup:true)
 }
 
 metadata {
@@ -165,16 +163,41 @@ def updated() {
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
     state.requestTime = 0
     state.responseTime = 0
+    state.lastPoll = 0
     state.updated = 0
 
     if (settings.confPassword) {
-        state.userAuth = ":${settings.confPassword}".bytes.encodeBase64()
+        state.userAuth = ":${settings.confPassword}".bytes.encodeBase64() as String
     } else {
         state.userAuth = null
     }
 
     //startPollingTask()
     STATE()
+}
+
+def pollingTask() {
+    //log.debug "pollingTask()"
+
+    state.lastPoll = now()
+
+    // Check connection status
+    def requestTime = state.requestTime ?: 0
+    def responseTime = state.responseTime ?: 0
+    if (requestTime && (requestTime - responseTime) > 5000) {
+        log.warn "No connection!"
+        sendEvent([
+            name:           'connection',
+            value:          'disconnected',
+            isStateChange:  true,
+            displayed:      true
+        ])
+    }
+
+    def updated = state.updated ?: 0
+    if ((now() - updated) > 10000) {
+        sendHubCommand(apiGetStatus())
+    }
 }
 
 def parse(String message) {
@@ -444,8 +467,25 @@ def __testTTS() {
     return playTextAndResume(text)
 }
 
+private startPollingTask() {
+    //log.debug "startPollingTask()"
+
+    pollingTask()
+
+    Random rand = new Random(now())
+    def seconds = rand.nextInt(60)
+    def sched = "${seconds} 0/1 * * * ?"
+
+    //log.debug "Scheduling polling task with \"${sched}\""
+    schedule(sched, pollingTask)
+}
+
 private apiGet(String path) {
     log.debug "apiGet(${path})"
+
+    if (!updateDNI()) {
+        return null
+    }
 
     def headers = [
         HOST:       state.hostAddress,
@@ -462,9 +502,7 @@ private apiGet(String path) {
         headers:    headers
     ]
 
-    //log.debug "httpRequest: ${httpRequest}"
-    updateDNI()
-
+    log.debug "httpRequest: ${httpRequest}"
     return new physicalgraph.device.HubAction(httpRequest)
 }
 
