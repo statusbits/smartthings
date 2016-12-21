@@ -24,18 +24,21 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 2.0.0 (12/18/2016)
+ *  Version 2.0.0 (12/21/2016)
  */
 
 import groovy.json.JsonSlurper
 
 preferences {
-    input("confIpAddr", "string", title:"Enter VLC IP address",
+    // NOTE: Android client does not accept "defaultValue" attribute!
+    input("confIpAddr", "string", title:"VLC IP Address",
         required:true, displayDuringSetup:true)
-    input("confTcpPort", "number", title:"Enter VLC TCP port",
+    input("confTcpPort", "number", title:"VLC TCP Port",
         required:true, displayDuringSetup:true)
-    input("confPassword", "password", title:"Enter your VLC password",
+    input("confPassword", "password", title:"VLC Password",
         required:false, displayDuringSetup:true)
+    input("pollingInterval", "number", title:"Polling interval in minutes (1 - 59)",
+        required:true, displayDuringSetup:true)
 }
 
 metadata {
@@ -48,6 +51,7 @@ metadata {
         capability "Polling"
 
         // Custom attributes
+        attribute "connection", "string"    // Connection status string
 
         // Custom commands
         command "enqueue", ["string"]
@@ -90,48 +94,10 @@ metadata {
 			}
 		}
 
-        standardTile("main", "device.status", width:2, height:2, canChangeIcon:true) {
-            state "disconnected", label:'Connect', icon:"st.Electronics.electronics16", backgroundColor:"#FFCC00", action:"refresh.refresh"
-            state "stopped", label:'Stopped', icon:"st.Electronics.electronics16", nextState:"playing", backgroundColor:"#ffffff", action:"Music Player.play"
-            state "paused", label:'Paused', icon:"st.Electronics.electronics16", nextState:"playing", backgroundColor:"#ffffff", action:"Music Player.play"
-            state "playing", label:'Playing', icon:"st.Electronics.electronics16", nextState:"paused", backgroundColor:"#79b821", action:"Music Player.pause"
-        }
-
-        standardTile("play", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "stopped", label:'', icon:"st.sonos.play-btn", nextState:"playing", action:"Music Player.play"
-            state "paused", label:'', icon:"st.sonos.play-btn", nextState:"playing", action:"Music Player.play"
-            state "playing", label:'', icon:"st.sonos.pause-btn", nextState:"paused", action:"Music Player.pause"
-        }
-
-        standardTile("stop", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "stopped", label:'', icon:"st.sonos.play-btn", nextState:"playing", action:"Music Player.play"
-            state "paused", label:'', icon:"st.sonos.stop-btn", nextState:"stopped", action:"Music Player.stop"
-            state "playing", label:'', icon:"st.sonos.stop-btn", nextState:"stopped", action:"Music Player.stop"
-        }
-
-        standardTile("nextTrack", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "default", label:'', icon:"st.sonos.next-btn", action:"Music Player.nextTrack"
-        }
-
-        standardTile("previousTrack", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "default", label:'', icon:"st.sonos.previous-btn", action:"music Player.previousTrack"
-        }
-
-        standardTile("mute", "device.mute", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "unmuted", label:"Mute", icon:"st.custom.sonos.unmuted", action:"Music Player.mute"
-            state "muted", label:"Unmute", icon:"st.custom.sonos.muted", action:"Music Player.unmute"
-        }
-
-        controlTile("volume", "device.level", "slider", height:2, width:6, inactiveLabel:false) {
-            state "level", action:"Music Player.setLevel"
-        }
-
-        valueTile("nowPlaying", "device.trackDescription", height:2, width:6, inactiveLabel:true, decoration:"flat") {
-            state "default", label:'${currentValue}'
-        }
-
         standardTile("refresh", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "default", icon:"st.secondary.refresh", action:"refresh.refresh"
+            state "default", icon:"st.secondary.refresh", backgroundColor:"#FFFFFF", action:"refresh.refresh", defaultState:true
+            state "connected", icon:"st.secondary.refresh", backgroundColor:"#44b621", action:"refresh.refresh"
+            state "disconnected", icon:"st.secondary.refresh", backgroundColor:"#ea5462", action:"refresh.refresh"
         }
 
         standardTile("testAudio", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
@@ -142,15 +108,14 @@ metadata {
             state "default", label:"Test", icon:"http://statusbits.github.io/icons/vlcthing.png", action:"__testTTS"
         }
 
-        main(["main"])
-        details([
-            "mediaplayer",
-            "nowPlaying",
-            "previousTrack", "play", "nextTrack",
-            "mute", "stop", "refresh",
-            "volume",
-            "testTTS"
-        ])
+        standardTile("main", "device.status", width:2, height:2, canChangeIcon:true) {
+            state "stopped", label:'Stopped', icon:"st.Electronics.electronics16", backgroundColor:"#ffffff", action:"Music Player.play", nextState:"playing"
+            state "paused", label:'Paused', icon:"st.Electronics.electronics16", backgroundColor:"#ffffff", action:"Music Player.play", nextState:"playing"
+            state "playing", label:'Playing', icon:"st.Electronics.electronics16", backgroundColor:"#79b821", action:"Music Player.pause", nextState:"paused"
+        }
+
+        main("main")
+        details(["mediaplayer", "refresh", "testTTS"])
     }
 
     simulator {
@@ -626,7 +591,7 @@ private updateDNI() {
 }
 
 private def textVersion() {
-    return "Version 2.0.0 (12/18/2016)"
+    return "Version 2.0.0 (12/21/2016)"
 }
 
 private def textCopyright() {
