@@ -1,6 +1,5 @@
 /**
- *  VLC Thing is a SmartThings device driver (a "thing") for the VLC media
- *  player.
+ *  VLC Things. A SmartThings device handler for the VLC media player.
  *
  *  For more information, please visit
  *  <https://github.com/statusbits/smartthings/tree/master/VlcThing.md/>
@@ -130,20 +129,52 @@ metadata {
     }
 }
 
-def updated() {
-    log.info "VLC Thing. ${textVersion()}. ${textCopyright()}"
-	log.debug "updated with settings: ${settings.inspect()}"
+def installed() {
+    //log.debug "installed()"
 
-    state.dni = createDNI(settings.confIpAddr, settings.confTcpPort)
+    printTitle()
+
+    // Initialize attributes to default values (Issue #18)
+    sendEvent([name:'status', value:'stopped', displayed:false])
+    sendEvent([name:'level', value:'0', displayed:false])
+    sendEvent([name:'mute', value:'unmuted', displayed:false])
+    sendEvent([name:'trackDescription', value:'', displayed:false])
+    sendEvent([name:'connection', value:'disconnected', displayed:false])
+}
+
+def updated() {
+	log.debug "updated with settings: ${settings}"
+
+    printTitle()
+    unschedule()
+
+    if (!settings.confIpAddr) {
+	    log.warn "IP address is not set!"
+        return
+    }
+
+    def port = settings.confTcpPort
+    if (!port) {
+	    log.warn "Using default TCP port 8080!"
+        port = 8080
+    }
+
+    def dni = createDNI(settings.confIpAddr, port)
+    device.deviceNetworkId = dni
+    state.dni = dni
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
+    state.requestTime = 0
+    state.responseTime = 0
+    state.updated = 0
+
     if (settings.confPassword) {
-        String auth = ":${settings.confPassword}".bytes.encodeBase64()
-        state.userAuth = auth
+        state.userAuth = ":${settings.confPassword}".bytes.encodeBase64()
     } else {
         state.userAuth = null
     }
 
-    setDefaults()
+    //startPollingTask()
+    STATE()
 }
 
 def parse(String message) {
@@ -546,33 +577,7 @@ private def myTextToSpeech(text) {
     return sound
 }
 
-private def setDefaults() {
-    log.debug "setDefaults()"
-
-    def events = []
-
-    if (device.currentValue('status') == null) {
-        events << createEvent([name:'status', value:'stopped', displayed:false])
-    }
-
-    if (device.currentValue('level') == null) {
-        events << createEvent([name:'level', value:'0', displayed:false])
-    }
-
-    if (device.currentValue('mute') == null) {
-        events << createEvent([name:'mute', value:'unmuted', displayed:false])
-    }
-
-    if (device.currentValue('trackDescription') == null) {
-        events << createEvent([name:'trackDescription', value:'', displayed:false])
-    }
-
-    events.each {
-        sendEvent(it)
-    }
-}
-
-private String createDNI(ipaddr, port) { 
+private String createDNI(ipaddr, port) {
     log.debug "createDNI(${ipaddr}, ${port})"
 
     def hexIp = ipaddr.tokenize('.').collect {
@@ -580,14 +585,26 @@ private String createDNI(ipaddr, port) {
     }.join()
 
     def hexPort = String.format('%04X', port.toInteger())
-
+ 
     return "${hexIp}:${hexPort}"
 }
 
-private updateDNI() { 
-    if (device.deviceNetworkId != state.dni) {
+private updateDNI() {
+    if (!state.dni) {
+	    log.warn "DNI is not set! Please enter device IP address and port in settings."
+        return false
+    }
+ 
+    if (state.dni != device.deviceNetworkId) {
+	    log.warn "Invalid DNI: ${device.deviceNetworkId}!"
         device.deviceNetworkId = state.dni
     }
+
+    return true
+}
+
+private def printTitle() {
+    log.info "VLC Thing. ${textVersion()}. ${textCopyright()}"
 }
 
 private def textVersion() {
@@ -605,4 +622,5 @@ private def STATE() {
     log.trace "level: ${device.currentValue('level')}"
     log.trace "mute: ${device.currentValue('mute')}"
     log.trace "trackDescription: ${device.currentValue('trackDescription')}"
+    log.trace "connection: ${device.currentValue("connection")}"
 }
