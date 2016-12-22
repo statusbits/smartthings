@@ -58,7 +58,7 @@ metadata {
         command "playTextAndResume", ["string","number"]
         command "playTextAndRestore", ["string","number"]
         command "playSoundAndTrack", ["string","number","json_object","number"]
-        command "__testTTS"
+        command "testTTS"
     }
 
     tiles(scale:2) {
@@ -97,12 +97,8 @@ metadata {
             state "disconnected", icon:"st.secondary.refresh", backgroundColor:"#ea5462", action:"refresh.refresh"
         }
 
-        standardTile("testAudio", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "default", label:"Audio Test", action:"__testAudio"
-        }
-
         standardTile("testTTS", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
-            state "default", label:"Test", icon:"http://statusbits.github.io/icons/vlcthing.png", action:"__testTTS"
+            state "default", label:"Test", icon:"http://statusbits.github.io/icons/vlcthing.png", action:"testTTS"
         }
 
         standardTile("main", "device.status", width:2, height:2, canChangeIcon:true) {
@@ -163,8 +159,8 @@ def updated() {
     state.hostAddress = "${settings.confIpAddr}:${settings.confTcpPort}"
     state.requestTime = 0
     state.responseTime = 0
+    state.updatedTime = 0
     state.lastPoll = 0
-    state.updated = 0
 
     if (settings.confPassword) {
         state.userAuth = ":${settings.confPassword}".bytes.encodeBase64() as String
@@ -184,7 +180,7 @@ def pollingTask() {
     // Check connection status
     def requestTime = state.requestTime ?: 0
     def responseTime = state.responseTime ?: 0
-    if (requestTime && (requestTime - responseTime) > 5000) {
+    if (requestTime && (requestTime - responseTime) > 10000) {
         log.warn "No connection!"
         sendEvent([
             name:           'connection',
@@ -194,7 +190,7 @@ def pollingTask() {
         ])
     }
 
-    def updated = state.updated ?: 0
+    def updated = state.updatedTime ?: 0
     if ((now() - updated) > 10000) {
         sendHubCommand(apiGetStatus())
     }
@@ -461,8 +457,8 @@ def playSoundAndTrack(uri, duration, trackData, volume = null) {
     return playTrackAndRestore(uri, duration, volume)
 }
 
-def __testTTS() {
-    log.debug "__testTTS()"
+def testTTS() {
+    log.debug "testTTS()"
     def text = "VLC for Smart Things is brought to you by Statusbits.com"
     return playTextAndResume(text)
 }
@@ -486,6 +482,9 @@ private apiGet(String path) {
     if (!updateDNI()) {
         return null
     }
+
+    state.requestTime = now()
+    state.responseTime = 0
 
     def headers = [
         HOST:       state.hostAddress,
@@ -550,6 +549,11 @@ private parseHttpHeaders(String headers) {
 private def parseHttpResponse(Map data) {
     log.debug "parseHttpResponse(${data})"
 
+    state.updatedTime = now()
+    if (!state.responseTime) {
+        state.responseTime = now()
+    }
+
     def events = []
 
     if (data.containsKey('state')) {
@@ -571,7 +575,14 @@ private def parseHttpResponse(Map data) {
         parseTrackInfo(events, data.information)
     }
 
-    //log.debug "events: ${events}"
+    events << createEvent([
+        name:           'connection',
+        value:          'connected',
+        isStateChange:  true,
+        displayed:      false
+    ])
+
+    log.debug "events: ${events}"
     return events
 }
 
