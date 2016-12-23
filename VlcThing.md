@@ -30,8 +30,16 @@ iPhone mobile app.
 
 ![VLC Thing Screenshot](http://statusbits.github.io/images/VLCThing-01.jpg)
 
-You can also click here to watch the
-[YouTube demo video](http://youtu.be/laCar-03Jq4).
+You can also watch the [YouTube demo video](http://youtu.be/laCar-03Jq4).
+
+---
+
+[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
+
+*If you enjoy using this software, please show your appreciation by making a small
+donation. Thank you for your support!*
+
+---
 
 
 ### Requirements
@@ -135,6 +143,12 @@ phrase "VLC for SmartThings is brought to you by Statusbits.com."
 
 
 ### Revision History
+
+**Version 2.0.0. Released 12/22/2016**
+* Completely redesigned UI using new multi-attribute tile.
+* Implemented automatic polling to update status every minute.
+* Refresh button now shows connection status: Green - connected, Red -
+disconnected.
 
 **Version 1.2.2. Released 08/25/2015**
 * Fixed an issue with DNI update not persisting.

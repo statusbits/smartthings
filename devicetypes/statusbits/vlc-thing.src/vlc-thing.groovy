@@ -23,7 +23,7 @@
  *
  *  --------------------------------------------------------------------------
  *
- *  Version 2.0.0 (12/21/2016)
+ *  Version 2.0.0 (12/22/2016)
  */
 
 import groovy.json.JsonSlurper
@@ -662,7 +662,7 @@ private updateDNI() {
 }
 
 private def title() {
-    return "VLC Thing. Version 2.0.0 (12/21/2016). Copyright © 2014 Statusbits.com"
+    return "VLC Thing. Version 2.0.0 (12/22/2016). Copyright © 2014 Statusbits.com"
 }
 
 private def STATE() {
