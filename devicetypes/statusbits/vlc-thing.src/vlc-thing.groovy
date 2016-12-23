@@ -91,7 +91,13 @@ metadata {
 			}
 		}
 
-        standardTile("refresh", "device.status", width:2, height:2, inactiveLabel:false, decoration:"flat") {
+        standardTile("status", "device.status", width:2, height:2, canChangeIcon:true) {
+            state "stopped", label:'Stopped', icon:"st.Electronics.electronics16", backgroundColor:"#ffffff", action:"Music Player.play", nextState:"playing"
+            state "paused", label:'Paused', icon:"st.Electronics.electronics16", backgroundColor:"#ffffff", action:"Music Player.play", nextState:"playing"
+            state "playing", label:'Playing', icon:"st.Electronics.electronics16", backgroundColor:"#79b821", action:"Music Player.pause", nextState:"paused"
+        }
+
+        standardTile("refresh", "device.connection", width:2, height:2, inactiveLabel:false, decoration:"flat") {
             state "default", icon:"st.secondary.refresh", backgroundColor:"#FFFFFF", action:"refresh.refresh", defaultState:true
             state "connected", icon:"st.secondary.refresh", backgroundColor:"#44b621", action:"refresh.refresh"
             state "disconnected", icon:"st.secondary.refresh", backgroundColor:"#ea5462", action:"refresh.refresh"
@@ -101,13 +107,7 @@ metadata {
             state "default", label:"Test", icon:"http://statusbits.github.io/icons/vlcthing.png", action:"testTTS"
         }
 
-        standardTile("main", "device.status", width:2, height:2, canChangeIcon:true) {
-            state "stopped", label:'Stopped', icon:"st.Electronics.electronics16", backgroundColor:"#ffffff", action:"Music Player.play", nextState:"playing"
-            state "paused", label:'Paused', icon:"st.Electronics.electronics16", backgroundColor:"#ffffff", action:"Music Player.play", nextState:"playing"
-            state "playing", label:'Playing', icon:"st.Electronics.electronics16", backgroundColor:"#79b821", action:"Music Player.pause", nextState:"paused"
-        }
-
-        main("main")
+        main("status")
         details(["mediaplayer", "refresh", "testTTS"])
     }
 
@@ -125,8 +125,7 @@ metadata {
 
 def installed() {
     //log.debug "installed()"
-
-    printTitle()
+    log.info title()
 
     // Initialize attributes to default values (Issue #18)
     sendEvent([name:'status', value:'stopped', displayed:false])
@@ -137,9 +136,9 @@ def installed() {
 }
 
 def updated() {
-	log.debug "updated with settings: ${settings}"
+	//log.debug "updated with settings: ${settings}"
+    log.info title()
 
-    printTitle()
     unschedule()
 
     if (!settings.confIpAddr) {
@@ -168,8 +167,8 @@ def updated() {
         state.userAuth = null
     }
 
-    //startPollingTask()
-    STATE()
+    startPollingTask()
+    //STATE()
 }
 
 def pollingTask() {
@@ -241,7 +240,7 @@ def off() {
 
 // MusicPlayer.play
 def play() {
-    log.debug "play()"
+    //log.debug "play()"
 
     def command
     if (device.currentValue('status') == 'paused') {
@@ -255,69 +254,63 @@ def play() {
 
 // MusicPlayer.stop
 def stop() {
-    log.debug "stop()"
-
+    //log.debug "stop()"
     return apiCommand("command=pl_stop", 500)
 }
 
 // MusicPlayer.pause
 def pause() {
-    log.debug "pause()"
-
+    //log.debug "pause()"
     return apiCommand("command=pl_forcepause")
 }
 
 // MusicPlayer.playTrack
 def playTrack(uri) {
-    log.debug "playTrack(${uri})"
-
+    //log.debug "playTrack(${uri})"
     def command = "command=in_play&input=" + URLEncoder.encode(uri, "UTF-8")
     return apiCommand(command, 500)
 }
 
 // MusicPlayer.playText
 def playText(text) {
-    log.debug "playText(${text})"
-
+    //log.debug "playText(${text})"
     def sound = myTextToSpeech(text)
     return playTrack(sound.uri)
 }
 
 // MusicPlayer.setTrack
 def setTrack(name) {
-    log.debug "setTrack(${name}) not implemented"
+    log.warn "setTrack(${name}) not implemented"
     return null
 }
 
 // MusicPlayer.resumeTrack
 def resumeTrack(name) {
-    log.debug "resumeTrack(${name}) not implemented"
+    log.warn "resumeTrack(${name}) not implemented"
     return null
 }
 
 // MusicPlayer.restoreTrack
 def restoreTrack(name) {
-    log.debug "restoreTrack(${name}) not implemented"
+    log.warn "restoreTrack(${name}) not implemented"
     return null
 }
 
 // MusicPlayer.nextTrack
 def nextTrack() {
-    log.debug "nextTrack()"
-
+    //log.debug "nextTrack()"
     return apiCommand("command=pl_next", 500)
 }
 
 // MusicPlayer.previousTrack
 def previousTrack() {
-    log.debug "previousTrack()"
-
+    //log.debug "previousTrack()"
     return apiCommand("command=pl_previous", 500)
 }
 
 // MusicPlayer.setLevel
 def setLevel(number) {
-    log.debug "setLevel(${number})"
+    //log.debug "setLevel(${number})"
 
     if (device.currentValue('mute') == 'muted') {
         sendEvent(name:'mute', value:'unmuted')
@@ -330,7 +323,7 @@ def setLevel(number) {
 
 // MusicPlayer.mute
 def mute() {
-    log.debug "mute()"
+    //log.debug "mute()"
 
     if (device.currentValue('mute') == 'muted') {
         return null
@@ -345,7 +338,7 @@ def mute() {
 
 // MusicPlayer.unmute
 def unmute() {
-    log.debug "unmute()"
+    //log.debug "unmute()"
 
     if (device.currentValue('mute') == 'muted') {
         return setLevel(state.savedVolume.toInteger())
@@ -356,47 +349,65 @@ def unmute() {
 
 // SpeechSynthesis.speak
 def speak(text) {
-    log.debug "speak(${text})"
-
+    //log.debug "speak(${text})"
     def sound = myTextToSpeech(text)
     return playTrack(sound.uri)
 }
 
 // polling.poll 
 def poll() {
-    log.debug "poll()"
+    //log.debug "poll()"
     return refresh()
 }
 
 // refresh.refresh
 def refresh() {
-    log.debug "refresh()"
-    STATE()
+    //log.debug "refresh()"
+    //STATE()
+
+    if (!updateDNI()) {
+        sendEvent([
+            name:           'connection',
+            value:          'disconnected',
+            isStateChange:  true,
+            displayed:      false
+        ])
+
+        return null
+    }
+
+    // Restart polling task if it's not run for 5 minutes
+    def elapsed = (now() - state.lastPoll) / 1000
+    if (elapsed > 300) {
+        log.warn "Restarting polling task..."
+        unschedule()
+        startPollingTask()
+    }
 
     return apiGetStatus()
 }
 
 def enqueue(uri) {
-    log.debug "enqueue(${uri})"
+    //log.debug "enqueue(${uri})"
     def command = "command=in_enqueue&input=" + URLEncoder.encode(uri, "UTF-8")
     return apiCommand(command)
 }
 
 def seek(trackNumber) {
-    log.debug "seek(${trackNumber})"
+    //log.debug "seek(${trackNumber})"
     def command = "command=pl_play&id=${trackNumber}"
     return apiCommand(command, 500)
 }
 
 def playTrackAndResume(uri, duration, volume = null) {
-    log.debug "playTrackAndResume(${uri}, ${duration}, ${volume})"
+    //log.debug "playTrackAndResume(${uri}, ${duration}, ${volume})"
 
     // FIXME
     return playTrackAndRestore(uri, duration, volume)
 }
 
 def playTrackAndRestore(uri, duration, volume = null) {
-    log.debug "playTrackAndRestore(${uri}, ${duration}, ${volume})"
+    //log.debug "playTrackAndRestore(${uri}, ${duration}, ${volume})"
 
     def currentStatus = device.currentValue('status')
     def currentVolume = device.currentValue('level')
@@ -437,28 +448,26 @@ def playTrackAndRestore(uri, duration, volume = null) {
 }
 
 def playTextAndResume(text, volume = null) {
-    log.debug "playTextAndResume(${text}, ${volume})"
-
+    //log.debug "playTextAndResume(${text}, ${volume})"
     def sound = myTextToSpeech(text)
     return playTrackAndResume(sound.uri, (sound.duration as Integer) + 1, volume)
 }
 
 def playTextAndRestore(text, volume = null) {
-    log.debug "playTextAndRestore(${text}, ${volume})"
-
+    //log.debug "playTextAndRestore(${text}, ${volume})"
     def sound = myTextToSpeech(text)
     return playTrackAndRestore(sound.uri, (sound.duration as Integer) + 1, volume)
 }
 
 def playSoundAndTrack(uri, duration, trackData, volume = null) {
-    log.debug "playSoundAndTrack(${uri}, ${duration}, ${trackData}, ${volume})"
+    //log.debug "playSoundAndTrack(${uri}, ${duration}, ${trackData}, ${volume})"
 
     // FIXME
     return playTrackAndRestore(uri, duration, volume)
 }
 
 def testTTS() {
-    log.debug "testTTS()"
+    //log.debug "testTTS()"
     def text = "VLC for Smart Things is brought to you by Statusbits.com"
     return playTextAndResume(text)
 }
@@ -477,7 +486,7 @@ private startPollingTask() {
 }
 
 private apiGet(String path) {
-    log.debug "apiGet(${path})"
+    //log.debug "apiGet(${path})"
 
     if (!updateDNI()) {
         return null
@@ -501,7 +510,7 @@ private apiGet(String path) {
         headers:    headers
     ]
 
-    log.debug "httpRequest: ${httpRequest}"
+    //log.debug "httpRequest: ${httpRequest}"
     return new physicalgraph.device.HubAction(httpRequest)
 }
 
@@ -514,7 +523,7 @@ private apiGetStatus() {
 }
 
 private apiCommand(command, refresh = 0) {
-    log.debug "apiCommand(${command})"
+    //log.debug "apiCommand(${command})"
 
     def actions = [
         apiGet("/requests/status.json?${command}")
@@ -529,7 +538,7 @@ private apiCommand(command, refresh = 0) {
 }
 
 private def apiGetPlaylists() {
-    log.debug "getPlaylists()"
+    //log.debug "getPlaylists()"
     return apiGet("/requests/playlist.json")
 }
 
@@ -547,7 +556,7 @@ private parseHttpHeaders(String headers) {
 }
 
 private def parseHttpResponse(Map data) {
-    log.debug "parseHttpResponse(${data})"
+    //log.debug "parseHttpResponse(${data})"
 
     state.updatedTime = now()
     if (!state.responseTime) {
@@ -582,7 +591,7 @@ private def parseHttpResponse(Map data) {
         displayed:      false
     ])
 
-    log.debug "events: ${events}"
+    //log.debug "events: ${events}"
     return events
 }
 
@@ -591,7 +600,7 @@ private def parseTrackInfo(events, Map info) {
 
     if (info.containsKey('category') && info.category.containsKey('meta')) {
         def meta = info.category.meta
-        log.debug "Track info: ${meta})"
+        //log.debug "Track info: ${meta})"
         if (meta.containsKey('filename')) {
             if (meta.filename.contains("//s3.amazonaws.com/smartapp-")) {
                 log.trace "Skipping event generation for sound file ${meta.filename}"
@@ -627,7 +636,7 @@ private def myTextToSpeech(text) {
 }
 
 private String createDNI(ipaddr, port) {
-    log.debug "createDNI(${ipaddr}, ${port})"
+    //log.debug "createDNI(${ipaddr}, ${port})"
 
     def hexIp = ipaddr.tokenize('.').collect {
         String.format('%02X', it.toInteger())
@@ -640,7 +649,7 @@ private String createDNI(ipaddr, port) {
 
 private updateDNI() {
     if (!state.dni) {
-	    log.warn "DNI is not set! Please enter device IP address and port in settings."
+	    log.warn "DNI is not set! Please enter IP address and port in settings."
         return false
     }
  
@@ -652,16 +661,8 @@ private updateDNI() {
     return true
 }
 
-private def printTitle() {
-    log.info "VLC Thing. ${textVersion()}. ${textCopyright()}"
-}
-
-private def textVersion() {
-    return "Version 2.0.0 (12/21/2016)"
-}
-
-private def textCopyright() {
-    return "Copyright © 2014 Statusbits.com"
+private def title() {
+    return "VLC Thing. Version 2.0.0 (12/21/2016). Copyright © 2014 Statusbits.com"
 }
 
 private def STATE() {
