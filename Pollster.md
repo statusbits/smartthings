@@ -26,14 +26,6 @@ intervals. The polling interval can be as short as one minute.
 
 ![Pollster Screenshot](http://statusbits.github.io/images/Pollster_1.2.jpg)
 
----
-
-*If you like this app, please consider supporting its development by making a
-donation via PayPal.*
-
-[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
-
-
 ### Installation
 
 1. Self-publish Pollster SmartApp by creating a new SmartApp in the
@@ -45,7 +37,6 @@ for more information.
 
 2. Open SmartThings mobile app and locate "Pollster" SmartApp in the "My Apps"
 section of the Marketplace.
-
 
 ### Revision History
 
@@ -98,7 +89,6 @@ interval.
 **Version 1.0. Released 7/14/2014** 
 
 * Published to SmartThings shared apps directory.
-
 
 ### License
 
