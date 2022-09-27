@@ -6,7 +6,6 @@ Dim and Dimmer
 This [SmartThings](http://www.smartthings.com) app allows you to create lighting
 scenes by setting dimmers to different levels depending on the home mode.
 
-
 ### Installation
 
 Before you can install this SmartApp using your SmartThings smart phone app,
@@ -14,12 +13,10 @@ you will have to self-publish it in the [SmartThings IDE](https://graph.api.smar
 Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
 for more information.
 
-
 ### Revision History
 
 **Version 1.0.0. Released 2014-12-21**
 * Released to SmartThings community.
-
 
 ### License
 

@@ -17,13 +17,6 @@ SmartThings iPhone mobile app.
 
 ---
 
-[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
-
-*If you enjoy using this software, please show your appreciation by making a small
-donation. Thank you for your support!*
-
----
-
 ### Requirements
 
 1. Your Wi-Fi thermostat must be connected to the same local network (LAN) as
@@ -34,7 +27,6 @@ your router is rebooted. This can be accomplished by using your router's
 reserve an IP address.
 3. Obviously, you need a functioning Internet connection for your hub to
 communicate with the SmartThings cloud.
-
 
 ### Installation
 
@@ -94,12 +86,10 @@ device.
 3. Log back in into your SmartThings account. A new RadioThermostat device
 should now appear on the "Things" page.
 
-
 ### Known Issues
 
 None. Please note that as of version 2.0.0, the RadioThermostat device handler
 performs polling automatcally and does not require Pollster. :=) 
-
 
 ### Revision History
 
@@ -118,7 +108,6 @@ cooling setpoints.
 
 **Version 1.0.3. Released 08/25/2015**
 * Fixed an issue with DNI not being updated.
-
 
 ### License
 

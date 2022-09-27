@@ -21,18 +21,9 @@ the button was pushed momentarily or held down. You can configure Remote
 Controller to perform different actions depending on the type of button
 action.
 
----
-
-*If you like this app, please consider supporting its development by making a
-donation via PayPal.*
-
-[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
-
-
 ### Screenshots
 
 ![Remote Controller Screenshot](http://statusbits.github.io/images/RemoteController-01.jpg)
-
 
 ### Installation
 
@@ -45,7 +36,6 @@ for more information.
 
 2. Open SmartThings mobile app and locate 'Remote Controller' SmartApp in the
 "My Apps" section of the Marketplace.
-
 
 ### Revision History
 

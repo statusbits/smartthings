@@ -17,11 +17,9 @@ the door is left unlocked for longer than a specified period of time.
 * Optionally, notifications can be repeated every N minutes.
 * Can set a limit on the number of notifications sent.
 
-
 ### Screenshots
 
 ![Screenshot](http://statusbits.github.io/images/RemindToLock.jpg)
-
 
 ### Installation
 
@@ -30,7 +28,6 @@ you will have to self-publish it in the [SmartThings IDE](https://graph.api.smar
 Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
 for more information.
 
-
 ### Revision History
 
 **Version 1.0.2. Released 2014-12-06**
@@ -38,7 +35,6 @@ for more information.
 
 **Version 1.0.1. Released 2014-12-05**
 * First public release.
-
 
 ### License
 

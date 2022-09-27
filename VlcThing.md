@@ -34,14 +34,6 @@ You can also watch the [YouTube demo video](http://youtu.be/laCar-03Jq4).
 
 ---
 
-[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
-
-*If you enjoy using this software, please show your appreciation by making a small
-donation. Thank you for your support!*
-
----
-
-
 ### Requirements
 
 1. Laptop or desktop computer. VLC Media Player can be installed on virtually
@@ -52,7 +44,6 @@ unchanged even if your computer or the router is rebooted. This can be
 accomplished by using either "static" or "reserved" IP address.
 3. Obviously, you need a functioning Internet connection for your hub to
 communicate with the SmartThings cloud.
-
 
 ### Installing and Configuring VLC Media Player
 
@@ -66,7 +57,6 @@ interface by following the instructions available here:
  - for [Linux](http://hobbyistsoftware.com/VLCSetup-linux)
  - for [Windows](http://hobbyistsoftware.com/vlcsetup-win-manual)
  - for [Mac OS](http://hobbyistsoftware.com/vlcsetup-mac-manual)
-
 
 ### Installing and Configuring VLC Thing Device Handler
 
@@ -141,7 +131,6 @@ configured during VLC Media Player configuration.
 correctly, tap the "Test" tile below the volume control. You should hear a
 phrase "VLC for SmartThings is brought to you by Statusbits.com."
 
-
 ### Revision History
 
 **Version 2.0.0. Released 12/22/2016**
@@ -170,7 +159,6 @@ applications.
 
 **Version 1.0.0. Released 10/04/2014**
 * First public release.
-
 
 ### License
 

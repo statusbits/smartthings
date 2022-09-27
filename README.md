@@ -1,17 +1,12 @@
 ## SmartThings Projects
 
+__Please note that SmartThings Groovy-based SmartApps and device handlers will be shut down at the end of 2022. Therefore, all the projects listed here are now obsolete. Surely it was fun while it lasted :)__
+
+---
+
 This repository contains open source applications (SmartApps) and custom
 device handlers I have written for the [SmartThings](http://www.smartthings.com)
 home automation system.
-
----
-
-[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ATTTMV7JV2W9W)
-
-*If you enjoy using my software, please show your appreciation by making a
-small donation. Thank you for your support!*
-
----
 
 ### Smart Apps
 

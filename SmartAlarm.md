@@ -27,7 +27,6 @@ switches as well as execute chosen 'Hello, Home' action.
 armed, disarmed or when an alarm is triggered.
 * Voice notifications using compatible audio devices, e.g. Sonos.
 
-
 ### Arming and Disarming
 
 Smart Alarm can be armed and disarmed in three different ways:
@@ -46,11 +45,9 @@ mode.
 and trigger panic alarm using HTTP GET request. This feature can be used to
 integrate Smart Alarm into variety of web apps and dashboards.
 
-
 ### Screenshots
 
 Coming soon....
-
 
 ### Using REST API
 
@@ -82,7 +79,6 @@ the list of Installed SmartApps. Right-click on the "Smart Alarm" and select
 There you'll see "accessToken" and "url". Save those values and plug them in
 into your web app.
 
-
 ### Installation
 
 As of July 2015, Smart Alarm has been officially accepted by SmartThings and
@@ -92,7 +88,6 @@ If you wish to install Smart Alarm from the GitHub repository, you will have
 to self-publish it in the [SmartThings IDE](https://graph.api.smartthings.com).
 Please refer to [SmartThings Developer Documentation](http://docs.smartthings.com/en/latest/index.html)
 for more information.
-
 
 ### Revision History
 
@@ -191,7 +186,6 @@ addition to turning on sirens and light switches
 
 **Version 1.0.0. Released 2014-07-04**
 * First public release.
-
 
 ### License
 
