@@ -5,6 +5,6 @@ This repository contains open source applications and device drivers for the
 
 ---
 
-_For the legacy Groovy-based SmratThings projects, please go [__here__](../legacy/README.md)_
+_For the legacy Groovy-based SmartThings projects, please go [__here__](../master/legacy/README.md)_
 
 ---
