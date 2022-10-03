@@ -5,8 +5,6 @@ This repository contains open source applications and device drivers for the
 
 ---
 
-__Please note that SmartThings Groovy-based SmartApps and device handlers will be shut down at the end of 2022.__
-
-For the legacy Groovy-based SmratThings projects, please go [__here__](../blob/master/legacy/README.md)
+_For the legacy Groovy-based SmratThings projects, please go [__here__](../legacy/README.md)_
 
 ---
